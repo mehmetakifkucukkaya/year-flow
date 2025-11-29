@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../features/auth/presentation/forgot_password_page.dart';
 import '../../features/auth/presentation/login_page.dart';
 import '../../features/auth/presentation/register_page.dart';
+import '../../features/goals/presentation/goal_create_page.dart';
 import '../../features/goals/presentation/goals_page.dart';
 import '../../features/home/presentation/home_page.dart';
 import '../../features/onboarding/presentation/onboarding_page.dart';
@@ -81,6 +82,13 @@ final routerProvider = Provider<GoRouter>((ref) {
         ],
       ),
 
+      // Goal Create (must be before goalDetail to avoid route conflict)
+      GoRoute(
+        path: AppRoutes.goalCreate,
+        name: 'goalCreate',
+        builder: (context, state) => const GoalCreatePage(),
+      ),
+
       // Goal Detail
       GoRoute(
         path: AppRoutes.goalDetail,
@@ -89,14 +97,6 @@ final routerProvider = Provider<GoRouter>((ref) {
           final goalId = state.pathParameters['id'] ?? '';
           return _PlaceholderScreen(title: 'Hedef Detay: $goalId');
         },
-      ),
-
-      // Goal Create
-      GoRoute(
-        path: AppRoutes.goalCreate,
-        name: 'goalCreate',
-        builder: (context, state) =>
-            const _PlaceholderScreen(title: 'Yeni Hedef'),
       ),
 
       // Check-in
@@ -186,7 +186,7 @@ class _MainShell extends StatelessWidget {
           }
         },
         labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
-        destinations: [
+        destinations: const [
           NavigationDestination(
             icon: Icon(Icons.home_outlined, size: 22), // Smaller icons
             selectedIcon: Icon(Icons.home, size: 22),
@@ -208,7 +208,10 @@ class _MainShell extends StatelessWidget {
             label: 'Ayarlar',
           ),
         ],
-        indicatorColor: Theme.of(context).colorScheme.primary.withOpacity(0.15), // Pastel background
+        indicatorColor: Theme.of(context)
+            .colorScheme
+            .primary
+            .withOpacity(0.15), // Pastel background
       ),
     );
   }
