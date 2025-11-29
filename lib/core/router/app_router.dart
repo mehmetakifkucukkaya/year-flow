@@ -2,37 +2,39 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../features/auth/presentation/forgot_password_page.dart';
+import '../../features/auth/presentation/login_page.dart';
+import '../../features/auth/presentation/register_page.dart';
 import 'app_routes.dart';
 
 /// Router provider
 final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
-    initialLocation: AppRoutes.splash,
+    initialLocation: AppRoutes.login,
     debugLogDiagnostics: true,
     routes: [
-      // Splash Screen
+      // Splash Screen (şimdilik login'e yönlendiriyor)
       GoRoute(
         path: AppRoutes.splash,
         name: 'splash',
-        builder: (context, state) => const _PlaceholderScreen(title: 'Splash'),
+        redirect: (context, state) => AppRoutes.login,
       ),
 
       // Auth Routes
       GoRoute(
         path: AppRoutes.login,
         name: 'login',
-        builder: (context, state) => const _PlaceholderScreen(title: 'Giriş'),
+        builder: (context, state) => const LoginPage(),
       ),
       GoRoute(
         path: AppRoutes.register,
         name: 'register',
-        builder: (context, state) => const _PlaceholderScreen(title: 'Kayıt'),
+        builder: (context, state) => const RegisterPage(),
       ),
       GoRoute(
         path: AppRoutes.forgotPassword,
         name: 'forgotPassword',
-        builder: (context, state) =>
-            const _PlaceholderScreen(title: 'Şifre Sıfırlama'),
+        builder: (context, state) => const ForgotPasswordPage(),
       ),
 
       // Onboarding

@@ -32,7 +32,10 @@ class AppTheme {
       useMaterial3: true,
       colorScheme: colorScheme,
       scaffoldBackgroundColor: AppColors.backgroundLight,
-      textTheme: AppTextStyles.textTheme,
+      textTheme: AppTextStyles.textTheme.apply(
+        bodyColor: AppColors.gray900,
+        displayColor: AppColors.gray900,
+      ),
 
       // AppBar
       appBarTheme: AppBarTheme(
