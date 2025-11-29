@@ -1,0 +1,539 @@
+---
+alwaysApply: true
+---
+
+### 2. İsimlendirme, Dosya Yapısı ve Kod Düzeni
+
+- Sınıf, enum, typedef, extension:
+  - `UpperCamelCase` → `UserProfile`, `AuthRepository`, `HomePage`
+- Değişken, fonksiyon, parametre, field:
+  - `lowerCamelCase` → `userName`, `loadUser`, `onTap`, `lessonCount`
+- Dosya ve klasör isimleri:
+  - `snake_case` → `user_profile_page.dart`, `auth_repository_impl.dart`
+- Widget isimlendirme:
+  - Ekran: `SomethingPage`, `SomethingScreen`
+  - Küçük UI bileşeni: `SomethingCard`, `SomethingButton`, `SomethingTile`
+- Provider isimlendirme (Riverpod):
+  - `authControllerProvider`, `lessonListProvider`, `appThemeProvider`
+  - Controller sınıfları: `AuthController`, `LessonController`, `ThemeController`
+- Kısaltma ve anlamsız isim yok:
+  - `d`, `smt`, `usr` yerine `user`, `lesson`, `subscription`
+- Asenkron fonksiyonlar:
+  - `loadUser()`, `fetchLessons()`, `saveToken()`
+- Import sırası:
+  1. `dart:` core
+  2. `package:flutter/...`
+  3. Üçüncü parti paketler (`dio`, `flutter_riverpod` vs.)
+  4. Proje içi importlar
+- `const`:
+  - Mümkün olan her yerde `const` widget kullan (performans için).
+
+---
+
+### 3. HTTP / Networking & Modelleme
+
+- HTTP:
+  - Varsayılan: **`dio`**
+  - Interceptor, logging, timeout, retry pattern kullan.
+  - Auth token / refresh logic merkezi bir interceptor üzerinden yönet.
+  - UI **asla** doğrudan `dio` veya raw HTTP çağırmasın:
+    - `Repository → DataSource → API Client` zinciri kur.
+- Modelleme:
+  - `freezed` + `json_serializable`:
+    - Immutable model, `copyWith`, equality, sealed class.
+  - API cevabı için DTO kullan:
+    - `UserDto` → `User` (domain) dönüşümü `toDomain()` ile.
+  - UI state için sealed/union pattern:
+    - `Loading`, `Success`, `Error`, `Empty` gibi state temsilini teşvik et.
+
+---
+
+### 4. State Management (Riverpod)
+
+- Genel yaklaşım:
+  - Varsayılan state management: **`flutter_riverpod` 2.x**
+  - Katmanlı yapı:
+    - Widget → Provider (controller/viewmodel) → Use case / Service → Repository → Data source
+  - İş mantığı widget içinde değil; provider/use-case katmanında olmalı.
+
+#### Provider Tipleri
+
+- `Provider`:
+  - Immutable değerler, config, client, repository bağımlılıkları (`dioProvider`, `authRepositoryProvider`).
+- `StateProvider<T>`:
+  - Küçük, lokal state (toggle, selectedTab). Kompleks domain state için kullanma.
+- `StateNotifierProvider / NotifierProvider`:
+  - Orta/büyük feature state:
+    - `AuthController`, `LessonController`, `ProfileController`
+  - State immutable (tercihen `freezed`).
+- `AsyncNotifier / AsyncNotifierProvider`:
+  - Async + state kombinasyonu (`AsyncValue<T>` ile).
+- `FutureProvider / StreamProvider`:
+  - Tek seferlik veya stream tabanlı data (remote config, Firestore stream vs.).
+
+#### Dosya ve Organizasyon
+
+- Her feature için provider dosyası:
+  - `auth_providers.dart`, `lesson_providers.dart`, `settings_providers.dart`
+- Global provider’lar:
+  - App scope’ta kökteki `providers.dart` içinde tutulabilir.
+
+#### Widget İçinde Kullanım
+
+- Widget türü:
+  - `ConsumerWidget` veya `ConsumerStatefulWidget` kullan.
+- İçeride:
+  - `ref.watch(provider)` → UI’ı reactive yapmak
+  - `ref.read(provider.notifier)` → event/command (onTap/onPressed içinde)
+- `build` içinde complex logic yok; provider’a taşınmalı.
+
+#### `select` ile Performans
+
+- Büyük state objelerinde:
+  - `ref.watch(provider.select((s) => s.isLoading))` kullanarak ince-grain update sağla.
+- Büyük modellerde parça parça rebuild için `select` öner.
+
+#### State Modelleme (`freezed` + `AsyncValue`)
+
+- State immutable olmalı:
+  ```dart
+  @freezed
+  class AuthState with _$AuthState {
+    const factory AuthState({
+      @Default(false) bool isLoading,
+      User? user,
+      String? errorMessage,
+    }) = _AuthState;
+  }
+  ```
+
+````
+
+* Async state için:
+
+  * `AsyncValue<T>`:
+
+    ```dart
+    final state = ref.watch(lessonControllerProvider);
+    return state.when(
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (e, st) => ErrorView(error: e),
+      data: (lessons) => LessonListView(lessons: lessons),
+    );
+    ```
+* God-state yerine feature-based state kullan.
+
+#### Side Effect’ler (listen / lifecycle)
+
+* Side-effect (navigation, snackbar, dialog) için:
+
+  * `ref.listen` / `ref.listenManual`:
+
+    ```dart
+    ref.listen<AuthState>(authControllerProvider, (prev, next) {
+      if (next.isLoggedIn && !(prev?.isLoggedIn ?? false)) {
+        // navigate to home
+      }
+    });
+    ```
+* `initState` / `dispose`:
+
+  * `ConsumerStatefulWidget` içinde:
+
+    * `initState` → initial load çağrıları
+    * `dispose` → cleanup
+
+#### Dependency Injection
+
+* Dependencies:
+
+  ```dart
+  final dioProvider = Provider<Dio>((ref) { ... });
+
+  final authRepositoryProvider = Provider<AuthRepository>((ref) {
+    final dio = ref.watch(dioProvider);
+    return AuthRepositoryImpl(dio);
+  });
+  ```
+* Controller, repository’leri `ref.watch` ile almalı.
+* Test / staging için:
+
+  ```dart
+  ProviderScope(
+    overrides: [
+      apiBaseUrlProvider.overrideWithValue('https://staging.api'),
+    ],
+    child: const MyApp(),
+  );
+  ```
+
+---
+
+### 5. Responsive / Adaptive UI
+
+* Genel:
+
+  * Responsive = UI’ı mevcut alana sığdırmak
+  * Adaptive = UI’ı cihaza ve duruma uygun hale getirmek
+* En az 3 breakpoint:
+
+  * `small`: telefon
+  * `medium`: geniş telefon / küçük tablet
+  * `large`: tablet / desktop / foldable
+* Breakpoint:
+
+  * Sadece `orientation` ile karar verme; genişlik/yükseklik ve oranı da dikkate al.
+* Layout:
+
+  * `LayoutBuilder` ile constraint tabanlı layout seç:
+
+    * Tek widget, farklı layout varyasyonları.
+* SafeArea / system UI:
+
+  * `SafeArea`, `MediaQuery.padding`, `MediaQuery.viewInsets`
+  * Klavye açıldığında bottom inputların görünür kalmasına dikkat (`viewInsets.bottom`).
+* Giriş yöntemleri:
+
+  * Dokunma + klavye + mouse düşün:
+
+    * Hover, focus, keyboard navigation, scroll wheel için uygun widgetları kullan.
+* Platform capabilities:
+
+  * `defaultTargetPlatform`, `kIsWeb` vs. ile sadece platform değil, ekran boyutu + kullanım senaryosunu da düşün.
+* Widget seviyesinde:
+
+  * Sabit piksel yok → `Expanded`, `Flexible`, `Spacer`, `FractionallySizedBox`, `LayoutBuilder`, `FittedBox`
+* Metin boyutları:
+
+  * `MediaQuery.textScaleFactor` + genişlik ile ölçekle.
+  * `AppTextStyles` üzerinden yönet.
+* Tasarımı parçala:
+
+  * Büyük widget’ları küçük, reusable parçalara böl.
+  * Ortak bileşenleri `core/widgets` altında tut.
+* Test:
+
+  * Farklı device size’larda manual test.
+  * Kritik ekranlar için screenshot/golden test düşünülebilir.
+
+---
+
+### 6. Design & Theming + Typography
+
+#### Genel
+
+* Tek `ThemeData` kaynağından yönet:
+
+  * Inline color/font yazma.
+* Design system:
+
+  * `AppTheme`, `AppColors`, `AppSpacing`, `AppRadius`, `AppTextStyles`, `AppTypography`, `AppIcons`
+
+#### Material 3
+
+* `ThemeData(useMaterial3: true)` varsayılan.
+* `ColorScheme.fromSeed` ile light/dark tema üret.
+* Renkler:
+
+  * `colorScheme.primary/secondary/tertiary/surface/error` vs.
+* Widget içinde hex color kullanma; color scheme’den çek.
+
+#### AppTheme Yapısı
+
+* `core/theme`:
+
+  * `app_theme.dart`
+  * `app_colors.dart`
+  * `app_text_styles.dart`
+  * `app_typography.dart`
+  * `app_spacing.dart`
+  * `app_radius.dart`
+  * `app_icons.dart`
+
+#### Shape & Radius
+
+* `AppRadius.sm / md / lg` kullan:
+
+  ```dart
+  borderRadius: BorderRadius.circular(AppRadius.md),
+  ```
+
+#### Spacing
+
+* Padding/margin:
+
+  * `AppSpacing.xs/sm/md/lg/xl`
+* Magic number yerine spacing token kullan.
+
+#### Iconography
+
+* Varsayılan: Material Icons / Material Symbols.
+* Alternatif icon setleri tutarlı kullanılmalı.
+* Icon boyutları `IconThemeData` üzerinden.
+
+#### Component Theme Override
+
+* `ElevatedButtonThemeData`, `FilledButtonThemeData`, `TextButtonThemeData`,
+  `InputDecorationTheme`, `CardTheme`, `AppBarTheme`, `NavigationBarTheme` theme üzerinden set edilmeli.
+* Inline override yerine theme.
+
+#### Cupertino Adaptation
+
+* Flutter’ın material + cupertino adaptif bileşenleri tercih edilmeli:
+
+  * iOS → `CupertinoSwitch`
+  * Android → `Switch`
+  * Gerekirse custom adaptive wrapper.
+
+#### Typography & Text
+
+* M3 `TextTheme` baz alınmalı:
+
+  * `displayLarge`, `headlineMedium`, `bodyLarge`, `labelMedium` vb.
+* Tüm text stilleri:
+
+  * `AppTextStyles` / `AppTypography` içinden gelsin.
+* Inline `TextStyle(fontSize: 16)` yazma.
+* Custom fonts:
+
+  * `pubspec.yaml` içinde tanımla, `TextTheme` üzerinden uygula.
+  * Widget içinde `fontFamily` override etme.
+* Dynamic type:
+
+  * `MediaQuery.textScaleFactor`’ı dikkate al.
+  * Min font size < 12 px olmasın.
+  * Geniş ekranlarda typography scale artsın (`AppTypography.responsive(context)`).
+* TextField & InputDecoration:
+
+  * Her şey `InputDecorationTheme` veya `AppInputDecorations` üzerinden gelsin.
+
+---
+
+### 7. Interactivity
+
+* Etkileşim widgetları:
+
+  * Tıklama: `InkWell` / M3 button family
+  * Uzun basma: `LongPressGestureRecognizer`
+  * Hover: `MouseRegion`
+* Butonlar:
+
+  * M3: `FilledButton`, `ElevatedButton`, `OutlinedButton`, `TextButton`, `IconButton`
+  * Stil: button theme üzerinden.
+* Touch feedback:
+
+  * `InkWell` için parent `Material` olmalı.
+* GestureDetector:
+
+  * Sadece özel gesture (pan, drag, scale, swipe) için.
+* Snackbars:
+
+  * `ScaffoldMessenger.of(context).showSnackBar()`
+  * Süreler:
+
+    * Basit info: 2–3 sn
+    * Kritik uyarı: 4–6 sn
+  * `SnackBarThemeData` kullan.
+* Focus / Keyboard / Mouse:
+
+  * Desktop/Web için: `FocusNode`, `FocusTraversalGroup`, `Shortcuts`, `Actions`, `MouseRegion`
+  * Tap target min: 48dp
+* Scroll:
+
+  * `ListView`, `CustomScrollView` + `Sliver`
+  * Gerekirse `ScrollConfiguration` ile physics override.
+
+---
+
+### 8. Assets & Media
+
+* Asset tanımları:
+
+  * `pubspec.yaml` içinde merkezi tanım.
+* Asset yolları:
+
+  * `AppAssets` sınıfı → string literal kullanma.
+* Klasör yapısı:
+
+  ```
+  assets/
+    images/
+    icons/
+    illustrations/
+    animations/
+    fonts/
+    videos/
+  ```
+
+#### Images
+
+* Local:
+
+  * `Image.asset(AppAssets.logo)` (mümkünse `const`)
+* Network:
+
+  * Tercihen `cached_network_image`
+  * Placeholder → fade-in / shimmer
+  * Error fallback → icon/placeholder
+* High DPI:
+
+  * 1x, 2x, 3x klasörleri.
+
+#### Image Performance
+
+* Büyük görseller:
+
+  * `cacheWidth` / `cacheHeight` kullan.
+* Listelerde:
+
+  * `RepaintBoundary` / `FadeInImage`.
+
+#### Video
+
+* `video_player` kullan.
+* Controller lifecycle: dispose etmeyi unutma.
+* Buffering state göster.
+
+#### Audio
+
+* `just_audio` / `audioplayers`, lifecycle düzgün yönetilmeli.
+
+#### SVG & Vector
+
+* `flutter_svg`, ağır animasyonlarda Lottie/Rive.
+
+#### Transformation
+
+* `Transform.scale`, `Transform.rotate`, `Opacity`, `ClipRRect`, `ClipPath` ile resmi dönüştür.
+
+#### Placeholder & Fade
+
+* `FadeInImage.assetNetwork`
+* 200–300ms civarı animasyon.
+* Skeleton için shimmer veya custom placeholder.
+
+#### Hata Yönetimi
+
+```dart
+Image.network(
+  url,
+  errorBuilder: (_, __, ___) => const Icon(Icons.broken_image),
+)
+```
+
+#### Boyut & Optimizasyon
+
+* 1MB üzeri assetleri sıkıştır:
+
+  * PNG → WebP
+  * GIF → MP4 / Lottie
+  * JPEG → optimize WebP
+* Kullanılmayan assetleri temiz tut.
+
+---
+
+### 9. Navigation & Routing
+
+* Genel:
+
+  * Küçük uygulama: Navigator 1.0
+  * Orta/Büyük: Navigator 2.0 tabanlı router (örn. GoRouter)
+* Router:
+
+  * `app_router.dart` içinde merkezi router.
+  * Path’ler: `/home`, `/login`, `/settings`, `/profile/:id`
+  * Sayfalar feature dizinlerinde (`features/auth/presentation/login_page.dart`)
+
+#### Navigation Basics
+
+* Push:
+
+  ```dart
+  Navigator.push(
+    context,
+    MaterialPageRoute(builder: (_) => DetailsPage()),
+  );
+  ```
+* Pop:
+
+  ```dart
+  Navigator.pop(context);
+  ```
+* Replace:
+
+  ```dart
+  Navigator.pushReplacement(...);
+  ```
+* `await Navigator.push(...)` ile result al.
+
+#### Veri Gönderme & Döndürme
+
+* Data gönder:
+
+  ```dart
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (_) => DetailsPage(item: item),
+    ),
+  );
+  ```
+* Data dön:
+
+  ```dart
+  final result = await Navigator.push(...);
+  ```
+
+#### Tabs
+
+* TabBar / BottomNavigationBar:
+
+  * State kaybı olmasın diye `IndexedStack`:
+
+    ```dart
+    IndexedStack(
+      index: currentIndex,
+      children: [
+        HomePage(),
+        SearchPage(),
+        ProfilePage(),
+      ],
+    );
+    ```
+
+* Global static değişkenle navigation/state yönetimini önermemek.
+
+*(Deep link / drawer / universal links gibi ekstra kurallar gerekiyorsa ayrıca eklenebilir.)*
+
+---
+
+### 10. Hata Yönetimi (Genel)
+
+* Kullanıcıya gösterilen hatalar:
+
+  * Ortak error handler / dialog / snackbar sistemi.
+  * Ağ, validasyon ve beklenmeyen hataları ayır.
+* Teknik hatalar:
+
+  * Sentry, Firebase Crashlytics gibi araçlarla logla.
+* `try/catch`:
+
+  * Exception’ları yutma → logla + kullanıcıya anlamlı mesaj göster.
+
+---
+
+### 11. Test
+
+* Unit test:
+
+  * Business logic (application/domain) odaklı.
+* Widget test:
+
+  * Kritik widget’lar (login form, subscription ekranı, main dashboard).
+* UI test:
+
+  * Gerekirse integration ve golden test; projeyi gereksiz ağırlaştırmadan.
+
+
+---
+````
