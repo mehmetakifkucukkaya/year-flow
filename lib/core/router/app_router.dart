@@ -6,6 +6,7 @@ import '../../features/auth/presentation/forgot_password_page.dart';
 import '../../features/auth/presentation/login_page.dart';
 import '../../features/auth/presentation/register_page.dart';
 import '../../features/goals/presentation/goal_create_page.dart';
+import '../../features/goals/presentation/goal_detail_page.dart';
 import '../../features/goals/presentation/goals_page.dart';
 import '../../features/home/presentation/home_page.dart';
 import '../../features/onboarding/presentation/onboarding_page.dart';
@@ -95,7 +96,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         name: 'goalDetail',
         builder: (context, state) {
           final goalId = state.pathParameters['id'] ?? '';
-          return _PlaceholderScreen(title: 'Hedef Detay: $goalId');
+          return GoalDetailPage(goalId: goalId);
         },
       ),
 
