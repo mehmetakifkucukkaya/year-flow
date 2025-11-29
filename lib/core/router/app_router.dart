@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../features/auth/presentation/forgot_password_page.dart';
 import '../../features/auth/presentation/login_page.dart';
 import '../../features/auth/presentation/register_page.dart';
+import '../../features/goals/presentation/goals_page.dart';
 import '../../features/home/presentation/home_page.dart';
 import '../../features/onboarding/presentation/onboarding_page.dart';
 import 'app_routes.dart';
@@ -63,8 +64,7 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: AppRoutes.goals,
             name: 'goals',
-            builder: (context, state) =>
-                const _PlaceholderScreen(title: 'Hedeflerim'),
+            builder: (context, state) => const GoalsPage(),
           ),
           GoRoute(
             path: AppRoutes.reports,
