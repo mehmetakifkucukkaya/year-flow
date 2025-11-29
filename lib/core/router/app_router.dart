@@ -5,12 +5,13 @@ import 'package:go_router/go_router.dart';
 import '../../features/auth/presentation/forgot_password_page.dart';
 import '../../features/auth/presentation/login_page.dart';
 import '../../features/auth/presentation/register_page.dart';
+import '../../features/onboarding/presentation/onboarding_page.dart';
 import 'app_routes.dart';
 
 /// Router provider
 final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
-    initialLocation: AppRoutes.login,
+    initialLocation: AppRoutes.onboarding,
     debugLogDiagnostics: true,
     routes: [
       // Splash Screen (şimdilik login'e yönlendiriyor)
@@ -41,8 +42,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutes.onboarding,
         name: 'onboarding',
-        builder: (context, state) =>
-            const _PlaceholderScreen(title: 'Onboarding'),
+        builder: (context, state) => const OnboardingPage(),
       ),
 
       // Main Shell (Bottom Navigation)
