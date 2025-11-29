@@ -151,15 +151,16 @@ class AppTheme {
       navigationBarTheme: NavigationBarThemeData(
         elevation: 0,
         backgroundColor: AppColors.white,
-        indicatorColor: AppColors.primary.withOpacity(0.1),
+        indicatorColor: AppColors.primary.withOpacity(0.15), // More pastel
+        height: 72, // Slightly taller
         labelTextStyle: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {
-            return AppTextStyles.labelSmall.copyWith(
+            return AppTextStyles.labelMedium.copyWith( // Larger text
               color: AppColors.primary,
               fontWeight: FontWeight.w600,
             );
           }
-          return AppTextStyles.labelSmall.copyWith(
+          return AppTextStyles.labelMedium.copyWith( // Larger text
             color: AppColors.gray500,
           );
         }),
@@ -167,12 +168,12 @@ class AppTheme {
           if (states.contains(WidgetState.selected)) {
             return const IconThemeData(
               color: AppColors.primary,
-              size: 24,
+              size: 22, // Smaller icons
             );
           }
           return const IconThemeData(
             color: AppColors.gray500,
-            size: 24,
+            size: 22, // Smaller icons
           );
         }),
       ),

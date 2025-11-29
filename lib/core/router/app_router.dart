@@ -5,13 +5,14 @@ import 'package:go_router/go_router.dart';
 import '../../features/auth/presentation/forgot_password_page.dart';
 import '../../features/auth/presentation/login_page.dart';
 import '../../features/auth/presentation/register_page.dart';
+import '../../features/home/presentation/home_page.dart';
 import '../../features/onboarding/presentation/onboarding_page.dart';
 import 'app_routes.dart';
 
 /// Router provider
 final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
-    initialLocation: AppRoutes.onboarding,
+    initialLocation: AppRoutes.home,
     debugLogDiagnostics: true,
     routes: [
       // Splash Screen (şimdilik login'e yönlendiriyor)
@@ -57,8 +58,7 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: AppRoutes.home,
             name: 'home',
-            builder: (context, state) =>
-                const _PlaceholderScreen(title: 'Anasayfa'),
+            builder: (context, state) => const HomePage(),
           ),
           GoRoute(
             path: AppRoutes.goals,
@@ -164,9 +164,11 @@ class _MainShell extends StatelessWidget {
     final selectedIndex = _getSelectedIndex();
 
     return Scaffold(
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: child,
       bottomNavigationBar: NavigationBar(
         selectedIndex: selectedIndex,
+        height: 72, // Slightly taller for better balance
         onDestinationSelected: (index) {
           switch (index) {
             case 0:
@@ -183,28 +185,30 @@ class _MainShell extends StatelessWidget {
               break;
           }
         },
-        destinations: const [
+        labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
+        destinations: [
           NavigationDestination(
-            icon: Icon(Icons.home_outlined),
-            selectedIcon: Icon(Icons.home),
+            icon: Icon(Icons.home_outlined, size: 22), // Smaller icons
+            selectedIcon: Icon(Icons.home, size: 22),
             label: 'Anasayfa',
           ),
           NavigationDestination(
-            icon: Icon(Icons.flag_outlined),
-            selectedIcon: Icon(Icons.flag),
+            icon: Icon(Icons.flag_outlined, size: 22),
+            selectedIcon: Icon(Icons.flag, size: 22),
             label: 'Hedefler',
           ),
           NavigationDestination(
-            icon: Icon(Icons.analytics_outlined),
-            selectedIcon: Icon(Icons.analytics),
+            icon: Icon(Icons.analytics_outlined, size: 22),
+            selectedIcon: Icon(Icons.analytics, size: 22),
             label: 'Raporlar',
           ),
           NavigationDestination(
-            icon: Icon(Icons.settings_outlined),
-            selectedIcon: Icon(Icons.settings),
+            icon: Icon(Icons.settings_outlined, size: 22),
+            selectedIcon: Icon(Icons.settings, size: 22),
             label: 'Ayarlar',
           ),
         ],
+        indicatorColor: Theme.of(context).colorScheme.primary.withOpacity(0.15), // Pastel background
       ),
     );
   }
