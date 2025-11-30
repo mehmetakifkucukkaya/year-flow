@@ -27,7 +27,7 @@ class _GoalDetailPageState extends ConsumerState<GoalDetailPage>
   late TabController _tabController;
 
   // Premium background color
-  static const Color _premiumBackground = Color(0xFFF9FAFB);
+  static const Color _premiumBackground = Color(0xFFF6F7F8);
 
   @override
   void initState() {
@@ -48,133 +48,29 @@ class _GoalDetailPageState extends ConsumerState<GoalDetailPage>
 
     return Scaffold(
       backgroundColor: _premiumBackground,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.pop(),
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.edit_outlined),
-            onPressed: () {
-              // TODO: Navigate to edit goal
-            },
+      body: CustomScrollView(
+        slivers: [
+          // Minimal App Bar
+          SliverSafeArea(
+            bottom: false,
+            sliver: SliverToBoxAdapter(
+              child: _MinimalAppBar(),
+            ),
           ),
-        ],
-      ),
-      body: Column(
-        children: [
-          // Header Section
-          Container(
-            color: Colors.white,
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.lg,
-              vertical: AppSpacing.lg,
-            ),
-            child: Column(
-              children: [
-                // Goal Title
-                Text(
-                  goal.title,
-                  style: AppTextStyles.headlineLarge.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: AppSpacing.md),
-                // Category Chip
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 8,
-                  ),
-                  decoration: BoxDecoration(
-                    color: goal.categoryBackgroundColor.withOpacity(0.2),
-                    borderRadius: AppRadius.borderRadiusFull,
-                  ),
-                  child: Text(
-                    goal.category,
-                    style: AppTextStyles.labelMedium.copyWith(
-                      color: goal.categoryColor,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.xl),
-                // Progress Ring
-                Column(
-                  children: [
-                    AppCircularProgress(
-                      progress: goal.progress,
-                      size: 192,
-                      strokeWidth: 12,
-                      progressColor: goal.categoryColor,
-                      backgroundColor: AppColors.gray200,
-                      showPercentage: true,
-                      percentageStyle: AppTextStyles.headlineLarge.copyWith(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 36,
-                      ),
-                    ),
-                    const SizedBox(height: AppSpacing.sm),
-                    Text(
-                      'Tamamlandı',
-                      style: AppTextStyles.bodySmall.copyWith(
-                        color: AppColors.gray600,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: AppSpacing.lg),
-                // Next Check-in Date
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(
-                      Icons.calendar_today_outlined,
-                      size: 18,
-                      color: AppColors.gray600,
-                    ),
-                    const SizedBox(width: AppSpacing.xs),
-                    Text(
-                      'Sonraki Check-in: ${goal.nextCheckIn}',
-                      style: AppTextStyles.bodySmall.copyWith(
-                        color: AppColors.gray600,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
+
+          // Header Section with Progress
+          SliverToBoxAdapter(
+            child: _HeaderSection(goal: goal),
           ),
 
           // Tab Navigation
-          Container(
-            color: Colors.white,
-            child: TabBar(
-              controller: _tabController,
-              labelColor: AppColors.primary,
-              unselectedLabelColor: AppColors.gray600,
-              indicatorColor: AppColors.primary,
-              indicatorWeight: 2,
-              labelStyle: AppTextStyles.labelMedium.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
-              unselectedLabelStyle: AppTextStyles.labelMedium.copyWith(
-                fontWeight: FontWeight.w500,
-              ),
-              tabs: const [
-                Tab(text: 'Timeline'),
-                Tab(text: 'Notlar'),
-                Tab(text: 'Alt Görevler'),
-              ],
-            ),
+          SliverToBoxAdapter(
+            child: _ModernTabBar(controller: _tabController),
           ),
 
           // Tab Content
-          Expanded(
+          SliverFillRemaining(
+            hasScrollBody: false,
             child: Container(
               color: Colors.white,
               child: TabBarView(
@@ -187,40 +83,207 @@ class _GoalDetailPageState extends ConsumerState<GoalDetailPage>
               ),
             ),
           ),
+        ],
+      ),
+      // Bottom Action Button - Fixed with gradient
+      bottomNavigationBar: _BottomActionButton(goalId: widget.goalId),
+    );
+  }
+}
 
-          // Bottom Action Button
+/// Minimal App Bar - No background, just icons
+class _MinimalAppBar extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.md,
+        vertical: AppSpacing.sm,
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          IconButton(
+            icon: const Icon(Icons.arrow_back, size: 24),
+            onPressed: () => context.pop(),
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(
+              minWidth: 48,
+              minHeight: 48,
+            ),
+          ),
+          IconButton(
+            icon: const Icon(Icons.edit_outlined, size: 24),
+            onPressed: () {
+              // TODO: Navigate to edit goal
+            },
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(
+              minWidth: 48,
+              minHeight: 48,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Header Section - Goal title, category, progress ring, next check-in
+class _HeaderSection extends StatelessWidget {
+  const _HeaderSection({required this.goal});
+
+  final _GoalDetail goal;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: _GoalDetailPageState._premiumBackground,
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.lg,
+        vertical: AppSpacing.xl,
+      ),
+      child: Column(
+        children: [
+          // Goal Title
+          Text(
+            goal.title,
+            style: AppTextStyles.headlineLarge.copyWith(
+              fontWeight: FontWeight.bold,
+              fontSize: 28,
+              letterSpacing: -0.5,
+              height: 1.2,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: AppSpacing.md),
+
+          // Category Chip - Modern pill shape
           Container(
-            padding: const EdgeInsets.all(AppSpacing.md),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 8,
+            ),
+            decoration: BoxDecoration(
+              color: goal.categoryBackgroundColor.withOpacity(0.25),
+              borderRadius: AppRadius.borderRadiusFull,
+            ),
+            child: Text(
+              goal.category,
+              style: AppTextStyles.labelMedium.copyWith(
+                color: goal.categoryColor,
+                fontWeight: FontWeight.w600,
+                fontSize: 13,
+              ),
+            ),
+          ),
+          const SizedBox(height: AppSpacing.xxl),
+
+          // Progress Ring - Larger and more prominent
+          AppCircularProgress(
+            progress: goal.progress,
+            size: 192,
+            strokeWidth: 12,
+            progressColor: goal.categoryColor,
+            backgroundColor: AppColors.gray200,
+            showPercentage: true,
+            percentageStyle: AppTextStyles.headlineLarge.copyWith(
+              fontWeight: FontWeight.bold,
+              fontSize: 40,
+              letterSpacing: -1,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+
+          // "Tamamlandı" label
+          Text(
+            'Tamamlandı',
+            style: AppTextStyles.bodySmall.copyWith(
+              color: AppColors.gray600,
+              fontSize: 13,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.xl),
+
+          // Next Check-in Date - Modern card style
+          Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.md,
+              vertical: AppSpacing.sm,
+            ),
             decoration: BoxDecoration(
               color: Colors.white,
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Colors.white.withOpacity(0),
-                  Colors.white,
-                ],
-              ),
+              borderRadius: AppRadius.borderRadiusMd,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.04),
+                  offset: const Offset(0, 2),
+                  blurRadius: 8,
+                  spreadRadius: 0,
+                ),
+              ],
             ),
-            child: AppButton(
-              variant: AppButtonVariant.filled,
-              onPressed: () {
-                context.push(AppRoutes.checkInPath(widget.goalId));
-              },
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.check_circle_outline, size: 20),
-                  const SizedBox(width: AppSpacing.xs),
-                  Text(
-                    'Check-in Yap',
-                    style: AppTextStyles.bodyMedium.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(
+                  Icons.calendar_today_outlined,
+                  size: 16,
+                  color: AppColors.gray600,
+                ),
+                const SizedBox(width: AppSpacing.xs),
+                Text(
+                  'Sonraki Check-in: ${goal.nextCheckIn}',
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: AppColors.gray600,
+                    fontSize: 13,
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Modern Tab Bar - Clean design with better spacing
+class _ModernTabBar extends StatelessWidget {
+  const _ModernTabBar({required this.controller});
+
+  final TabController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: Colors.white,
+      child: Column(
+        children: [
+          const Divider(
+            height: 1,
+            thickness: 1,
+            color: AppColors.gray200,
+          ),
+          TabBar(
+            controller: controller,
+            labelColor: AppColors.primary,
+            unselectedLabelColor: AppColors.gray600,
+            indicatorColor: AppColors.primary,
+            indicatorWeight: 2.5,
+            labelStyle: AppTextStyles.labelMedium.copyWith(
+              fontWeight: FontWeight.w600,
+              fontSize: 14,
+            ),
+            unselectedLabelStyle: AppTextStyles.labelMedium.copyWith(
+              fontWeight: FontWeight.w500,
+              fontSize: 14,
+            ),
+            tabs: const [
+              Tab(text: 'Timeline'),
+              Tab(text: 'Notlar'),
+              Tab(text: 'Alt Görevler'),
+            ],
           ),
         ],
       ),
@@ -298,7 +361,7 @@ final _mockGoal = _GoalDetail(
   ],
 );
 
-/// Timeline Tab
+/// Timeline Tab - Modern timeline design
 class _TimelineTab extends StatelessWidget {
   const _TimelineTab({required this.timelineItems});
 
@@ -309,14 +372,15 @@ class _TimelineTab extends StatelessWidget {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(AppSpacing.lg),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           for (int i = 0; i < timelineItems.length; i++) ...[
-            _TimelineItemWidget(
+            _ModernTimelineItem(
               item: timelineItems[i],
               isLast: i == timelineItems.length - 1,
             ),
             if (i < timelineItems.length - 1)
-              const SizedBox(height: AppSpacing.lg),
+              const SizedBox(height: AppSpacing.xl),
           ],
         ],
       ),
@@ -324,9 +388,9 @@ class _TimelineTab extends StatelessWidget {
   }
 }
 
-/// Timeline Item Widget
-class _TimelineItemWidget extends StatelessWidget {
-  const _TimelineItemWidget({
+/// Modern Timeline Item Widget - Professional design
+class _ModernTimelineItem extends StatelessWidget {
+  const _ModernTimelineItem({
     required this.item,
     required this.isLast,
   });
@@ -370,38 +434,54 @@ class _TimelineItemWidget extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Timeline indicator
-        Column(
-          children: [
-            Container(
-              width: 24,
-              height: 24,
-              decoration: BoxDecoration(
-                color: _backgroundColor,
-                shape: BoxShape.circle,
-                border: item.type == _TimelineItemType.checkIn
-                    ? Border.all(
-                        color: _iconColor,
-                        width: 2,
-                      )
-                    : null,
-              ),
-              child: Icon(
-                _icon,
-                size: 14,
-                color: item.type == _TimelineItemType.checkIn
-                    ? _iconColor
-                    : Colors.white,
-              ),
-            ),
-            if (!isLast)
+        // Timeline indicator with connecting line
+        SizedBox(
+          width: 24,
+          child: Column(
+            children: [
               Container(
-                width: 2,
-                height: 60,
-                color: AppColors.gray200,
-                margin: const EdgeInsets.only(top: AppSpacing.xs),
+                width: 24,
+                height: 24,
+                decoration: BoxDecoration(
+                  color: _backgroundColor,
+                  shape: BoxShape.circle,
+                  border: item.type == _TimelineItemType.checkIn
+                      ? Border.all(
+                          color: _iconColor,
+                          width: 2,
+                        )
+                      : null,
+                  boxShadow: item.type != _TimelineItemType.checkIn
+                      ? [
+                          BoxShadow(
+                            color: _iconColor.withOpacity(0.3),
+                            offset: const Offset(0, 2),
+                            blurRadius: 4,
+                            spreadRadius: 0,
+                          ),
+                        ]
+                      : null,
+                ),
+                child: Icon(
+                  _icon,
+                  size: 14,
+                  color: item.type == _TimelineItemType.checkIn
+                      ? _iconColor
+                      : Colors.white,
+                ),
               ),
-          ],
+              if (!isLast)
+                Container(
+                  width: 2,
+                  height: 80,
+                  margin: const EdgeInsets.only(top: AppSpacing.xs),
+                  decoration: BoxDecoration(
+                    color: AppColors.gray200,
+                    borderRadius: BorderRadius.circular(1),
+                  ),
+                ),
+            ],
+          ),
         ),
         const SizedBox(width: AppSpacing.md),
         // Content
@@ -413,6 +493,8 @@ class _TimelineItemWidget extends StatelessWidget {
                 item.title,
                 style: AppTextStyles.bodyMedium.copyWith(
                   fontWeight: FontWeight.w600,
+                  fontSize: 15,
+                  height: 1.3,
                 ),
               ),
               const SizedBox(height: AppSpacing.xs),
@@ -420,21 +502,27 @@ class _TimelineItemWidget extends StatelessWidget {
                 item.date,
                 style: AppTextStyles.bodySmall.copyWith(
                   color: AppColors.gray600,
+                  fontSize: 13,
                 ),
               ),
               if (item.note != null) ...[
                 const SizedBox(height: AppSpacing.sm),
                 Container(
-                  padding: AppSpacing.paddingSm,
+                  padding: const EdgeInsets.all(AppSpacing.md),
                   decoration: BoxDecoration(
                     color: AppColors.gray50,
                     borderRadius: AppRadius.borderRadiusMd,
-                    border: Border.all(color: AppColors.gray200),
+                    border: Border.all(
+                      color: AppColors.gray200,
+                      width: 1,
+                    ),
                   ),
                   child: Text(
                     item.note!,
                     style: AppTextStyles.bodySmall.copyWith(
                       color: AppColors.gray700,
+                      fontSize: 13,
+                      height: 1.5,
                     ),
                   ),
                 ),
@@ -503,3 +591,56 @@ class _SubtasksTab extends StatelessWidget {
   }
 }
 
+/// Bottom Action Button - Fixed with gradient overlay
+class _BottomActionButton extends StatelessWidget {
+  const _BottomActionButton({required this.goalId});
+
+  final String goalId;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.only(
+        left: AppSpacing.md,
+        right: AppSpacing.md,
+        top: AppSpacing.lg,
+        bottom: AppSpacing.md,
+      ),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Colors.white.withOpacity(0),
+            Colors.white,
+          ],
+          stops: const [0.0, 0.3],
+        ),
+      ),
+      child: SafeArea(
+        child: AppButton(
+          variant: AppButtonVariant.filled,
+          onPressed: () {
+            context.push(AppRoutes.checkInPath(goalId));
+          },
+          minHeight: 56,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.check_circle_outline, size: 20),
+              const SizedBox(width: AppSpacing.xs),
+              Text(
+                'Check-in Yap',
+                style: AppTextStyles.bodyMedium.copyWith(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 16,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
