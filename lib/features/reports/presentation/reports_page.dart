@@ -12,63 +12,59 @@ import '../../../core/theme/app_text_styles.dart';
 class ReportsPage extends ConsumerWidget {
   const ReportsPage({super.key});
 
-  static const Color _background = AppColors.backgroundLight;
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return Container(
-      color: _background,
-      child: SafeArea(
-        bottom: false,
-        child: Scaffold(
-          backgroundColor: Colors.transparent,
-          body: Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Color(0xFFF5F7FF),
-                  Color(0xFFFDFBFF),
-                ],
+    return Material(
+      type: MaterialType.transparency,
+      child: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Color(0xFFF5F7FF),
+              Color(0xFFFDFBFF),
+            ],
+          ),
+        ),
+        child: CustomScrollView(
+          slivers: [
+            // Status bar alanı için safe area
+            SliverSafeArea(
+              bottom: false,
+              sliver: SliverToBoxAdapter(
+                child: _ReportsTopAppBar(),
               ),
             ),
-            child: CustomScrollView(
-              slivers: [
-                SliverToBoxAdapter(
-                  child: _ReportsTopAppBar(),
+            const SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.symmetric(
+                  horizontal: AppSpacing.md,
+                  vertical: AppSpacing.md,
                 ),
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.md,
-                      vertical: AppSpacing.md,
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: const [
-                        _HeaderHero(),
-                        SizedBox(height: AppSpacing.xl),
-                        _OverviewSection(),
-                        SizedBox(height: AppSpacing.xl),
-                        _CategoryProgressSection(),
-                        SizedBox(height: AppSpacing.xl),
-                        _AchievementsSection(),
-                        SizedBox(height: AppSpacing.xl),
-                        _ChallengesSection(),
-                        SizedBox(height: AppSpacing.xl),
-                        _AiSuggestionsSection(),
-                        SizedBox(height: AppSpacing.xl),
-                      ],
-                    ),
-                  ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _HeaderHero(),
+                    SizedBox(height: AppSpacing.xl),
+                    _OverviewSection(),
+                    SizedBox(height: AppSpacing.xl),
+                    _CategoryProgressSection(),
+                    SizedBox(height: AppSpacing.xl),
+                    _AchievementsSection(),
+                    SizedBox(height: AppSpacing.xl),
+                    _ChallengesSection(),
+                    SizedBox(height: AppSpacing.xl),
+                    _AiSuggestionsSection(),
+                    SizedBox(height: AppSpacing.xl),
+                  ],
                 ),
-                const SliverToBoxAdapter(
-                  child: SizedBox(height: AppSpacing.xl),
-                ),
-              ],
+              ),
             ),
-          ),
+            const SliverToBoxAdapter(
+              child: SizedBox(height: AppSpacing.xl),
+            ),
+          ],
         ),
       ),
     );
@@ -292,7 +288,7 @@ class _OverviewSection extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: AppSpacing.md),
-              Expanded(
+              const Expanded(
                 child: _StatCard(
                   label: 'Tamamlanma Oranı',
                   value: '75%',
@@ -315,7 +311,8 @@ class _OverviewSection extends StatelessWidget {
             child: LinearProgressIndicator(
               value: 0.75,
               backgroundColor: AppColors.gray200,
-              valueColor: AlwaysStoppedAnimation<Color>(colorScheme.primary),
+              valueColor:
+                  AlwaysStoppedAnimation<Color>(colorScheme.primary),
               minHeight: 8,
             ),
           ),
@@ -435,7 +432,8 @@ class _CategoryProgressSection extends StatelessWidget {
           const SizedBox(height: AppSpacing.md),
           for (final item in categories) ...[
             _CategoryProgressRow(data: item),
-            if (item != categories.last) const SizedBox(height: AppSpacing.sm),
+            if (item != categories.last)
+              const SizedBox(height: AppSpacing.sm),
           ],
         ],
       ),
@@ -490,7 +488,7 @@ class _CategoryProgressRow extends StatelessWidget {
           children: [
             Container(
               height: 10,
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 color: AppColors.gray200,
                 borderRadius: AppRadius.borderRadiusFull,
               ),
@@ -682,8 +680,7 @@ class _ChallengesSection extends StatelessWidget {
           const SizedBox(height: AppSpacing.md),
           for (final item in items) ...[
             _ChallengeCard(data: item),
-            if (item != items.last)
-              const SizedBox(height: AppSpacing.md),
+            if (item != items.last) const SizedBox(height: AppSpacing.md),
           ],
         ],
       ),
@@ -895,5 +892,3 @@ class _AiSuggestionsSection extends StatelessWidget {
     );
   }
 }
-
-

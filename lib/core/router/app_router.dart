@@ -14,6 +14,7 @@ import '../../features/onboarding/presentation/onboarding_page.dart';
 import '../../features/reports/presentation/reports_page.dart';
 import '../../features/settings/presentation/settings_page.dart';
 import '../../features/settings/presentation/profile_page.dart';
+import '../../features/checkin/presentation/check_in_page.dart';
 import 'app_routes.dart';
 
 /// Router provider
@@ -118,7 +119,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         name: 'checkIn',
         builder: (context, state) {
           final goalId = state.pathParameters['goalId'] ?? '';
-          return _PlaceholderScreen(title: 'Check-in: $goalId');
+          return CheckInPage(goalId: goalId);
         },
       ),
 
