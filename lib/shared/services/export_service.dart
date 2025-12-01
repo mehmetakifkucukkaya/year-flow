@@ -85,6 +85,59 @@ class ExportService {
     }
   }
 
+  /// Goals ve Reports'ları CSV olarak export et
+  Future<void> exportGoalsAndReportsAsCsv(String userId) async {
+    try {
+      // Goals'ları al
+      final goals = await _goalRepository.fetchGoals(userId);
+
+      // Yearly reports'ları al
+      final currentYear = DateTime.now().year;
+      final yearlyReport = await _goalRepository.getYearlyReport(
+        userId: userId,
+        year: currentYear,
+      );
+
+      // CSV oluştur
+      final csvLines = <String>[];
+      
+      // Goals CSV
+      csvLines.add('=== GOALS ===');
+      csvLines.add('ID,Title,Category,Created At,Target Date,Progress,Is Archived,Motivation');
+      for (final goal in goals) {
+        csvLines.add([
+          goal.id,
+          _escapeCsv(goal.title),
+          goal.category.name,
+          goal.createdAt.toIso8601String(),
+          goal.targetDate?.toIso8601String() ?? '',
+          goal.progress.toString(),
+          goal.isArchived.toString(),
+          _escapeCsv(goal.motivation ?? ''),
+        ].join(','));
+      }
+
+      // Yearly Report CSV
+      if (yearlyReport != null) {
+        csvLines.add('');
+        csvLines.add('=== YEARLY REPORT ===');
+        csvLines.add('Year,Generated At,Content');
+        csvLines.add([
+          yearlyReport.year.toString(),
+          yearlyReport.generatedAt.toIso8601String(),
+          _escapeCsv(yearlyReport.content),
+        ].join(','));
+      }
+
+      final csvString = csvLines.join('\n');
+
+      // Dosyayı kaydet ve paylaş
+      await _shareCsvFile(csvString, 'yearflow_goals_reports_${DateTime.now().millisecondsSinceEpoch}.csv');
+    } catch (e) {
+      throw Exception('Veri export edilirken hata oluştu: $e');
+    }
+  }
+
   /// Tüm verileri CSV olarak export et
   Future<void> exportAllDataAsCsv(String userId) async {
     try {
@@ -139,35 +192,79 @@ class ExportService {
     }
   }
 
-  /// JSON dosyasını paylaş
+  /// JSON dosyasını paylaş ve kaydet
   Future<void> _shareJsonFile(String content, String fileName) async {
     try {
-      final directory = await getTemporaryDirectory();
-      final file = File('${directory.path}/$fileName');
-      await file.writeAsString(content);
+      // Tüm platformlar için Application Documents Directory kullan
+      // Bu her zaman çalışır ve izin sorunu yaratmaz
+      final saveDirectory = await getApplicationDocumentsDirectory();
+      final yearFlowDir = Directory('${saveDirectory.path}/YearFlow');
 
-      await Share.shareXFiles(
-        [XFile(file.path)],
-        text: 'YearFlow Veri Yedekleme',
-      );
+      // Klasör yoksa oluştur
+      if (!await yearFlowDir.exists()) {
+        await yearFlowDir.create(recursive: true);
+      }
+
+      // Dosyayı kaydet
+      final savedFile = File('${yearFlowDir.path}/$fileName');
+      await savedFile.writeAsString(content);
+
+      // Paylaşım menüsünü göster
+      try {
+        await Share.shareXFiles(
+          [XFile(savedFile.path)],
+          text: 'YearFlow Veri Yedekleme\n\nDosya kaydedildi:\n${savedFile.path}\n\nDosyayı bulmak için: Dosya Yöneticisi > YearFlow klasörü',
+        );
+      } catch (pluginError) {
+        // Plugin yüklenmemişse, dosya yolunu text olarak paylaş
+        if (pluginError.toString().contains('MissingPluginException')) {
+          await Share.share(
+            'YearFlow Veri Yedekleme\n\nDosya kaydedildi:\n${savedFile.path}\n\nDosyayı bulmak için: Dosya Yöneticisi > YearFlow klasörü',
+          );
+        } else {
+          rethrow;
+        }
+      }
     } catch (e) {
-      throw Exception('Dosya paylaşılırken hata oluştu: $e');
+      throw Exception('Dosya kaydedilirken/paylaşılırken hata oluştu: $e');
     }
   }
 
-  /// CSV dosyasını paylaş
+  /// CSV dosyasını paylaş ve kaydet
   Future<void> _shareCsvFile(String content, String fileName) async {
     try {
-      final directory = await getTemporaryDirectory();
-      final file = File('${directory.path}/$fileName');
-      await file.writeAsString(content, encoding: utf8);
+      // Tüm platformlar için Application Documents Directory kullan
+      // Bu her zaman çalışır ve izin sorunu yaratmaz
+      final saveDirectory = await getApplicationDocumentsDirectory();
+      final yearFlowDir = Directory('${saveDirectory.path}/YearFlow');
 
-      await Share.shareXFiles(
-        [XFile(file.path)],
-        text: 'YearFlow Veri Yedekleme',
-      );
+      // Klasör yoksa oluştur
+      if (!await yearFlowDir.exists()) {
+        await yearFlowDir.create(recursive: true);
+      }
+
+      // Dosyayı kaydet
+      final savedFile = File('${yearFlowDir.path}/$fileName');
+      await savedFile.writeAsString(content, encoding: utf8);
+
+      // Paylaşım menüsünü göster
+      try {
+        await Share.shareXFiles(
+          [XFile(savedFile.path)],
+          text: 'YearFlow Veri Yedekleme\n\nDosya kaydedildi:\n${savedFile.path}\n\nDosyayı bulmak için: Dosya Yöneticisi > YearFlow klasörü',
+        );
+      } catch (pluginError) {
+        // Plugin yüklenmemişse, dosya yolunu text olarak paylaş
+        if (pluginError.toString().contains('MissingPluginException')) {
+          await Share.share(
+            'YearFlow Veri Yedekleme\n\nDosya kaydedildi:\n${savedFile.path}\n\nDosyayı bulmak için: Dosya Yöneticisi > YearFlow klasörü',
+          );
+        } else {
+          rethrow;
+        }
+      }
     } catch (e) {
-      throw Exception('Dosya paylaşılırken hata oluştu: $e');
+      throw Exception('Dosya kaydedilirken/paylaşılırken hata oluştu: $e');
     }
   }
 

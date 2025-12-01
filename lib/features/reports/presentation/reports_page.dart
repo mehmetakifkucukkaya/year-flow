@@ -5,6 +5,8 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_radius.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_text_styles.dart';
+import '../../../core/widgets/index.dart';
+import '../../../shared/providers/goal_providers.dart';
 import '../providers/reports_providers.dart';
 
 /// Raporlar ana sayfası
@@ -73,9 +75,19 @@ class ReportsPage extends ConsumerWidget {
 }
 
 /// Üst app bar – başlık ve geri butonu (şimdilik sadece pop)
-class _ReportsTopAppBar extends StatelessWidget {
+class _ReportsTopAppBar extends ConsumerWidget {
+  const _ReportsTopAppBar();
+
+  void _showExportOptionsDialog(BuildContext context, WidgetRef ref) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => const _ReportsExportBottomSheet(),
+    );
+  }
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Container(
       padding: const EdgeInsets.only(
         left: AppSpacing.md,
@@ -115,22 +127,12 @@ class _ReportsTopAppBar extends StatelessWidget {
             children: [
               IconButton(
                 onPressed: () {
-                  // TODO: Paylaşım akışı
-                },
-                icon: const Icon(Icons.ios_share_rounded),
-                iconSize: 22,
-                color: AppColors.gray800,
-                tooltip: 'Paylaş',
-              ),
-              const SizedBox(width: AppSpacing.xs),
-              IconButton(
-                onPressed: () {
-                  // TODO: PDF oluşturma
+                  _showExportOptionsDialog(context, ref);
                 },
                 icon: const Icon(Icons.download_rounded),
                 iconSize: 22,
                 color: AppColors.gray800,
-                tooltip: 'PDF olarak indir',
+                tooltip: 'Raporu indir',
               ),
             ],
           ),
@@ -976,6 +978,144 @@ class _AiSuggestionsSection extends StatelessWidget {
               color: AppColors.gray800,
             ),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Reports Export Bottom Sheet
+class _ReportsExportBottomSheet extends ConsumerStatefulWidget {
+  const _ReportsExportBottomSheet();
+
+  @override
+  ConsumerState<_ReportsExportBottomSheet> createState() =>
+      _ReportsExportBottomSheetState();
+}
+
+class _ReportsExportBottomSheetState
+    extends ConsumerState<_ReportsExportBottomSheet> {
+  bool _isLoading = false;
+
+  Future<void> _handleExport(String format) async {
+    final userId = ref.read(currentUserIdProvider);
+    if (userId == null) {
+      AppSnackbar.showError(context, message: 'Giriş yapmanız gerekiyor');
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    try {
+      final exportService = ref.read(exportServiceProvider);
+
+      if (format == 'json') {
+        await exportService.exportGoalsAndReportsAsJson(userId);
+      } else {
+        await exportService.exportGoalsAndReportsAsCsv(userId);
+      }
+
+      if (mounted) {
+        AppSnackbar.showSuccess(
+          context,
+          message: 'Rapor başarıyla export edildi',
+        );
+        Navigator.of(context).pop();
+      }
+    } catch (e) {
+      if (mounted) {
+        AppSnackbar.showError(
+          context,
+          message: e.toString().replaceFirst('Exception: ', ''),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Text(
+                'Raporu Dışa Aktar',
+                style: AppTextStyles.titleLarge.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const Spacer(),
+              IconButton(
+                onPressed: () => Navigator.of(context).pop(),
+                icon: const Icon(Icons.close_rounded),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.lg),
+          Text(
+            'Format seçin:',
+            style: AppTextStyles.bodyMedium.copyWith(
+              color: AppColors.gray700,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.md),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: _isLoading ? null : () => _handleExport('json'),
+                  icon: const Icon(Icons.code_rounded),
+                  label: const Text('JSON'),
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    side: const BorderSide(
+                      color: AppColors.gray300,
+                      width: 1.5,
+                    ),
+                    shape: const RoundedRectangleBorder(
+                      borderRadius: AppRadius.borderRadiusLg,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: AppSpacing.md),
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: _isLoading ? null : () => _handleExport('csv'),
+                  icon: const Icon(Icons.table_chart_rounded),
+                  label: const Text('CSV'),
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    side: const BorderSide(
+                      color: AppColors.gray300,
+                      width: 1.5,
+                    ),
+                    shape: const RoundedRectangleBorder(
+                      borderRadius: AppRadius.borderRadiusLg,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          if (_isLoading) ...[
+            const SizedBox(height: AppSpacing.md),
+            const Center(
+              child: CircularProgressIndicator(),
+            ),
+          ],
         ],
       ),
     );
