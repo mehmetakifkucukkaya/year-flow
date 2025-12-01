@@ -14,6 +14,7 @@ import '../../features/onboarding/presentation/onboarding_page.dart';
 import '../../features/reports/presentation/reports_page.dart';
 import '../../features/settings/presentation/settings_page.dart';
 import '../../features/settings/presentation/profile_page.dart';
+import '../../features/settings/presentation/privacy_security_page.dart';
 import '../../features/checkin/presentation/check_in_page.dart';
 import 'app_routes.dart';
 
@@ -144,6 +145,13 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: AppRoutes.profile,
         name: 'profile',
         builder: (context, state) => const ProfilePage(),
+      ),
+
+      // Privacy & Security
+      GoRoute(
+        path: AppRoutes.privacySecurity,
+        name: 'privacySecurity',
+        builder: (context, state) => const PrivacySecurityPage(),
       ),
     ],
     errorBuilder: (context, state) => Scaffold(

@@ -267,26 +267,30 @@ class _SettingsTile extends StatelessWidget {
     required this.icon,
     required this.title,
     this.trailing,
+    this.onTap,
   });
 
   const _SettingsTile.notification()
       : icon = Icons.notifications_rounded,
         title = 'Bildirimler',
-        trailing = const _NotificationSwitch();
+        trailing = const _NotificationSwitch(),
+        onTap = null;
 
   const _SettingsTile.language()
       : icon = Icons.language_rounded,
         title = 'Dil',
-        trailing = const _ChevronWithLabel(label: 'Türkçe');
+        trailing = const _ChevronWithLabel(label: 'Türkçe'),
+        onTap = null;
 
   final IconData icon;
   final String title;
   final Widget? trailing;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: trailing is _NotificationSwitch ? null : () {},
+      onTap: trailing is _NotificationSwitch ? null : onTap,
       child: Padding(
         padding: const EdgeInsets.symmetric(
           horizontal: AppSpacing.md,
@@ -421,10 +425,13 @@ class _SecuritySection extends StatelessWidget {
               ),
             ],
           ),
-          child: const _SettingsTile._(
+          child: _SettingsTile._(
             icon: Icons.shield_rounded,
             title: 'Gizlilik & Güvenlik',
-            trailing: _ChevronWithLabel(label: ''),
+            trailing: const _ChevronWithLabel(label: ''),
+            onTap: () {
+              context.push(AppRoutes.privacySecurity);
+            },
           ),
         ),
       ],

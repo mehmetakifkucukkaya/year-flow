@@ -21,6 +21,7 @@ class AppRoutes {
 
   // Settings
   static const String profile = '/settings/profile';
+  static const String privacySecurity = '/settings/privacy-security';
 
   // Goals
   static const String goalDetail = '/goal/:id';
