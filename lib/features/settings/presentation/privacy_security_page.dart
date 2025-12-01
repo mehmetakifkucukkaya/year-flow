@@ -24,20 +24,20 @@ class PrivacySecurityPage extends ConsumerWidget {
             ],
           ),
         ),
-        child: SafeArea(
+        child: const SafeArea(
           bottom: false,
           child: Column(
             children: [
-              const _PrivacyAppBar(),
+              _PrivacyAppBar(),
               Expanded(
                 child: SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(
+                  padding: EdgeInsets.symmetric(
                     horizontal: AppSpacing.md,
                     vertical: AppSpacing.lg,
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    children: const [
+                    children: [
                       _PrivacyIntroCard(),
                       SizedBox(height: AppSpacing.xl),
                       _PrivacyOptionsSection(),
@@ -157,7 +157,7 @@ class _PrivacyIntroCard extends StatelessWidget {
                 ),
                 const SizedBox(height: AppSpacing.xs),
                 Text(
-                  'YearFlow, hedef, check-in ve rapor verilerini KVKK ve ilgili veri koruma mevzuatına uygun şekilde işler. '
+                  'YearFlow, Hedef, Check-in ve Rapor verilerini KVKK ve ilgili veri koruma mevzuatına uygun şekilde işler. '
                   'Kişisel verilerin reklam amaçlı üçüncü kişilerle paylaşılmaz; yalnızca uygulama deneyimini geliştirmek, kişiselleştirilmiş içerik üretmek ve ürün analitiği yapmak için kullanılır. '
                   'Dilediğin zaman verilerini indirip inceleyebilir veya hesap silme sürecini kullanarak verilerinin sistemden kaldırılmasını talep edebilirsin.',
                   style: AppTextStyles.bodyMedium.copyWith(
@@ -216,23 +216,23 @@ class _PrivacyOptionsSection extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: AppSpacing.sm),
-                _BulletText(
+                const _BulletText(
                   text:
-                      'YearFlow’da tuttuğun tüm hedef, check-in ve rapor verileri KVKK ve ilgili mevzuata uygun şekilde işlenir.',
+                      'YearFlow\'da tuttuğun tüm Hedef, Check-in ve Rapor verileri KVKK ve ilgili mevzuata uygun şekilde işlenir.',
                 ),
-                _BulletText(
+                const _BulletText(
                   text:
                       'Verilerin; uygulama deneyimini iyileştirmek, kişiselleştirilmiş içerikler sunmak ve ürün analitiği yapmak dışında başka bir amaçla kullanılmaz.',
                 ),
-                _BulletText(
+                const _BulletText(
                   text:
                       'Kişisel verilerin reklam, pazarlama veya profilleme amaçlı üçüncü taraflarla paylaşılmaz.',
                 ),
-                _BulletText(
+                const _BulletText(
                   text:
                       'Hesabını sildiğinde, kimliğini doğrudan belirleyen kişisel verilerin makul bir süre içinde sistemden silinmesi hedeflenir.',
                 ),
-                _BulletText(
+                const _BulletText(
                   text:
                       'Yasal yükümlülükler gereği tutulması zorunlu olan kayıtlar, yalnızca mevzuata uygun süre boyunca saklanır ve süresi dolduğunda güvenli biçimde imha edilir.',
                 ),
@@ -262,11 +262,11 @@ class _PrivacyOptionsSection extends StatelessWidget {
               ),
             ],
           ),
-          child: Padding(
-            padding: const EdgeInsets.all(AppSpacing.md),
+          child: const Padding(
+            padding: EdgeInsets.all(AppSpacing.md),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: const [
+              children: [
                 _BulletText(
                   text:
                       'Verilerin, endüstri standartlarına uygun biçimde yetkisiz erişime, kayba veya kötüye kullanıma karşı korunur.',
@@ -392,5 +392,3 @@ class _PrivacyOptionTile extends StatelessWidget {
     );
   }
 }
-
-

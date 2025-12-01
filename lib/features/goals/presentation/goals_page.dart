@@ -524,7 +524,7 @@ class _GoalCard extends ConsumerWidget {
   final Goal goal;
 
   String _formatLastCheckIn(DateTime? date) {
-    if (date == null) return 'Henüz check-in yok';
+    if (date == null) return 'Henüz Check-in yok';
 
     final now = DateTime.now();
     final difference = now.difference(date);
@@ -551,12 +551,12 @@ class _GoalCard extends ConsumerWidget {
     final checkInsAsync = ref.watch(checkInsStreamProvider(goal.id));
     final lastCheckInLabel = checkInsAsync.when(
       loading: () => 'Yükleniyor...',
-      error: (_, __) => 'Henüz check-in yok',
+      error: (_, __) => 'Henüz Check-in yok',
       data: (checkIns) {
-        if (checkIns.isEmpty) return 'Henüz check-in yok';
+        if (checkIns.isEmpty) return 'Henüz Check-in yok';
         final sorted = checkIns
           ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
-        return 'Son check-in: ${_formatLastCheckIn(sorted.first.createdAt)}';
+        return 'Son Check-in: ${_formatLastCheckIn(sorted.first.createdAt)}';
       },
     );
 

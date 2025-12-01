@@ -490,7 +490,7 @@ class _DataAndPrivacySection extends ConsumerWidget {
             children: [
               _SettingsTile._(
                 icon: Icons.cloud_download_rounded,
-                title: 'Hedef ve raporları yedekle / dışa aktar',
+                title: 'Hedef ve Raporları yedekle / dışa aktar',
                 trailing: const _ChevronWithLabel(label: 'Dışa aktar'),
                 onTap: () {
                   _showExportOptionsDialog(context, 'goals_reports');

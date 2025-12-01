@@ -166,7 +166,7 @@ class _GoalDetailPageState extends ConsumerState<GoalDetailPage>
                 ),
                 Expanded(
                   child: Center(
-                    child: Text('Check-inler yüklenirken hata: $error'),
+                    child: Text('Check-in\'ler yüklenirken hata: $error'),
                   ),
                 ),
               ],
@@ -264,7 +264,7 @@ class _GoalDetailPageState extends ConsumerState<GoalDetailPage>
     // Check-in zaten Firestore'a kaydedildi, stream otomatik güncellenecek
     AppSnackbar.showSuccess(
       context,
-      message: 'Check-in kaydedildi',
+      message: 'Check-in kaydedildi! ✅',
     );
   }
 }

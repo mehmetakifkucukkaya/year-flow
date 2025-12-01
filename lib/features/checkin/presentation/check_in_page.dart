@@ -84,7 +84,7 @@ class _CheckInPageState extends ConsumerState<CheckInPage> {
       if (mounted) {
         AppSnackbar.showSuccess(
           context,
-          message: 'Check-in kaydedildi! 🎉',
+          message: 'Check-in kaydedildi! ✅',
         );
         context.pop();
       }
