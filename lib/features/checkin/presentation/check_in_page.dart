@@ -19,8 +19,10 @@ class CheckInPage extends ConsumerStatefulWidget {
 }
 
 class _CheckInPageState extends ConsumerState<CheckInPage> {
-  final TextEditingController _progressController = TextEditingController();
-  final TextEditingController _challengeController = TextEditingController();
+  final TextEditingController _progressController =
+      TextEditingController();
+  final TextEditingController _challengeController =
+      TextEditingController();
   final TextEditingController _noteController = TextEditingController();
 
   double _score = 7;
@@ -34,18 +36,7 @@ class _CheckInPageState extends ConsumerState<CheckInPage> {
   }
 
   void _submit() {
-    // Şimdilik sadece mock olarak snackbar gösteriyoruz.
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          'Check-in kaydedildi (mock)',
-          style: AppTextStyles.bodyMedium.copyWith(
-            color: AppColors.white,
-          ),
-        ),
-      ),
-    );
-    Navigator.of(context).maybePop();
+    Navigator.of(context).pop(true);
   }
 
   @override
@@ -147,7 +138,7 @@ class _CheckInPageState extends ConsumerState<CheckInPage> {
                           style: FilledButton.styleFrom(
                             backgroundColor: Colors.transparent,
                             elevation: 0,
-                            shape: RoundedRectangleBorder(
+                            shape: const RoundedRectangleBorder(
                               borderRadius: AppRadius.borderRadiusXl,
                             ),
                           ),
@@ -420,6 +411,3 @@ class _QuestionCard extends StatelessWidget {
     );
   }
 }
-
-
-

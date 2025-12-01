@@ -24,6 +24,9 @@ class GoalDetailPage extends ConsumerStatefulWidget {
 class _GoalDetailPageState extends ConsumerState<GoalDetailPage>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  final _GoalDetail _goal = _mockGoal;
+  List<_TimelineItem> _timelineItems =
+      List<_TimelineItem>.from(_mockGoal.timelineItems);
 
   // Premium background color
   static const Color _premiumBackground = Color(0xFFF9FAFB);
@@ -43,9 +46,6 @@ class _GoalDetailPageState extends ConsumerState<GoalDetailPage>
 
   @override
   Widget build(BuildContext context) {
-    // Mock goal data
-    final goal = _mockGoal;
-
     return Scaffold(
       backgroundColor: _premiumBackground,
       body: Column(
@@ -57,7 +57,7 @@ class _GoalDetailPageState extends ConsumerState<GoalDetailPage>
           ),
 
           // Header Section with Progress - Compact
-          _PremiumHeaderSection(goal: goal),
+          _PremiumHeaderSection(goal: _goal),
 
           // Tab Navigation
           _PremiumTabBar(controller: _tabController),
@@ -69,9 +69,9 @@ class _GoalDetailPageState extends ConsumerState<GoalDetailPage>
               child: TabBarView(
                 controller: _tabController,
                 children: [
-                  _TimelineTab(timelineItems: goal.timelineItems),
-                  _NotesTab(notes: goal.notes),
-                  _SubtasksTab(subtasks: goal.subtasks),
+                  _TimelineTab(timelineItems: _timelineItems),
+                  _NotesTab(notes: _goal.notes),
+                  _SubtasksTab(subtasks: _goal.subtasks),
                 ],
               ),
             ),
@@ -79,7 +79,35 @@ class _GoalDetailPageState extends ConsumerState<GoalDetailPage>
         ],
       ),
       // Bottom Action Button - Fixed with gradient
-      bottomNavigationBar: _PremiumBottomButton(goalId: widget.goalId),
+      bottomNavigationBar: _PremiumBottomButton(
+        goalId: widget.goalId,
+        onCheckInCompleted: _handleCheckInCompleted,
+      ),
+    );
+  }
+
+  void _handleCheckInCompleted() {
+    setState(() {
+      _timelineItems = [
+        ..._timelineItems,
+        const _TimelineItem(
+          title: 'Check-in yapıldı (mock)',
+          date: 'Bugün',
+          type: _TimelineItemType.checkIn,
+          note: 'Bu check-in sadece örnek olarak eklendi.',
+        ),
+      ];
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          'Check-in kaydedildi',
+          style: AppTextStyles.bodyMedium.copyWith(
+            color: AppColors.white,
+          ),
+        ),
+      ),
     );
   }
 }
@@ -251,7 +279,7 @@ class _PremiumHeaderSection extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: AppSpacing.sm),
-                    Icon(
+                    const Icon(
                       Icons.arrow_forward_ios_rounded,
                       size: 14,
                       color: AppColors.gray500,
@@ -401,7 +429,8 @@ class _GradientCircularProgressPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant _GradientCircularProgressPainter oldDelegate) {
+  bool shouldRepaint(
+      covariant _GradientCircularProgressPainter oldDelegate) {
     return oldDelegate.progress != progress ||
         oldDelegate.baseColor != baseColor ||
         oldDelegate.progressColor != progressColor;
@@ -557,20 +586,24 @@ final _mockGoal = _GoalDetail(
       title: 'Check-in Yapıldı: +15% İlerleme',
       date: '10 Aralık',
       type: _TimelineItemType.checkIn,
-      note: 'Bu hafta dil pratiği için bir partner buldum. Konuşma becerilerim hızla gelişiyor!',
+      note:
+          'Bu hafta dil pratiği için bir partner buldum. Konuşma becerilerim hızla gelişiyor!',
     ),
   ],
   notes: const [
     _Note(
-      content: 'Duolingo uygulaması ile günde 30 dakika çalışıyorum. Temel kelimeleri öğrenmeye başladım.',
+      content:
+          'Duolingo uygulaması ile günde 30 dakika çalışıyorum. Temel kelimeleri öğrenmeye başladım.',
       date: '20 Kasım',
     ),
     _Note(
-      content: 'Yerel bir dil değişim grubuna katıldım. Haftada 2 kez buluşuyoruz ve pratik yapıyoruz.',
+      content:
+          'Yerel bir dil değişim grubuna katıldım. Haftada 2 kez buluşuyoruz ve pratik yapıyoruz.',
       date: '5 Aralık',
     ),
     _Note(
-      content: 'İlk basit cümleleri kurmaya başladım. Gramer kurallarını öğrenmek için bir kitap aldım.',
+      content:
+          'İlk basit cümleleri kurmaya başladım. Gramer kurallarını öğrenmek için bir kitap aldım.',
       date: '12 Aralık',
     ),
   ],
@@ -611,17 +644,29 @@ class _TimelineTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final items = List<_TimelineItem>.from(timelineItems);
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(AppSpacing.lg),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          for (int i = 0; i < timelineItems.length; i++) ...[
+          for (int i = 0; i < items.length; i++) ...[
+            if (i == 0 || items[i].date != items[i - 1].date) ...[
+              Text(
+                items[i].date,
+                style: AppTextStyles.bodyMedium.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.gray700,
+                ),
+              ),
+              const SizedBox(height: AppSpacing.xs),
+            ],
             _PremiumTimelineItem(
-              item: timelineItems[i],
-              isLast: i == timelineItems.length - 1,
+              item: items[i],
+              isLast: i == items.length - 1,
             ),
-            if (i < timelineItems.length - 1)
+            if (i < items.length - 1)
               const SizedBox(height: AppSpacing.lg),
           ],
         ],
@@ -718,7 +763,8 @@ class _PremiumTimelineItem extends StatelessWidget {
                   height: 60,
                   margin: const EdgeInsets.only(top: AppSpacing.xs),
                   decoration: BoxDecoration(
-                    color: AppColors.gray200.withOpacity(0.6), // Lighter line
+                    color:
+                        AppColors.gray200.withOpacity(0.6), // Lighter line
                     borderRadius: BorderRadius.circular(1),
                   ),
                 ),
@@ -836,7 +882,8 @@ class _NotesTab extends StatelessWidget {
         children: [
           for (int i = 0; i < notes.length; i++) ...[
             _NoteCard(note: notes[i]),
-            if (i < notes.length - 1) const SizedBox(height: AppSpacing.md),
+            if (i < notes.length - 1)
+              const SizedBox(height: AppSpacing.md),
           ],
         ],
       ),
@@ -878,7 +925,7 @@ class _NoteCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(
+              const Icon(
                 Icons.note_outlined,
                 size: 18,
                 color: AppColors.gray600,
@@ -953,7 +1000,8 @@ class _SubtasksTab extends StatelessWidget {
         children: [
           for (int i = 0; i < subtasks.length; i++) ...[
             _SubtaskCard(subtask: subtasks[i]),
-            if (i < subtasks.length - 1) const SizedBox(height: AppSpacing.md),
+            if (i < subtasks.length - 1)
+              const SizedBox(height: AppSpacing.md),
           ],
         ],
       ),
@@ -1058,7 +1106,7 @@ class _SubtaskCard extends StatelessWidget {
                   const SizedBox(height: AppSpacing.xs),
                   Row(
                     children: [
-                      Icon(
+                      const Icon(
                         Icons.calendar_today_outlined,
                         size: 14,
                         color: AppColors.gray500,
@@ -1085,9 +1133,13 @@ class _SubtaskCard extends StatelessWidget {
 
 /// Premium Bottom Button - Increased visual weight
 class _PremiumBottomButton extends StatelessWidget {
-  const _PremiumBottomButton({required this.goalId});
+  const _PremiumBottomButton({
+    required this.goalId,
+    required this.onCheckInCompleted,
+  });
 
   final String goalId;
+  final VoidCallback onCheckInCompleted;
 
   @override
   Widget build(BuildContext context) {
@@ -1140,8 +1192,13 @@ class _PremiumBottomButton extends StatelessWidget {
             ],
           ),
           child: FilledButton(
-            onPressed: () {
-              context.push(AppRoutes.checkInPath(goalId));
+            onPressed: () async {
+              final result = await context.push(
+                AppRoutes.checkInPath(goalId),
+              );
+              if (result == true) {
+                onCheckInCompleted();
+              }
             },
             style: FilledButton.styleFrom(
               backgroundColor: Colors.transparent,
