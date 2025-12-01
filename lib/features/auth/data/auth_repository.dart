@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
@@ -47,6 +48,15 @@ abstract class AuthRepository {
   Future<AppUser?> signInWithGoogle();
 
   Future<void> signOut();
+
+  /// Şifre değiştir (mevcut şifre ile)
+  Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  });
+
+  /// Hesabı sil (Firebase Auth + Firestore cleanup)
+  Future<void> deleteAccount();
 }
 
 /// FirebaseAuth tabanlı repository implementasyonu
@@ -54,11 +64,30 @@ class FirebaseAuthRepository implements AuthRepository {
   FirebaseAuthRepository({
     required FirebaseAuth firebaseAuth,
     required GoogleSignIn googleSignIn,
+    required FirebaseFirestore firestore,
   })  : _firebaseAuth = firebaseAuth,
-        _googleSignIn = googleSignIn;
+        _googleSignIn = googleSignIn,
+        _firestore = firestore;
 
   final FirebaseAuth _firebaseAuth;
   final GoogleSignIn _googleSignIn;
+  final FirebaseFirestore _firestore;
+
+  /// Users collection'ına kullanıcı kaydet/güncelle
+  Future<void> _saveUserToFirestore(AppUser user) async {
+    try {
+      await _firestore.collection('users').doc(user.uid).set({
+        'email': user.email,
+        'displayName': user.displayName,
+        'photoUrl': user.photoUrl,
+        'createdAt': FieldValue.serverTimestamp(),
+        'updatedAt': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true)); // merge: true ile mevcut verileri koru
+    } catch (e) {
+      // Firestore hatası auth işlemini engellememeli
+      print('Error saving user to Firestore: $e');
+    }
+  }
 
   @override
   Stream<AppUser?> authStateChanges() {
@@ -95,7 +124,10 @@ class FirebaseAuthRepository implements AuthRepository {
     final user = credential.user;
     if (user == null) return null;
     // Email ile kayıt her zaman yeni kullanıcıdır
-    return AppUser.fromFirebaseUser(user, isNewUser: true);
+    final appUser = AppUser.fromFirebaseUser(user, isNewUser: true);
+    // Users collection'ına kaydet
+    await _saveUserToFirestore(appUser);
+    return appUser;
   }
 
   @override
@@ -137,7 +169,14 @@ class FirebaseAuthRepository implements AuthRepository {
       // additionalUserInfo.isNewUser ile yeni kullanıcı mı kontrol et
       final isNewUser = userCredential.additionalUserInfo?.isNewUser ?? false;
 
-      return AppUser.fromFirebaseUser(user, isNewUser: isNewUser);
+      final appUser = AppUser.fromFirebaseUser(user, isNewUser: isNewUser);
+      
+      // Yeni kullanıcı ise veya mevcut kullanıcı bilgileri güncellenmişse Firestore'a kaydet
+      if (isNewUser || user.displayName != null || user.photoURL != null) {
+        await _saveUserToFirestore(appUser);
+      }
+
+      return appUser;
     } catch (e) {
       // Hata durumunda Google oturumunu temizle
       await _googleSignIn.signOut();
@@ -151,6 +190,97 @@ class FirebaseAuthRepository implements AuthRepository {
       _firebaseAuth.signOut(),
       _googleSignIn.signOut(),
     ]);
+  }
+
+  @override
+  Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    final user = _firebaseAuth.currentUser;
+    if (user == null) {
+      throw Exception('Kullanıcı giriş yapmamış');
+    }
+
+    if (user.email == null) {
+      throw Exception('E-posta adresi bulunamadı');
+    }
+
+    // Email/Password ile giriş yapmış kullanıcılar için şifre değiştirme
+    // Google ile giriş yapmış kullanıcılar için şifre yok, bu durumda hata ver
+    if (user.providerData.isEmpty ||
+        !user.providerData.any((info) => info.providerId == 'password')) {
+      throw Exception('Google ile giriş yapmış kullanıcılar şifre değiştiremez');
+    }
+
+    // Mevcut şifreyi doğrula
+    final credential = EmailAuthProvider.credential(
+      email: user.email!,
+      password: currentPassword,
+    );
+
+    try {
+      await user.reauthenticateWithCredential(credential);
+    } catch (e) {
+      throw Exception('Mevcut şifre yanlış');
+    }
+
+    // Yeni şifreyi güncelle
+    await user.updatePassword(newPassword);
+  }
+
+  @override
+  Future<void> deleteAccount() async {
+    final user = _firebaseAuth.currentUser;
+    if (user == null) {
+      throw Exception('Kullanıcı giriş yapmamış');
+    }
+
+    final userId = user.uid;
+
+    // Firestore'dan tüm kullanıcı verilerini sil
+    try {
+      final batch = _firestore.batch();
+
+      // Goals'ları sil
+      final goalsSnapshot = await _firestore
+          .collection('goals')
+          .where('userId', isEqualTo: userId)
+          .get();
+      for (final goalDoc in goalsSnapshot.docs) {
+        batch.delete(goalDoc.reference);
+      }
+
+      // Check-ins'leri sil (ayrı collection olarak)
+      final checkInsSnapshot = await _firestore
+          .collection('checkIns')
+          .where('userId', isEqualTo: userId)
+          .get();
+      for (final checkInDoc in checkInsSnapshot.docs) {
+        batch.delete(checkInDoc.reference);
+      }
+
+      // Yearly reports'ları sil
+      final reportsSnapshot = await _firestore
+          .collection('yearlyReports')
+          .where('userId', isEqualTo: userId)
+          .get();
+      for (final reportDoc in reportsSnapshot.docs) {
+        batch.delete(reportDoc.reference);
+      }
+
+      // User document'ını sil
+      final userDocRef = _firestore.collection('users').doc(userId);
+      batch.delete(userDocRef);
+
+      await batch.commit();
+    } catch (e) {
+      print('Error deleting user data from Firestore: $e');
+      // Firestore hatası olsa bile auth hesabını silmeye devam et
+    }
+
+    // Firebase Auth hesabını sil
+    await user.delete();
   }
 }
 

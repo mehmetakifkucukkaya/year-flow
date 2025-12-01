@@ -134,25 +134,6 @@ class _TopAppBar extends StatelessWidget {
               ),
             ),
           ),
-          // Profile button - smaller and minimal
-          Container(
-            width: 36,
-            height: 36,
-            decoration: const BoxDecoration(
-              color: AppColors.gray200,
-              shape: BoxShape.circle,
-            ),
-            child: IconButton(
-              icon: const Icon(
-                Icons.person,
-                size: 20,
-              ),
-              onPressed: () {
-                // TODO: Navigate to profile
-              },
-              padding: EdgeInsets.zero,
-            ),
-          ),
         ],
       ),
     );

@@ -27,6 +27,32 @@ class Goal {
   final List<SubGoal> subGoals;
   final int progress; // 0–100
   final bool isArchived;
+
+  Goal copyWith({
+    String? id,
+    String? userId,
+    String? title,
+    GoalCategory? category,
+    DateTime? createdAt,
+    DateTime? targetDate,
+    String? motivation,
+    List<SubGoal>? subGoals,
+    int? progress,
+    bool? isArchived,
+  }) {
+    return Goal(
+      id: id ?? this.id,
+      userId: userId ?? this.userId,
+      title: title ?? this.title,
+      category: category ?? this.category,
+      createdAt: createdAt ?? this.createdAt,
+      targetDate: targetDate ?? this.targetDate,
+      motivation: motivation ?? this.motivation,
+      subGoals: subGoals ?? this.subGoals,
+      progress: progress ?? this.progress,
+      isArchived: isArchived ?? this.isArchived,
+    );
+  }
 }
 
 @immutable

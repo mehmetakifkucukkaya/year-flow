@@ -10,14 +10,96 @@ import '../../../core/theme/app_text_styles.dart';
 import '../../../shared/models/goal.dart';
 import '../../../shared/providers/goal_providers.dart';
 
-class GoalsPage extends ConsumerWidget {
+enum _SortOption {
+  newest,
+  oldest,
+  progressHigh,
+  progressLow,
+  titleAsc,
+  titleDesc,
+}
+
+enum _FilterOption {
+  all,
+  health,
+  finance,
+  career,
+  relationship,
+  learning,
+  habit,
+  personalGrowth,
+}
+
+class GoalsPage extends ConsumerStatefulWidget {
   const GoalsPage({super.key});
 
+  @override
+  ConsumerState<GoalsPage> createState() => _GoalsPageState();
+}
+
+class _GoalsPageState extends ConsumerState<GoalsPage> {
   // Premium background color
   static const Color _premiumBackground = Color(0xFFF9FAFB);
 
+  _SortOption _sortOption = _SortOption.newest;
+  _FilterOption _filterOption = _FilterOption.all;
+
+  List<Goal> _filterAndSortGoals(List<Goal> goals) {
+    // Filtrele
+    var filtered = goals;
+    if (_filterOption != _FilterOption.all) {
+      final category = _filterOptionToCategory(_filterOption);
+      filtered = goals.where((g) => g.category == category).toList();
+    }
+
+    // Sırala
+    switch (_sortOption) {
+      case _SortOption.newest:
+        filtered.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+        break;
+      case _SortOption.oldest:
+        filtered.sort((a, b) => a.createdAt.compareTo(b.createdAt));
+        break;
+      case _SortOption.progressHigh:
+        filtered.sort((a, b) => b.progress.compareTo(a.progress));
+        break;
+      case _SortOption.progressLow:
+        filtered.sort((a, b) => a.progress.compareTo(b.progress));
+        break;
+      case _SortOption.titleAsc:
+        filtered.sort((a, b) => a.title.compareTo(b.title));
+        break;
+      case _SortOption.titleDesc:
+        filtered.sort((a, b) => b.title.compareTo(a.title));
+        break;
+    }
+
+    return filtered;
+  }
+
+  GoalCategory? _filterOptionToCategory(_FilterOption option) {
+    switch (option) {
+      case _FilterOption.all:
+        return null;
+      case _FilterOption.health:
+        return GoalCategory.health;
+      case _FilterOption.finance:
+        return GoalCategory.finance;
+      case _FilterOption.career:
+        return GoalCategory.career;
+      case _FilterOption.relationship:
+        return GoalCategory.relationship;
+      case _FilterOption.learning:
+        return GoalCategory.learning;
+      case _FilterOption.habit:
+        return GoalCategory.habit;
+      case _FilterOption.personalGrowth:
+        return GoalCategory.personalGrowth;
+    }
+  }
+
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final goalsAsync = ref.watch(goalsStreamProvider);
 
     return Container(
@@ -28,15 +110,45 @@ class GoalsPage extends ConsumerWidget {
             loading: () => const Center(
               child: CircularProgressIndicator(),
             ),
-            error: (error, _) => Center(
-              child: Text(
-                'Hedefler yüklenirken bir hata oluştu.',
-                style: AppTextStyles.bodyMedium.copyWith(
-                  color: AppColors.error,
+            error: (error, stackTrace) {
+              // Hata detaylarını logla
+              debugPrint('GoalsPage error: $error');
+              debugPrint('Stack trace: $stackTrace');
+
+              return Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(AppSpacing.lg),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(
+                        Icons.error_outline_rounded,
+                        size: 48,
+                        color: AppColors.error,
+                      ),
+                      const SizedBox(height: AppSpacing.md),
+                      Text(
+                        'Hedefler yüklenirken bir hata oluştu.',
+                        style: AppTextStyles.bodyMedium.copyWith(
+                          color: AppColors.error,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: AppSpacing.sm),
+                      TextButton(
+                        onPressed: () {
+                          // Stream'i yeniden başlat
+                          ref.invalidate(goalsStreamProvider);
+                        },
+                        child: const Text('Yeniden Dene'),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ),
+              );
+            },
             data: (goals) {
+              final filteredAndSortedGoals = _filterAndSortGoals(goals);
               return CustomScrollView(
                 slivers: [
                   // SafeArea for status bar
@@ -56,12 +168,25 @@ class GoalsPage extends ConsumerWidget {
                         top: AppSpacing.md,
                         bottom: AppSpacing.sm,
                       ),
-                      child: _FilterSortButtons(),
+                      child: _FilterSortButtons(
+                        sortOption: _sortOption,
+                        filterOption: _filterOption,
+                        onSortChanged: (option) {
+                          setState(() {
+                            _sortOption = option;
+                          });
+                        },
+                        onFilterChanged: (option) {
+                          setState(() {
+                            _filterOption = option;
+                          });
+                        },
+                      ),
                     ),
                   ),
 
                   // Goals List
-                  if (goals.isEmpty)
+                  if (filteredAndSortedGoals.isEmpty)
                     SliverFillRemaining(
                       hasScrollBody: false,
                       child: _EmptyState(),
@@ -70,7 +195,7 @@ class GoalsPage extends ConsumerWidget {
                     SliverList(
                       delegate: SliverChildBuilderDelegate(
                         (context, index) {
-                          final goal = goals[index];
+                          final goal = filteredAndSortedGoals[index];
                           return Padding(
                             padding: const EdgeInsets.only(
                               left: AppSpacing.md,
@@ -80,7 +205,7 @@ class GoalsPage extends ConsumerWidget {
                             child: _GoalCard(goal: goal),
                           );
                         },
-                        childCount: goals.length,
+                        childCount: filteredAndSortedGoals.length,
                       ),
                     ),
 
@@ -167,6 +292,18 @@ class _TopAppBar extends StatelessWidget {
 
 /// Filter and Sort Buttons - Minimalist design
 class _FilterSortButtons extends StatelessWidget {
+  const _FilterSortButtons({
+    required this.sortOption,
+    required this.filterOption,
+    required this.onSortChanged,
+    required this.onFilterChanged,
+  });
+
+  final _SortOption sortOption;
+  final _FilterOption filterOption;
+  final ValueChanged<_SortOption> onSortChanged;
+  final ValueChanged<_FilterOption> onFilterChanged;
+
   @override
   Widget build(BuildContext context) {
     return Row(
@@ -175,7 +312,7 @@ class _FilterSortButtons extends StatelessWidget {
           icon: Icons.swap_vert,
           label: 'Sırala',
           onPressed: () {
-            // TODO: Show sort options
+            _showSortDialog(context);
           },
         ),
         const SizedBox(width: AppSpacing.sm),
@@ -183,11 +320,127 @@ class _FilterSortButtons extends StatelessWidget {
           icon: Icons.filter_list,
           label: 'Filtrele',
           onPressed: () {
-            // TODO: Show filter options
+            _showFilterDialog(context);
           },
         ),
       ],
     );
+  }
+
+  void _showSortDialog(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        padding: const EdgeInsets.all(AppSpacing.lg),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Sırala',
+              style: AppTextStyles.titleMedium.copyWith(
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: AppSpacing.md),
+            ..._SortOption.values
+                .map((option) => RadioListTile<_SortOption>(
+                      title: Text(_getSortLabel(option)),
+                      value: option,
+                      groupValue: sortOption,
+                      onChanged: (value) {
+                        if (value != null) {
+                          onSortChanged(value);
+                          Navigator.pop(context);
+                        }
+                      },
+                    )),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showFilterDialog(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        padding: const EdgeInsets.all(AppSpacing.lg),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Filtrele',
+              style: AppTextStyles.titleMedium.copyWith(
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: AppSpacing.md),
+            ..._FilterOption.values
+                .map((option) => RadioListTile<_FilterOption>(
+                      title: Text(_getFilterLabel(option)),
+                      value: option,
+                      groupValue: filterOption,
+                      onChanged: (value) {
+                        if (value != null) {
+                          onFilterChanged(value);
+                          Navigator.pop(context);
+                        }
+                      },
+                    )),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _getSortLabel(_SortOption option) {
+    switch (option) {
+      case _SortOption.newest:
+        return 'En Yeni';
+      case _SortOption.oldest:
+        return 'En Eski';
+      case _SortOption.progressHigh:
+        return 'İlerleme (Yüksek)';
+      case _SortOption.progressLow:
+        return 'İlerleme (Düşük)';
+      case _SortOption.titleAsc:
+        return 'Başlık (A-Z)';
+      case _SortOption.titleDesc:
+        return 'Başlık (Z-A)';
+    }
+  }
+
+  String _getFilterLabel(_FilterOption option) {
+    switch (option) {
+      case _FilterOption.all:
+        return 'Tümü';
+      case _FilterOption.health:
+        return 'Sağlık';
+      case _FilterOption.finance:
+        return 'Finans';
+      case _FilterOption.career:
+        return 'Kariyer';
+      case _FilterOption.relationship:
+        return 'İlişkiler';
+      case _FilterOption.learning:
+        return 'Öğrenme';
+      case _FilterOption.habit:
+        return 'Alışkanlık';
+      case _FilterOption.personalGrowth:
+        return 'Kişisel Gelişim';
+    }
   }
 }
 

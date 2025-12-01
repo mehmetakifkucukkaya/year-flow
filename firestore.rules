@@ -2,17 +2,55 @@ rules_version='2'
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /{document=**} {
-      // This rule allows anyone with your database reference to view, edit,
-      // and delete all data in your database. It is useful for getting
-      // started, but it is configured to expire after 30 days because it
-      // leaves your app open to attackers. At that time, all client
-      // requests to your database will be denied.
-      //
-      // Make sure to write security rules for your app before that time, or
-      // else all client requests to your database will be denied until you
-      // update your rules.
-      allow read, write: if request.time < timestamp.date(2025, 12, 31);
+    // Helper function: Kullanıcı authenticated mı?
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Users collection - kullanıcılar kendi bilgilerini okuyabilir, herkes yazabilir (auth sırasında)
+    match /users/{userId} {
+      allow read: if isAuthenticated() && request.auth.uid == userId;
+      allow write: if isAuthenticated(); // Auth sırasında kayıt için
+    }
+
+    // Goals collection
+    match /goals/{goalId} {
+      // Query'ler için: authenticated kullanıcılar erişebilir (query'de zaten userId filtresi var)
+      // Tekil document okuma için: userId kontrolü
+      allow read: if isAuthenticated() && 
+        (!resource.exists || resource.data.userId == request.auth.uid);
+      allow create: if isAuthenticated() && 
+        request.resource.data.userId == request.auth.uid;
+      allow update: if isAuthenticated() && 
+        resource.data.userId == request.auth.uid;
+      allow delete: if isAuthenticated() && 
+        resource.data.userId == request.auth.uid;
+    }
+
+    // Check-ins collection (ayrı collection olarak)
+    // Query'ler için: authenticated kullanıcılar erişebilir (query'de zaten userId filtresi var)
+    // Tekil document okuma için: userId kontrolü
+    match /checkIns/{checkInId} {
+      allow read: if isAuthenticated() && 
+        (!resource.exists || resource.data.userId == request.auth.uid);
+      allow create: if isAuthenticated() && 
+        request.resource.data.userId == request.auth.uid;
+      allow update: if isAuthenticated() && 
+        resource.data.userId == request.auth.uid;
+      allow delete: if isAuthenticated() && 
+        resource.data.userId == request.auth.uid;
+    }
+
+    // Yearly reports collection
+    match /yearlyReports/{reportId} {
+      allow read: if isAuthenticated() && 
+        (!resource.exists || resource.data.userId == request.auth.uid);
+      allow create: if isAuthenticated() && 
+        request.resource.data.userId == request.auth.uid;
+      allow update: if isAuthenticated() && 
+        resource.data.userId == request.auth.uid;
+      allow delete: if isAuthenticated() && 
+        resource.data.userId == request.auth.uid;
     }
   }
 }

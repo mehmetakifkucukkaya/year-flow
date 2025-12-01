@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:uuid/uuid.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_radius.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_text_styles.dart';
+import '../../../core/widgets/index.dart';
+import '../../../shared/models/check_in.dart';
+import '../../../shared/providers/goal_providers.dart';
 
 class CheckInPage extends ConsumerStatefulWidget {
   const CheckInPage({
@@ -35,8 +40,63 @@ class _CheckInPageState extends ConsumerState<CheckInPage> {
     super.dispose();
   }
 
-  void _submit() {
-    Navigator.of(context).pop(true);
+  Future<void> _submit() async {
+    final userId = ref.read(currentUserIdProvider);
+    if (userId == null) {
+      if (mounted) {
+        AppSnackbar.showError(context,
+            message: 'Giriş yapmanız gerekiyor');
+      }
+      return;
+    }
+
+    if (!mounted) return;
+
+    try {
+      final repository = ref.read(goalRepositoryProvider);
+
+      // Progress delta hesapla (score'a göre basit bir formül)
+      // Score 1-10 arası, progress delta -5 ile +10 arası olabilir
+      final progressDelta = ((_score - 5) * 2).round().clamp(-5, 10);
+
+      // Note: progress ve challenge text'lerini birleştir
+      final note = [
+        if (_progressController.text.trim().isNotEmpty)
+          'Yapılanlar: ${_progressController.text.trim()}',
+        if (_challengeController.text.trim().isNotEmpty)
+          'Zorluklar ve çözümler: ${_challengeController.text.trim()}',
+        if (_noteController.text.trim().isNotEmpty)
+          'Not: ${_noteController.text.trim()}',
+      ].join('\n\n');
+
+      final checkIn = CheckIn(
+        id: const Uuid().v4(),
+        goalId: widget.goalId,
+        userId: userId,
+        createdAt: DateTime.now(),
+        score: _score.round(),
+        progressDelta: progressDelta,
+        note: note.isEmpty ? null : note,
+      );
+
+      await repository.addCheckIn(checkIn);
+
+      if (mounted) {
+        AppSnackbar.showSuccess(
+          context,
+          message: 'Check-in kaydedildi! 🎉',
+        );
+        context.pop();
+      }
+    } catch (e) {
+      if (mounted) {
+        AppSnackbar.showError(
+          context,
+          message:
+              'Check-in kaydedilirken bir hata oluştu: ${e.toString()}',
+        );
+      }
+    }
   }
 
   @override

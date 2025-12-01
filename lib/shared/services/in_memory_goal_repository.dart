@@ -3,6 +3,7 @@ import 'dart:async';
 import '../../core/constants/app_constants.dart';
 import '../models/check_in.dart';
 import '../models/goal.dart';
+import '../models/note.dart';
 import '../models/yearly_report.dart';
 import 'goal_repository.dart';
 
@@ -170,8 +171,10 @@ class InMemoryGoalRepository implements GoalRepository {
   }
 
   @override
-  Stream<List<CheckIn>> watchCheckIns(String goalId) async* {
-    yield _checkIns.where((c) => c.goalId == goalId).toList();
+  Stream<List<CheckIn>> watchCheckIns(String goalId, String userId) async* {
+    yield _checkIns
+        .where((c) => c.goalId == goalId && c.userId == userId)
+        .toList();
   }
 
   @override
@@ -222,6 +225,22 @@ class InMemoryGoalRepository implements GoalRepository {
       _reports.add(report);
     }
     return report;
+  }
+
+  @override
+  Stream<List<Note>> watchNotes(String goalId, String userId) {
+    // In-memory implementation - mock data
+    return Stream.value([]);
+  }
+
+  @override
+  Future<void> addNote(Note note) async {
+    // In-memory implementation - no-op
+  }
+
+  @override
+  Future<void> deleteNote(String noteId) async {
+    // In-memory implementation - no-op
   }
 }
 

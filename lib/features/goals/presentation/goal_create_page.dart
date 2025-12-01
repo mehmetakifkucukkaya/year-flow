@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:uuid/uuid.dart';
 
 import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_colors.dart';
@@ -9,6 +10,9 @@ import '../../../core/theme/app_radius.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/app_button.dart';
+import '../../../core/widgets/index.dart';
+import '../../../shared/models/goal.dart';
+import '../../../shared/providers/goal_providers.dart';
 
 class GoalCreatePage extends ConsumerStatefulWidget {
   const GoalCreatePage({super.key});
@@ -36,11 +40,13 @@ class _GoalCreatePageState extends ConsumerState<GoalCreatePage> {
   }
 
   Future<void> _selectDate() async {
+    final now = DateTime.now();
+    final tomorrow = DateTime(now.year, now.month, now.day + 1);
     final picked = await showDatePicker(
       context: context,
-      initialDate: DateTime.now().add(const Duration(days: 365)),
-      firstDate: DateTime.now(),
-      lastDate: DateTime.now().add(const Duration(days: 365 * 2)),
+      initialDate: now.add(const Duration(days: 365)),
+      firstDate: tomorrow, // Geçmiş tarih ve bugün seçilemez
+      lastDate: now.add(const Duration(days: 365 * 2)),
       locale: const Locale('tr', 'TR'),
     );
     if (picked != null) {
@@ -50,22 +56,61 @@ class _GoalCreatePageState extends ConsumerState<GoalCreatePage> {
     }
   }
 
-  void _handleSave() {
-    if (_formKey.currentState!.validate()) {
-      if (_selectedCategory == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Lütfen bir kategori seçin')),
-        );
-        return;
+  Future<void> _handleSave() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    if (_selectedCategory == null) {
+      AppSnackbar.showError(context, message: 'Lütfen bir kategori seçin');
+      return;
+    }
+
+    if (_completionDate == null) {
+      AppSnackbar.showError(context, message: 'Lütfen tamamlanma tarihi seçin');
+      return;
+    }
+
+    final userId = ref.read(currentUserIdProvider);
+    if (userId == null) {
+      AppSnackbar.showError(context, message: 'Giriş yapmanız gerekiyor');
+      return;
+    }
+
+    if (!mounted) return;
+
+    try {
+      final repository = ref.read(goalRepositoryProvider);
+      
+      final goal = Goal(
+        id: const Uuid().v4(),
+        userId: userId,
+        title: _titleController.text.trim(),
+        category: _selectedCategory!,
+        createdAt: DateTime.now(),
+        targetDate: _completionDate,
+        motivation: _reasonController.text.trim().isEmpty
+            ? null
+            : _reasonController.text.trim(),
+        subGoals: const [],
+        progress: 0,
+        isArchived: false,
+      );
+
+      await repository.createGoal(goal);
+
+      if (mounted) {
+        // Stream'i yeniden başlatmak için invalidate et
+        ref.invalidate(goalsStreamProvider);
+        
+        AppSnackbar.showSuccess(context, message: 'Hedef başarıyla oluşturuldu! 🎉');
+        context.pop();
       }
-      if (_completionDate == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Lütfen tamamlanma tarihi seçin')),
+    } catch (e) {
+      if (mounted) {
+        AppSnackbar.showError(
+          context,
+          message: 'Hedef oluşturulurken bir hata oluştu: ${e.toString()}',
         );
-        return;
       }
-      // TODO: Save goal
-      context.pop();
     }
   }
 

@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -24,13 +25,20 @@ final googleSignInProvider = Provider<GoogleSignIn>((ref) {
   );
 });
 
+/// FirebaseFirestore provider (auth için)
+final firestoreForAuthProvider = Provider<FirebaseFirestore>((ref) {
+  return FirebaseFirestore.instance;
+});
+
 /// Auth repository provider
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
   final firebaseAuth = ref.watch(firebaseAuthProvider);
   final googleSignIn = ref.watch(googleSignInProvider);
+  final firestore = ref.watch(firestoreForAuthProvider);
   return FirebaseAuthRepository(
     firebaseAuth: firebaseAuth,
     googleSignIn: googleSignIn,
+    firestore: firestore,
   );
 });
 
@@ -319,6 +327,68 @@ class AuthNotifier extends StateNotifier<AuthState> {
       isAuthenticated: false,
       currentUser: null,
     );
+  }
+
+  /// Şifre değiştir
+  Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    state = state.copyWith(
+      isLoading: true,
+      errorMessage: null,
+    );
+    try {
+      await authRepository.changePassword(
+        currentPassword: currentPassword,
+        newPassword: newPassword,
+      );
+      state = state.copyWith(
+        isLoading: false,
+        errorMessage: null,
+      );
+    } on FirebaseAuthException catch (e) {
+      String errorMessage = 'Şifre değiştirme sırasında hata oluştu.';
+      if (e.code == 'weak-password') {
+        errorMessage = 'Yeni şifre çok zayıf. Lütfen daha güçlü bir şifre seçin.';
+      } else if (e.code == 'requires-recent-login') {
+        errorMessage = 'Güvenlik nedeniyle lütfen tekrar giriş yapın.';
+      } else if (e.message != null) {
+        errorMessage = e.message!;
+      }
+      state = state.copyWith(
+        isLoading: false,
+        errorMessage: errorMessage,
+      );
+      rethrow;
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        errorMessage: e.toString(),
+      );
+      rethrow;
+    }
+  }
+
+  /// Hesabı sil
+  Future<void> deleteAccount() async {
+    state = state.copyWith(
+      isLoading: true,
+      errorMessage: null,
+    );
+    try {
+      await authRepository.deleteAccount();
+      state = const AuthState(
+        isAuthenticated: false,
+        currentUser: null,
+      );
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        errorMessage: e.toString(),
+      );
+      rethrow;
+    }
   }
 }
 

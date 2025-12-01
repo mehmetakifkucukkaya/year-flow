@@ -3,12 +3,18 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 
+import '../../../core/constants/app_constants.dart';
 import '../../../core/router/app_routes.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_radius.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/index.dart';
+import '../../../shared/models/check_in.dart';
+import '../../../shared/models/goal.dart';
+import '../../../shared/providers/goal_providers.dart';
 
 class GoalDetailPage extends ConsumerStatefulWidget {
   const GoalDetailPage({
@@ -25,9 +31,6 @@ class GoalDetailPage extends ConsumerStatefulWidget {
 class _GoalDetailPageState extends ConsumerState<GoalDetailPage>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  final _GoalDetail _goal = _mockGoal;
-  List<_TimelineItem> _timelineItems =
-      List<_TimelineItem>.from(_mockGoal.timelineItems);
 
   // Premium background color
   static const Color _premiumBackground = Color(0xFFF9FAFB);
@@ -45,39 +48,188 @@ class _GoalDetailPageState extends ConsumerState<GoalDetailPage>
     super.dispose();
   }
 
+  List<_TimelineItem> _buildTimelineItems(
+      Goal? goal, List<CheckIn> checkIns) {
+    final items = <_TimelineItem>[];
+
+    if (goal != null) {
+      // Goal created item
+      final createdDate =
+          DateFormat('d MMMM', 'tr_TR').format(goal.createdAt);
+      items.add(_TimelineItem(
+        title: 'Hedef Oluşturuldu',
+        date: createdDate,
+        type: _TimelineItemType.created,
+      ));
+
+      // Check-in items
+      for (final checkIn in checkIns) {
+        final checkInDate =
+            DateFormat('d MMMM', 'tr_TR').format(checkIn.createdAt);
+        final progressText = checkIn.progressDelta > 0
+            ? '+${checkIn.progressDelta}% İlerleme'
+            : '${checkIn.progressDelta}% İlerleme';
+        items.add(_TimelineItem(
+          title: 'Check-in Yapıldı: $progressText',
+          date: checkInDate,
+          type: _TimelineItemType.checkIn,
+          note: checkIn.note,
+        ));
+      }
+    }
+
+    return items;
+  }
+
+  String _formatNextCheckIn(Goal? goal) {
+    if (goal?.targetDate == null) return 'Belirtilmemiş';
+
+    final now = DateTime.now();
+    final target = goal!.targetDate!;
+    final daysLeft = target.difference(now).inDays;
+
+    if (daysLeft < 0) return 'Süresi doldu';
+    if (daysLeft == 0) return 'Bugün';
+    if (daysLeft == 1) return 'Yarın';
+    if (daysLeft < 7) return '$daysLeft gün sonra';
+
+    return DateFormat('d MMMM', 'tr_TR').format(target);
+  }
+
   @override
   Widget build(BuildContext context) {
+    final goalAsync = ref.watch(goalDetailProvider(widget.goalId));
+    final checkInsAsync = ref.watch(checkInsStreamProvider(widget.goalId));
+
     return Scaffold(
       backgroundColor: _premiumBackground,
-      body: Column(
-        children: [
-          // Minimal App Bar
-          SafeArea(
-            bottom: false,
-            child: _PremiumAppBar(goalId: widget.goalId),
-          ),
-
-          // Header Section with Progress - Compact
-          _PremiumHeaderSection(goal: _goal),
-
-          // Tab Navigation
-          _PremiumTabBar(controller: _tabController),
-
-          // Tab Content - Expanded to take remaining space
-          Expanded(
-            child: Container(
-              color: _premiumBackground,
-              child: TabBarView(
-                controller: _tabController,
-                children: [
-                  _TimelineTab(timelineItems: _timelineItems),
-                  _NotesTab(notes: _goal.notes),
-                  _SubtasksTab(subtasks: _goal.subtasks),
-                ],
-              ),
+      body: goalAsync.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (error, _) => Center(
+          child: Text('Hedef yüklenirken hata oluştu: $error'),
+        ),
+        data: (goal) {
+          // Check-ins stream'ini düzgün handle et
+          return checkInsAsync.when(
+            loading: () => Column(
+              children: [
+                SafeArea(
+                  bottom: false,
+                  child: _PremiumAppBar(goalId: widget.goalId),
+                ),
+                _PremiumHeaderSection(
+                  goal: goal != null
+                      ? _GoalDetail(
+                          title: goal.title,
+                          category: goal.category.label,
+                          progress: goal.progress.toDouble(),
+                          nextCheckIn: _formatNextCheckIn(goal),
+                          categoryColor: _getCategoryColor(goal.category),
+                          categoryBackgroundColor:
+                              _getCategoryColor(goal.category)
+                                  .withOpacity(0.1),
+                          timelineItems: [],
+                          notes: [],
+                          subtasks: [],
+                        )
+                      : _mockGoal,
+                ),
+                const Expanded(
+                  child: Center(child: CircularProgressIndicator()),
+                ),
+              ],
             ),
-          ),
-        ],
+            error: (error, _) => Column(
+              children: [
+                SafeArea(
+                  bottom: false,
+                  child: _PremiumAppBar(goalId: widget.goalId),
+                ),
+                _PremiumHeaderSection(
+                  goal: goal != null
+                      ? _GoalDetail(
+                          title: goal.title,
+                          category: goal.category.label,
+                          progress: goal.progress.toDouble(),
+                          nextCheckIn: _formatNextCheckIn(goal),
+                          categoryColor: _getCategoryColor(goal.category),
+                          categoryBackgroundColor:
+                              _getCategoryColor(goal.category)
+                                  .withOpacity(0.1),
+                          timelineItems: [],
+                          notes: [],
+                          subtasks: [],
+                        )
+                      : _mockGoal,
+                ),
+                Expanded(
+                  child: Center(
+                    child: Text('Check-inler yüklenirken hata: $error'),
+                  ),
+                ),
+              ],
+            ),
+            data: (checkIns) {
+              final timelineItems = _buildTimelineItems(goal, checkIns);
+
+              final goalDetail = goal != null
+                  ? _GoalDetail(
+                      title: goal.title,
+                      category: goal.category.label,
+                      progress: goal.progress.toDouble(),
+                      nextCheckIn: _formatNextCheckIn(goal),
+                      categoryColor: _getCategoryColor(goal.category),
+                      categoryBackgroundColor:
+                          _getCategoryColor(goal.category)
+                              .withOpacity(0.1),
+                      timelineItems: timelineItems,
+                      notes: _mockGoal.notes, // TODO: Firestore'dan çek
+                      subtasks: goal.subGoals
+                          .map((sg) => _Subtask(
+                                title: sg.title,
+                                isCompleted: sg.isCompleted,
+                                dueDate: sg.dueDate != null
+                                    ? DateFormat('d MMMM', 'tr_TR')
+                                        .format(sg.dueDate!)
+                                    : null,
+                              ))
+                          .toList(),
+                    )
+                  : _mockGoal;
+
+              return Column(
+                children: [
+                  // Minimal App Bar
+                  SafeArea(
+                    bottom: false,
+                    child: _PremiumAppBar(goalId: widget.goalId),
+                  ),
+
+                  // Header Section with Progress - Compact
+                  _PremiumHeaderSection(goal: goalDetail),
+
+                  // Tab Navigation
+                  _PremiumTabBar(controller: _tabController),
+
+                  // Tab Content - Expanded to take remaining space
+                  Expanded(
+                    child: Container(
+                      color: _premiumBackground,
+                      child: TabBarView(
+                        controller: _tabController,
+                        children: [
+                          _TimelineTab(timelineItems: timelineItems),
+                          _NotesTab(notes: goalDetail.notes),
+                          _SubtasksTab(subtasks: goalDetail.subtasks),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            },
+          );
+        },
       ),
       // Bottom Action Button - Fixed with gradient
       bottomNavigationBar: _PremiumBottomButton(
@@ -87,19 +239,27 @@ class _GoalDetailPageState extends ConsumerState<GoalDetailPage>
     );
   }
 
-  void _handleCheckInCompleted() {
-    setState(() {
-      _timelineItems = [
-        ..._timelineItems,
-        const _TimelineItem(
-          title: 'Check-in yapıldı (mock)',
-          date: 'Bugün',
-          type: _TimelineItemType.checkIn,
-          note: 'Bu check-in sadece örnek olarak eklendi.',
-        ),
-      ];
-    });
+  Color _getCategoryColor(GoalCategory category) {
+    switch (category) {
+      case GoalCategory.health:
+        return const Color(0xFF4CAF50);
+      case GoalCategory.finance:
+        return const Color(0xFF009688);
+      case GoalCategory.career:
+        return const Color(0xFF2196F3);
+      case GoalCategory.relationship:
+        return const Color(0xFFE91E63);
+      case GoalCategory.learning:
+        return const Color(0xFF9C27B0);
+      case GoalCategory.habit:
+        return const Color(0xFFFF9800);
+      case GoalCategory.personalGrowth:
+        return AppColors.primary;
+    }
+  }
 
+  void _handleCheckInCompleted() {
+    // Check-in zaten Firestore'a kaydedildi, stream otomatik güncellenecek
     AppSnackbar.showSuccess(
       context,
       message: 'Check-in kaydedildi',
@@ -107,13 +267,13 @@ class _GoalDetailPageState extends ConsumerState<GoalDetailPage>
   }
 }
 
-class _PremiumAppBar extends StatelessWidget {
+class _PremiumAppBar extends ConsumerWidget {
   const _PremiumAppBar({required this.goalId});
 
   final String goalId;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Padding(
       padding: const EdgeInsets.only(
         left: AppSpacing.md,
@@ -133,16 +293,78 @@ class _PremiumAppBar extends StatelessWidget {
               minHeight: 48,
             ),
           ),
-          IconButton(
-            icon: const Icon(Icons.edit_outlined, size: 22),
-            onPressed: () {
-              context.push(AppRoutes.goalEditPath(goalId));
-            },
-            padding: EdgeInsets.zero,
-            constraints: const BoxConstraints(
-              minWidth: 48,
-              minHeight: 48,
-            ),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              IconButton(
+                icon: const Icon(Icons.edit_outlined, size: 22),
+                onPressed: () {
+                  context.push(AppRoutes.goalEditPath(goalId));
+                },
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(
+                  minWidth: 48,
+                  minHeight: 48,
+                ),
+              ),
+              PopupMenuButton<String>(
+                icon: const Icon(Icons.more_vert, size: 22),
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(
+                  minWidth: 48,
+                  minHeight: 48,
+                ),
+                onSelected: (value) async {
+                  if (value == 'delete') {
+                    final shouldDelete = await showDialog<bool>(
+                      context: context,
+                      barrierColor: Colors.black.withOpacity(0.5),
+                      builder: (context) => _DeleteConfirmationDialog(
+                        goalId: goalId,
+                      ),
+                    );
+
+                    if (shouldDelete == true && context.mounted) {
+                      try {
+                        final repository =
+                            ref.read(goalRepositoryProvider);
+                        await repository.deleteGoal(goalId);
+                        if (context.mounted) {
+                          ref.invalidate(goalsStreamProvider);
+                          AppSnackbar.showSuccess(
+                            context,
+                            message: 'Hedef başarıyla silindi',
+                          );
+                          context.pop();
+                        }
+                      } catch (e) {
+                        if (context.mounted) {
+                          AppSnackbar.showError(
+                            context,
+                            message: 'Hedef silinirken hata oluştu: $e',
+                          );
+                        }
+                      }
+                    }
+                  }
+                },
+                itemBuilder: (context) => [
+                  const PopupMenuItem(
+                    value: 'delete',
+                    child: Row(
+                      children: [
+                        Icon(Icons.delete_outline, color: AppColors.error),
+                        SizedBox(width: AppSpacing.sm),
+                        Text(
+                          'Hedefi Sil',
+                          style: TextStyle(color: AppColors.error),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ),
         ],
       ),
@@ -1223,6 +1445,136 @@ class _PremiumBottomButton extends StatelessWidget {
               ],
             ),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Delete Confirmation Dialog
+class _DeleteConfirmationDialog extends StatelessWidget {
+  const _DeleteConfirmationDialog({required this.goalId});
+
+  final String goalId;
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      backgroundColor: Colors.transparent,
+      contentPadding: EdgeInsets.zero,
+      insetPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+      shape: const RoundedRectangleBorder(
+        borderRadius: AppRadius.borderRadiusXl,
+      ),
+      content: Container(
+        padding: const EdgeInsets.all(AppSpacing.xl),
+        decoration: BoxDecoration(
+          color: AppColors.white,
+          borderRadius: AppRadius.borderRadiusXl,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 30,
+              offset: const Offset(0, 15),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 64,
+              height: 64,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: const LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    Color(0xFFFF7070),
+                    Color(0xFFDC2626),
+                  ],
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFFDC2626).withOpacity(0.4),
+                    blurRadius: 16,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
+              ),
+              child: const Icon(
+                Icons.delete_outline_rounded,
+                color: Colors.white,
+                size: 32,
+              ),
+            ),
+            const SizedBox(height: AppSpacing.lg),
+            Text(
+              'Hedefi Sil',
+              style: AppTextStyles.titleLarge.copyWith(
+                fontWeight: FontWeight.w700,
+                color: AppColors.gray900,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            Text(
+              'Bu hedefi silmek istediğinize emin misiniz? Bu işlem geri alınamaz.',
+              style: AppTextStyles.bodyMedium.copyWith(
+                color: AppColors.gray700,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: AppSpacing.xl),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () => Navigator.of(context).pop(false),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      side: const BorderSide(
+                        color: AppColors.gray300,
+                        width: 1.5,
+                      ),
+                      shape: const RoundedRectangleBorder(
+                        borderRadius: AppRadius.borderRadiusLg,
+                      ),
+                    ),
+                    child: Text(
+                      'İptal',
+                      style: AppTextStyles.bodyMedium.copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.gray800,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.md),
+                Expanded(
+                  child: FilledButton(
+                    onPressed: () => Navigator.of(context).pop(true),
+                    style: FilledButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      backgroundColor: const Color(0xFFFF5252),
+                      shape: const RoundedRectangleBorder(
+                        borderRadius: AppRadius.borderRadiusLg,
+                      ),
+                      elevation: 0,
+                    ),
+                    child: Text(
+                      'Sil',
+                      style: AppTextStyles.bodyMedium.copyWith(
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
         ),
       ),
     );

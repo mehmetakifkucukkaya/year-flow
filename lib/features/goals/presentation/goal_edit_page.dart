@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../../core/constants/app_constants.dart';
@@ -7,7 +8,8 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_radius.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_text_styles.dart';
-import '../../../core/widgets/app_button.dart';
+import '../../../core/widgets/index.dart';
+import '../../../shared/providers/goal_providers.dart';
 
 class GoalEditPage extends ConsumerStatefulWidget {
   const GoalEditPage({
@@ -35,13 +37,32 @@ class _GoalEditPageState extends ConsumerState<GoalEditPage> {
   @override
   void initState() {
     super.initState();
-    // Mock initial values for now – later this will come from goal detail data.
-    _titleController = TextEditingController(text: 'Yeni Bir Dil Öğren');
-    _reasonController = TextEditingController(
-      text: 'Akıcı konuşabilmek ve yeni kültürler keşfetmek istiyorum.',
+    _titleController = TextEditingController();
+    _reasonController = TextEditingController();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Goal'u yükle ve formu doldur
+    _loadGoal();
+  }
+
+  Future<void> _loadGoal() async {
+    final goalAsync = ref.read(goalDetailProvider(widget.goalId));
+    goalAsync.when(
+      data: (goal) {
+        if (goal != null && mounted) {
+          _titleController.text = goal.title;
+          _reasonController.text = goal.motivation ?? '';
+          _selectedCategory = goal.category;
+          _completionDate = goal.targetDate;
+          setState(() {});
+        }
+      },
+      loading: () {},
+      error: (_, __) {},
     );
-    _selectedCategory = GoalCategory.personalGrowth;
-    _completionDate = DateTime.now().add(const Duration(days: 120));
   }
 
   @override
@@ -52,11 +73,13 @@ class _GoalEditPageState extends ConsumerState<GoalEditPage> {
   }
 
   Future<void> _selectDate() async {
+    final now = DateTime.now();
+    final tomorrow = DateTime(now.year, now.month, now.day + 1);
     final picked = await showDatePicker(
       context: context,
-      initialDate: _completionDate ?? DateTime.now().add(const Duration(days: 365)),
-      firstDate: DateTime.now(),
-      lastDate: DateTime.now().add(const Duration(days: 365 * 2)),
+      initialDate: _completionDate ?? now.add(const Duration(days: 365)),
+      firstDate: tomorrow, // Geçmiş tarih ve bugün seçilemez
+      lastDate: now.add(const Duration(days: 365 * 2)),
       locale: const Locale('tr', 'TR'),
     );
     if (picked != null) {
@@ -66,22 +89,60 @@ class _GoalEditPageState extends ConsumerState<GoalEditPage> {
     }
   }
 
-  void _handleSave() {
-    if (_formKey.currentState!.validate()) {
-      if (_selectedCategory == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Lütfen bir kategori seçin')),
-        );
+  Future<void> _handleSave() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    if (_selectedCategory == null) {
+      AppSnackbar.showError(context, message: 'Lütfen bir kategori seçin');
+      return;
+    }
+
+    if (_completionDate == null) {
+      AppSnackbar.showError(context,
+          message: 'Lütfen tamamlanma tarihi seçin');
+      return;
+    }
+
+    if (!mounted) return;
+
+    try {
+      final repository = ref.read(goalRepositoryProvider);
+      final currentGoal = await repository.fetchGoalById(widget.goalId);
+
+      if (currentGoal == null) {
+        if (mounted) {
+          AppSnackbar.showError(context, message: 'Hedef bulunamadı');
+        }
         return;
       }
-      if (_completionDate == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Lütfen tamamlanma tarihi seçin')),
-        );
-        return;
+
+      final updatedGoal = currentGoal.copyWith(
+        title: _titleController.text.trim(),
+        category: _selectedCategory!,
+        targetDate: _completionDate,
+        motivation: _reasonController.text.trim().isEmpty
+            ? null
+            : _reasonController.text.trim(),
+      );
+
+      await repository.updateGoal(updatedGoal);
+
+      if (mounted) {
+        // Stream'i yeniden başlatmak için invalidate et
+        ref.invalidate(goalsStreamProvider);
+        // Goal detail'i de invalidate et
+        ref.invalidate(goalDetailProvider(widget.goalId));
+
+        AppSnackbar.showSuccess(context, message: 'Hedef güncellendi! ✅');
+        context.pop();
       }
-      // TODO: Update goal
-      Navigator.of(context).pop();
+    } catch (e) {
+      if (mounted) {
+        AppSnackbar.showError(
+          context,
+          message: 'Hedef güncellenirken bir hata oluştu: ${e.toString()}',
+        );
+      }
     }
   }
 
@@ -173,7 +234,7 @@ class _GoalEditPageState extends ConsumerState<GoalEditPage> {
             ),
             Container(
               padding: AppSpacing.paddingMd,
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 color: Colors.white,
                 border: Border(
                   top: BorderSide(
@@ -201,7 +262,8 @@ class _GoalEditPageState extends ConsumerState<GoalEditPage> {
                       child: OutlinedButton(
                         onPressed: _handleAIOptimize,
                         style: OutlinedButton.styleFrom(
-                          backgroundColor: AppColors.primary.withOpacity(0.1),
+                          backgroundColor:
+                              AppColors.primary.withOpacity(0.1),
                           foregroundColor: AppColors.primary,
                           minimumSize: const Size(double.infinity, 60),
                           padding: const EdgeInsets.symmetric(
@@ -216,7 +278,7 @@ class _GoalEditPageState extends ConsumerState<GoalEditPage> {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(
+                            const Icon(
                               Icons.auto_awesome,
                               size: 22,
                               color: AppColors.primary,
@@ -333,21 +395,21 @@ class _PremiumTextField extends StatelessWidget {
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(16),
-            borderSide: BorderSide(
+            borderSide: const BorderSide(
               color: AppColors.primary,
               width: 2,
             ),
           ),
           errorBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(16),
-            borderSide: BorderSide(
+            borderSide: const BorderSide(
               color: AppColors.error,
               width: 1,
             ),
           ),
           focusedErrorBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(16),
-            borderSide: BorderSide(
+            borderSide: const BorderSide(
               color: AppColors.error,
               width: 2,
             ),
@@ -408,7 +470,7 @@ class _PremiumTextArea extends StatelessWidget {
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(16),
-            borderSide: BorderSide(
+            borderSide: const BorderSide(
               color: AppColors.primary,
               width: 2,
             ),
@@ -468,7 +530,7 @@ class _CategoryDropdown extends StatelessWidget {
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(16),
-            borderSide: BorderSide(
+            borderSide: const BorderSide(
               color: AppColors.primary,
               width: 2,
             ),
@@ -493,7 +555,7 @@ class _CategoryDropdown extends StatelessWidget {
           );
         }).toList(),
         onChanged: onChanged,
-        icon: Icon(
+        icon: const Icon(
           Icons.keyboard_arrow_down_rounded,
           color: AppColors.gray400,
           size: 24,
@@ -550,7 +612,7 @@ class _DatePickerField extends StatelessWidget {
                       color: _placeholderColor,
                     ),
             ),
-            Icon(
+            const Icon(
               Icons.calendar_today_outlined,
               size: 20,
               color: AppColors.gray400,
@@ -561,5 +623,3 @@ class _DatePickerField extends StatelessWidget {
     );
   }
 }
-
-

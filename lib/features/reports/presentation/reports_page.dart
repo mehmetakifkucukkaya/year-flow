@@ -5,6 +5,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_radius.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_text_styles.dart';
+import '../providers/reports_providers.dart';
 
 /// Raporlar ana sayfası
 ///
@@ -212,7 +213,7 @@ class _HeaderHero extends StatelessWidget {
                           ),
                           const SizedBox(width: AppSpacing.xs),
                           Text(
-                            '75% hedef tamamlandı',
+                            'Yıllık Rapor',
                             style: AppTextStyles.labelMedium.copyWith(
                               fontWeight: FontWeight.w600,
                               color: AppColors.gray900,
@@ -222,11 +223,30 @@ class _HeaderHero extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: AppSpacing.sm),
-                    Text(
-                      'Harika bir yıl geçirdin 🎉',
-                      style: AppTextStyles.bodySmall.copyWith(
-                        color: AppColors.gray700,
-                      ),
+                    Consumer(
+                      builder: (context, ref, _) {
+                        final statsAsync = ref.watch(reportsStatsProvider);
+                        return statsAsync.when(
+                          loading: () => const SizedBox.shrink(),
+                          error: (_, __) => const SizedBox.shrink(),
+                          data: (stats) {
+                            final completionRate = stats.totalGoals > 0
+                                ? ((stats.completedGoals / stats.totalGoals) * 100).round()
+                                : 0;
+                            final message = completionRate >= 75
+                                ? 'Harika bir yıl geçirdin 🎉'
+                                : completionRate >= 50
+                                    ? 'İyi bir ilerleme kaydettin! 💪'
+                                    : 'Yolculuğuna devam et! 🌱';
+                            return Text(
+                              message,
+                              style: AppTextStyles.bodySmall.copyWith(
+                                color: AppColors.gray700,
+                              ),
+                            );
+                          },
+                        );
+                      },
                     ),
                   ],
                 ),
@@ -240,84 +260,127 @@ class _HeaderHero extends StatelessWidget {
 }
 
 /// Genel Bakış kartı
-class _OverviewSection extends StatelessWidget {
+class _OverviewSection extends ConsumerWidget {
   const _OverviewSection();
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final colorScheme = Theme.of(context).colorScheme;
+    final statsAsync = ref.watch(reportsStatsProvider);
 
-    return Container(
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Color(0xFFF5F7FF),
-            Color(0xFFEFFBFF),
-          ],
+    return statsAsync.when(
+      loading: () => const Center(
+        child: Padding(
+          padding: EdgeInsets.all(AppSpacing.xl),
+          child: CircularProgressIndicator(),
         ),
-        borderRadius: AppRadius.borderRadiusXl,
-        border: Border.all(color: AppColors.gray200.withOpacity(0.4)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 18,
-            offset: const Offset(0, 8),
-          ),
-        ],
       ),
-      padding: const EdgeInsets.all(AppSpacing.lg),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Genel Bakış',
-            style: AppTextStyles.titleMedium.copyWith(
-              fontWeight: FontWeight.w700,
+      error: (error, _) => Container(
+        padding: const EdgeInsets.all(AppSpacing.lg),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: AppRadius.borderRadiusXl,
+        ),
+        child: Text('Veriler yüklenirken hata oluştu: $error'),
+      ),
+      data: (stats) {
+        final completionRate = stats.totalGoals > 0
+            ? ((stats.completedGoals / stats.totalGoals) * 100).round()
+            : 0;
+
+        return Container(
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Color(0xFFF5F7FF),
+                Color(0xFFEFFBFF),
+              ],
             ),
+            borderRadius: AppRadius.borderRadiusXl,
+            border: Border.all(color: AppColors.gray200.withOpacity(0.4)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.04),
+                blurRadius: 18,
+                offset: const Offset(0, 8),
+              ),
+            ],
           ),
-          const SizedBox(height: AppSpacing.md),
-          Row(
+          padding: const EdgeInsets.all(AppSpacing.lg),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(
-                child: _StatCard(
-                  label: 'Toplam Hedef',
-                  value: '48',
-                  color: colorScheme.primary,
+              Text(
+                'Genel Bakış',
+                style: AppTextStyles.titleMedium.copyWith(
+                  fontWeight: FontWeight.w700,
                 ),
               ),
-              const SizedBox(width: AppSpacing.md),
-              const Expanded(
-                child: _StatCard(
-                  label: 'Tamamlanma Oranı',
-                  value: '75%',
-                  color: AppColors.success,
+              const SizedBox(height: AppSpacing.md),
+              Row(
+                children: [
+                  Expanded(
+                    child: _StatCard(
+                      label: 'Toplam Hedef',
+                      value: '${stats.totalGoals}',
+                      color: colorScheme.primary,
+                    ),
+                  ),
+                  const SizedBox(width: AppSpacing.md),
+                  Expanded(
+                    child: _StatCard(
+                      label: 'Tamamlanma Oranı',
+                      value: '$completionRate%',
+                      color: AppColors.success,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: AppSpacing.md),
+              Row(
+                children: [
+                  Expanded(
+                    child: _StatCard(
+                      label: 'Check-in',
+                      value: '${stats.totalCheckIns}',
+                      color: AppColors.primary,
+                    ),
+                  ),
+                  const SizedBox(width: AppSpacing.md),
+                  Expanded(
+                    child: _StatCard(
+                      label: 'Ortalama İlerleme',
+                      value: '${stats.averageProgress.round()}%',
+                      color: AppColors.success,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: AppSpacing.lg),
+              Text(
+                'Yıllık İlerleme',
+                style: AppTextStyles.bodyMedium.copyWith(
+                  color: AppColors.gray600,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              ClipRRect(
+                borderRadius: AppRadius.borderRadiusFull,
+                child: LinearProgressIndicator(
+                  value: stats.averageProgress / 100,
+                  backgroundColor: AppColors.gray200,
+                  valueColor:
+                      AlwaysStoppedAnimation<Color>(colorScheme.primary),
+                  minHeight: 8,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: AppSpacing.lg),
-          Text(
-            'Yıllık İlerleme',
-            style: AppTextStyles.bodyMedium.copyWith(
-              color: AppColors.gray600,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          ClipRRect(
-            borderRadius: AppRadius.borderRadiusFull,
-            child: LinearProgressIndicator(
-              value: 0.75,
-              backgroundColor: AppColors.gray200,
-              valueColor:
-                  AlwaysStoppedAnimation<Color>(colorScheme.primary),
-              minHeight: 8,
-            ),
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 }
@@ -389,54 +452,80 @@ class _StatCard extends StatelessWidget {
 }
 
 /// Kategori Bazlı Gelişim
-class _CategoryProgressSection extends StatelessWidget {
+class _CategoryProgressSection extends ConsumerWidget {
   const _CategoryProgressSection();
 
   @override
-  Widget build(BuildContext context) {
-    final categories = [
-      const _CategoryProgressData(
-        label: 'Kariyer',
-        value: 0.85,
-      ),
-      const _CategoryProgressData(
-        label: 'Sağlık',
-        value: 0.9,
-      ),
-      const _CategoryProgressData(
-        label: 'Kişisel Gelişim',
-        value: 0.6,
-      ),
-      const _CategoryProgressData(
-        label: 'Finans',
-        value: 0.7,
-      ),
-    ];
+  Widget build(BuildContext context, WidgetRef ref) {
+    final statsAsync = ref.watch(reportsStatsProvider);
 
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.white,
-        borderRadius: AppRadius.borderRadiusXl,
-        border: Border.all(color: AppColors.gray200),
+    return statsAsync.when(
+      loading: () => Container(
+        padding: const EdgeInsets.all(AppSpacing.lg),
+        decoration: BoxDecoration(
+          color: AppColors.white,
+          borderRadius: AppRadius.borderRadiusXl,
+        ),
+        child: const Center(child: CircularProgressIndicator()),
       ),
-      padding: const EdgeInsets.all(AppSpacing.lg),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Kategori Bazlı Gelişim',
-            style: AppTextStyles.titleMedium.copyWith(
-              fontWeight: FontWeight.w700,
+      error: (error, _) => Container(
+        padding: const EdgeInsets.all(AppSpacing.lg),
+        decoration: BoxDecoration(
+          color: AppColors.white,
+          borderRadius: AppRadius.borderRadiusXl,
+        ),
+        child: Text('Veriler yüklenirken hata oluştu: $error'),
+      ),
+      data: (stats) {
+        final categories = stats.categoryProgress.entries.map((entry) {
+          return _CategoryProgressData(
+            label: entry.key.label,
+            value: entry.value / 100,
+          );
+        }).toList();
+
+        if (categories.isEmpty) {
+          return Container(
+            padding: const EdgeInsets.all(AppSpacing.lg),
+            decoration: BoxDecoration(
+              color: AppColors.white,
+              borderRadius: AppRadius.borderRadiusXl,
             ),
+            child: Text(
+              'Henüz kategori bazlı veri yok',
+              style: AppTextStyles.bodyMedium.copyWith(
+                color: AppColors.gray600,
+              ),
+            ),
+          );
+        }
+
+        return Container(
+          decoration: BoxDecoration(
+            color: AppColors.white,
+            borderRadius: AppRadius.borderRadiusXl,
+            border: Border.all(color: AppColors.gray200),
           ),
-          const SizedBox(height: AppSpacing.md),
-          for (final item in categories) ...[
-            _CategoryProgressRow(data: item),
-            if (item != categories.last)
-              const SizedBox(height: AppSpacing.sm),
-          ],
-        ],
-      ),
+          padding: const EdgeInsets.all(AppSpacing.lg),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Kategori Bazlı Gelişim',
+                style: AppTextStyles.titleMedium.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(height: AppSpacing.md),
+              for (final item in categories) ...[
+                _CategoryProgressRow(data: item),
+                if (item != categories.last)
+                  const SizedBox(height: AppSpacing.sm),
+              ],
+            ],
+          ),
+        );
+      },
     );
   }
 }
