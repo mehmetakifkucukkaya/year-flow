@@ -7,6 +7,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_radius.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_text_styles.dart';
+import '../../auth/providers/auth_providers.dart';
 
 class SettingsPage extends ConsumerWidget {
   const SettingsPage({super.key});
@@ -49,6 +50,8 @@ class SettingsPage extends ConsumerWidget {
                       _DataAndPrivacySection(),
                       SizedBox(height: AppSpacing.xl),
                       _SecuritySection(),
+                      SizedBox(height: AppSpacing.xl),
+                      _LogoutSection(),
                       SizedBox(height: AppSpacing.xxl),
                       _DangerZoneSection(),
                       SizedBox(height: AppSpacing.xxl),
@@ -494,6 +497,181 @@ class _DataAndPrivacySection extends StatelessWidget {
   }
 }
 
+class _LogoutSection extends ConsumerWidget {
+  const _LogoutSection();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return SizedBox(
+      width: double.infinity,
+      height: 52,
+      child: OutlinedButton.icon(
+        onPressed: () async {
+          // Modern onay dialogu göster
+          final shouldLogout = await showDialog<bool>(
+            context: context,
+            barrierColor: Colors.black.withOpacity(0.5),
+            builder: (context) => const _LogoutConfirmationDialog(),
+          );
+
+          if (shouldLogout == true && context.mounted) {
+            await ref.read(authStateProvider.notifier).signOut();
+            if (context.mounted) {
+              context.go(AppRoutes.login);
+            }
+          }
+        },
+        style: OutlinedButton.styleFrom(
+          side: BorderSide(
+            color: AppColors.gray300.withOpacity(0.9),
+          ),
+          shape: const RoundedRectangleBorder(
+            borderRadius: AppRadius.borderRadiusXl,
+          ),
+        ),
+        icon: const Icon(
+          Icons.logout_rounded,
+          color: AppColors.gray700,
+        ),
+        label: Text(
+          'Çıkış Yap',
+          style: AppTextStyles.bodyMedium.copyWith(
+            fontWeight: FontWeight.w600,
+            color: AppColors.gray800,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _LogoutConfirmationDialog extends StatelessWidget {
+  const _LogoutConfirmationDialog();
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+      child: Container(
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: AppColors.white,
+          borderRadius: AppRadius.borderRadiusXl,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.15),
+              blurRadius: 32,
+              offset: const Offset(0, 16),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // İkon
+            Container(
+              width: 64,
+              height: 64,
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    Color(0xFFFF6B6B),
+                    Color(0xFFFF5252),
+                  ],
+                ),
+                borderRadius: AppRadius.borderRadiusFull,
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFFFF5252).withOpacity(0.3),
+                    blurRadius: 16,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
+              ),
+              child: const Icon(
+                Icons.logout_rounded,
+                color: Colors.white,
+                size: 32,
+              ),
+            ),
+            const SizedBox(height: 20),
+            // Başlık
+            Text(
+              'Çıkış Yap',
+              style: AppTextStyles.titleLarge.copyWith(
+                fontWeight: FontWeight.w700,
+                color: AppColors.gray900,
+              ),
+            ),
+            const SizedBox(height: 12),
+            // Açıklama
+            Text(
+              'Hesabınızdan çıkış yapmak istediğinize emin misiniz?',
+              textAlign: TextAlign.center,
+              style: AppTextStyles.bodyMedium.copyWith(
+                color: AppColors.gray600,
+                height: 1.5,
+              ),
+            ),
+            const SizedBox(height: 24),
+            // Butonlar
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () => Navigator.of(context).pop(false),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      side: const BorderSide(
+                        color: AppColors.gray300,
+                        width: 1.5,
+                      ),
+                      shape: const RoundedRectangleBorder(
+                        borderRadius: AppRadius.borderRadiusLg,
+                      ),
+                    ),
+                    child: Text(
+                      'İptal',
+                      style: AppTextStyles.bodyMedium.copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.gray700,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: FilledButton(
+                    onPressed: () => Navigator.of(context).pop(true),
+                    style: FilledButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      backgroundColor: const Color(0xFFFF5252),
+                      shape: const RoundedRectangleBorder(
+                        borderRadius: AppRadius.borderRadiusLg,
+                      ),
+                      elevation: 0,
+                    ),
+                    child: Text(
+                      'Çıkış Yap',
+                      style: AppTextStyles.bodyMedium.copyWith(
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class _DangerZoneSection extends StatelessWidget {
   const _DangerZoneSection();
 
@@ -502,6 +680,31 @@ class _DangerZoneSection extends StatelessWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
+        SizedBox(
+          width: double.infinity,
+          height: 48,
+          child: OutlinedButton(
+            onPressed: () {
+              // TODO: Şifre değiştir akışı
+            },
+            style: OutlinedButton.styleFrom(
+              side: BorderSide(
+                color: AppColors.gray300.withOpacity(0.9),
+              ),
+              shape: const RoundedRectangleBorder(
+                borderRadius: AppRadius.borderRadiusXl,
+              ),
+            ),
+            child: Text(
+              'Şifreyi Değiştir',
+              style: AppTextStyles.bodyMedium.copyWith(
+                fontWeight: FontWeight.w600,
+                color: AppColors.gray800,
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: AppSpacing.sm),
         SizedBox(
           width: double.infinity,
           height: 52,
@@ -545,31 +748,6 @@ class _DangerZoneSection extends StatelessWidget {
                   fontWeight: FontWeight.w700,
                   color: Colors.white,
                 ),
-              ),
-            ),
-          ),
-        ),
-        const SizedBox(height: AppSpacing.sm),
-        SizedBox(
-          width: double.infinity,
-          height: 48,
-          child: OutlinedButton(
-            onPressed: () {
-              // TODO: Şifre değiştir akışı
-            },
-            style: OutlinedButton.styleFrom(
-              side: BorderSide(
-                color: AppColors.gray300.withOpacity(0.9),
-              ),
-              shape: const RoundedRectangleBorder(
-                borderRadius: AppRadius.borderRadiusXl,
-              ),
-            ),
-            child: Text(
-              'Şifreyi Değiştir',
-              style: AppTextStyles.bodyMedium.copyWith(
-                fontWeight: FontWeight.w600,
-                color: AppColors.gray800,
               ),
             ),
           ),

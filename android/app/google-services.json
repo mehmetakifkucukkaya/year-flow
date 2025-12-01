@@ -12,7 +12,20 @@
           "package_name": "com.yearflow.year_flow"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "111770215758-8aqovht48k3i77ekfvrqllto1jhp0dia.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.yearflow.year_flow",
+            "certificate_hash": "f45bb43f8340755dc90e8623e2600005fef55996"
+          }
+        },
+        {
+          "client_id": "111770215758-gjlg8cjkd0fictaj3ri9upc9tvghp0cj.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyBqjybLKj5WOw7rhKsI0BBZB5nLo9PU66o"
@@ -20,7 +33,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "111770215758-gjlg8cjkd0fictaj3ri9upc9tvghp0cj.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "111770215758-occloc6p41fj6el5oegvikp036a8t283.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.yearflow.yearFlow"
+              }
+            }
+          ]
         }
       }
     }

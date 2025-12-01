@@ -5,24 +5,50 @@ import 'package:go_router/go_router.dart';
 import '../../features/auth/presentation/forgot_password_page.dart';
 import '../../features/auth/presentation/login_page.dart';
 import '../../features/auth/presentation/register_page.dart';
+import '../../features/auth/providers/auth_providers.dart';
+import '../../features/checkin/presentation/check_in_page.dart';
 import '../../features/goals/presentation/goal_create_page.dart';
-import '../../features/goals/presentation/goal_edit_page.dart';
 import '../../features/goals/presentation/goal_detail_page.dart';
+import '../../features/goals/presentation/goal_edit_page.dart';
 import '../../features/goals/presentation/goals_page.dart';
 import '../../features/home/presentation/home_page.dart';
 import '../../features/onboarding/presentation/onboarding_page.dart';
 import '../../features/reports/presentation/reports_page.dart';
-import '../../features/settings/presentation/settings_page.dart';
-import '../../features/settings/presentation/profile_page.dart';
 import '../../features/settings/presentation/privacy_security_page.dart';
-import '../../features/checkin/presentation/check_in_page.dart';
+import '../../features/settings/presentation/profile_page.dart';
+import '../../features/settings/presentation/settings_page.dart';
 import 'app_routes.dart';
 
 /// Router provider
 final routerProvider = Provider<GoRouter>((ref) {
+  final authState = ref.watch(authStateProvider);
+
   return GoRouter(
-    initialLocation: AppRoutes.home,
+    initialLocation:
+        authState.isAuthenticated ? AppRoutes.home : AppRoutes.login,
     debugLogDiagnostics: true,
+    redirect: (context, state) {
+      final isAuthenticated = authState.isAuthenticated;
+      final isAuthRoute = state.uri.path == AppRoutes.login ||
+          state.uri.path == AppRoutes.register ||
+          state.uri.path == AppRoutes.forgotPassword;
+      final isHomeRoute = state.uri.path == AppRoutes.home ||
+          state.uri.path == AppRoutes.goals ||
+          state.uri.path == AppRoutes.reports ||
+          state.uri.path == AppRoutes.settings;
+
+      // Eğer authenticated ise ve auth sayfalarına gitmeye çalışıyorsa home'a yönlendir
+      if (isAuthenticated && isAuthRoute) {
+        return AppRoutes.home;
+      }
+
+      // Eğer authenticated değilse ve home sayfalarına gitmeye çalışıyorsa login'e yönlendir
+      if (!isAuthenticated && isHomeRoute) {
+        return AppRoutes.login;
+      }
+
+      return null; // Yönlendirme yok
+    },
     routes: [
       // Splash Screen (şimdilik login'e yönlendiriyor)
       GoRoute(

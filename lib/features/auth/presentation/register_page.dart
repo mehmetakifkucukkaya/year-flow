@@ -35,27 +35,61 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
       return;
     }
 
+    if (!mounted) return;
+
     await ref.read(authStateProvider.notifier).signUpWithEmail(
           email: _emailController.text.trim(),
           password: _passwordController.text,
           confirmPassword: _confirmPasswordController.text,
         );
 
+    if (!mounted) return;
+
     final authState = ref.read(authStateProvider);
 
     if (authState.errorMessage != null) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(authState.errorMessage!)),
-        );
-      }
+      AppSnackbar.showError(context, message: authState.errorMessage!);
     } else if (authState.isAuthenticated) {
+      context.go(AppRoutes.home);
+    }
+  }
+
+  Future<void> _handleGoogleSignIn() async {
+    if (!mounted) return;
+
+    await ref.read(authStateProvider.notifier).signInWithGoogle();
+
+    if (!mounted) return;
+
+    final authState = ref.read(authStateProvider);
+
+    if (authState.errorMessage != null) {
+      AppSnackbar.showError(context, message: authState.errorMessage!);
+    } else if (authState.isAuthenticated) {
+      // Kullanıcıya bilgi mesajı göster
+      final user = authState.currentUser;
+      if (user != null) {
+        if (user.isNewUser) {
+          AppSnackbar.showSuccess(
+            context,
+            message: 'Hoş geldiniz! 🎉',
+            duration: const Duration(seconds: 2),
+          );
+        } else {
+          AppSnackbar.showInfo(
+            context,
+            message: 'Giriş başarılı! Hoş geldiniz 👋',
+            duration: const Duration(seconds: 2),
+          );
+        }
+      }
+      // Kısa bir gecikme sonrası home'a yönlendir (mesajın görünmesi için)
+      await Future.delayed(const Duration(milliseconds: 500));
       if (mounted) {
         context.go(AppRoutes.home);
       }
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -185,9 +219,61 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                 AppSpacers.lg,
                 // Register button
                 AppButton(
-                  onPressed: authState.isLoading ? null : _handleRegister,
-                  isLoading: authState.isLoading,
+                  onPressed: (authState.isEmailLoading ||
+                          authState.isGoogleLoading)
+                      ? null
+                      : _handleRegister,
+                  isLoading: authState.isEmailLoading,
                   child: const Text('Kayıt Ol'),
+                ),
+                AppSpacers.lg,
+                // Separator
+                Row(
+                  children: [
+                    Expanded(
+                      child: Divider(
+                        color: AppColors.gray200,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      'veya',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: AppColors.gray500,
+                          ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Divider(
+                        color: AppColors.gray200,
+                      ),
+                    ),
+                  ],
+                ),
+                AppSpacers.lg,
+                // Google Sign-Up (Sign-In) button
+                AppButton(
+                  onPressed: (authState.isEmailLoading ||
+                          authState.isGoogleLoading)
+                      ? null
+                      : _handleGoogleSignIn,
+                  variant: AppButtonVariant.outlined,
+                  isLoading: authState.isGoogleLoading,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
+                    children: const [
+                      Icon(
+                        Icons.login,
+                        size: 18,
+                        color: AppColors.gray800,
+                      ),
+                      SizedBox(width: 8),
+                      Text(
+                        'Google ile kayıt ol / devam et',
+                      ),
+                    ],
+                  ),
                 ),
                 AppSpacers.xl,
                 // Login link

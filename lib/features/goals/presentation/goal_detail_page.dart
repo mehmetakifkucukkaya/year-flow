@@ -8,6 +8,7 @@ import '../../../core/router/app_routes.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_text_styles.dart';
+import '../../../core/widgets/index.dart';
 
 class GoalDetailPage extends ConsumerStatefulWidget {
   const GoalDetailPage({
@@ -99,15 +100,9 @@ class _GoalDetailPageState extends ConsumerState<GoalDetailPage>
       ];
     });
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          'Check-in kaydedildi',
-          style: AppTextStyles.bodyMedium.copyWith(
-            color: AppColors.white,
-          ),
-        ),
-      ),
+    AppSnackbar.showSuccess(
+      context,
+      message: 'Check-in kaydedildi',
     );
   }
 }

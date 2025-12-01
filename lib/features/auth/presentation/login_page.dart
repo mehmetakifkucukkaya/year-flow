@@ -32,26 +32,60 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       return;
     }
 
+    if (!mounted) return;
+
     await ref.read(authStateProvider.notifier).signInWithEmail(
           email: _emailController.text.trim(),
           password: _passwordController.text,
         );
 
+    if (!mounted) return;
+
     final authState = ref.read(authStateProvider);
 
     if (authState.errorMessage != null) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(authState.errorMessage!)),
-        );
-      }
+      AppSnackbar.showError(context, message: authState.errorMessage!);
     } else if (authState.isAuthenticated) {
+      context.go(AppRoutes.home);
+    }
+  }
+
+  Future<void> _handleGoogleSignIn() async {
+    if (!mounted) return;
+
+    await ref.read(authStateProvider.notifier).signInWithGoogle();
+
+    if (!mounted) return;
+
+    final authState = ref.read(authStateProvider);
+
+    if (authState.errorMessage != null) {
+      AppSnackbar.showError(context, message: authState.errorMessage!);
+    } else if (authState.isAuthenticated) {
+      // Kullanıcıya bilgi mesajı göster
+      final user = authState.currentUser;
+      if (user != null) {
+        if (user.isNewUser) {
+          AppSnackbar.showSuccess(
+            context,
+            message: 'Hoş geldiniz! 🎉',
+            duration: const Duration(seconds: 2),
+          );
+        } else {
+          AppSnackbar.showInfo(
+            context,
+            message: 'Giriş başarılı! Hoş geldiniz 👋',
+            duration: const Duration(seconds: 2),
+          );
+        }
+      }
+      // Kısa bir gecikme sonrası home'a yönlendir (mesajın görünmesi için)
+      await Future.delayed(const Duration(milliseconds: 500));
       if (mounted) {
         context.go(AppRoutes.home);
       }
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -79,7 +113,10 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       const SizedBox(height: 16),
                       Text(
                         'YearFlow',
-                        style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+                        style: Theme.of(context)
+                            .textTheme
+                            .headlineLarge
+                            ?.copyWith(
                               color: AppColors.gray900,
                               fontWeight: FontWeight.bold,
                             ),
@@ -91,10 +128,11 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                 // Başlık
                 Text(
                   'Tekrar Hoş Geldin!',
-                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                        color: AppColors.gray900,
-                        fontWeight: FontWeight.bold,
-                      ),
+                  style:
+                      Theme.of(context).textTheme.headlineMedium?.copyWith(
+                            color: AppColors.gray900,
+                            fontWeight: FontWeight.bold,
+                          ),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 32),
@@ -158,9 +196,62 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                 AppSpacers.lg,
                 // Login button
                 AppButton(
-                  onPressed: authState.isLoading ? null : _handleLogin,
-                  isLoading: authState.isLoading,
+                  onPressed: (authState.isEmailLoading ||
+                          authState.isGoogleLoading)
+                      ? null
+                      : _handleLogin,
+                  isLoading: authState.isEmailLoading,
                   child: const Text('Giriş Yap'),
+                ),
+                AppSpacers.lg,
+                // Separator
+                Row(
+                  children: [
+                    const Expanded(
+                      child: Divider(
+                        color: AppColors.gray200,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      'veya',
+                      style:
+                          Theme.of(context).textTheme.bodySmall?.copyWith(
+                                color: AppColors.gray500,
+                              ),
+                    ),
+                    const SizedBox(width: 8),
+                    const Expanded(
+                      child: Divider(
+                        color: AppColors.gray200,
+                      ),
+                    ),
+                  ],
+                ),
+                AppSpacers.lg,
+                // Google Sign-In button
+                AppButton(
+                  onPressed: (authState.isEmailLoading ||
+                          authState.isGoogleLoading)
+                      ? null
+                      : _handleGoogleSignIn,
+                  variant: AppButtonVariant.outlined,
+                  isLoading: authState.isGoogleLoading,
+                  child: const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.login,
+                        size: 18,
+                        color: AppColors.gray800,
+                      ),
+                      SizedBox(width: 8),
+                      Text(
+                        'Google ile devam et',
+                      ),
+                    ],
+                  ),
                 ),
                 AppSpacers.xl,
                 // Register link
@@ -184,4 +275,3 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     );
   }
 }
-
