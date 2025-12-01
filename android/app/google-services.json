@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "111770215758",
+    "project_id": "yearflow-app",
+    "storage_bucket": "yearflow-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:111770215758:android:2d13c4b4698d47d2a72a1f",
+        "android_client_info": {
+          "package_name": "com.yearflow.year_flow"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBqjybLKj5WOw7rhKsI0BBZB5nLo9PU66o"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
