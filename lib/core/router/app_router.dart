@@ -11,6 +11,7 @@ import '../../features/goals/presentation/goal_detail_page.dart';
 import '../../features/goals/presentation/goals_page.dart';
 import '../../features/home/presentation/home_page.dart';
 import '../../features/onboarding/presentation/onboarding_page.dart';
+import '../../features/reports/presentation/reports_page.dart';
 import 'app_routes.dart';
 
 /// Router provider
@@ -72,8 +73,7 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: AppRoutes.reports,
             name: 'reports',
-            builder: (context, state) =>
-                const _PlaceholderScreen(title: 'Raporlar'),
+            builder: (context, state) => const ReportsPage(),
           ),
           GoRoute(
             path: AppRoutes.settings,
