@@ -22,6 +22,7 @@ class AppRoutes {
   // Goals
   static const String goalDetail = '/goal/:id';
   static const String goalCreate = '/goal/create';
+  static const String goalEdit = '/goal/:id/edit';
 
   // Check-in
   static const String checkIn = '/goal/:goalId/check-in';
@@ -35,6 +36,9 @@ class AppRoutes {
 
   /// Goal detail path oluştur
   static String goalDetailPath(String goalId) => '/goal/$goalId';
+
+  /// Goal edit path oluştur
+  static String goalEditPath(String goalId) => '/goal/$goalId/edit';
 
   /// Check-in path oluştur
   static String checkInPath(String goalId) => '/goal/$goalId/check-in';
