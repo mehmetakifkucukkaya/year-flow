@@ -2,10 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/constants/app_constants.dart';
 import '../../../core/router/app_routes.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_text_styles.dart';
+import '../../../shared/models/goal.dart';
+import '../../../shared/providers/goal_providers.dart';
 
 class GoalsPage extends ConsumerWidget {
   const GoalsPage({super.key});
@@ -15,64 +18,79 @@ class GoalsPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final goals = _mockGoals;
+    final goalsAsync = ref.watch(goalsStreamProvider);
 
     return Container(
       color: _premiumBackground,
       child: Stack(
         children: [
-          CustomScrollView(
-            slivers: [
-              // SafeArea for status bar
-              SliverSafeArea(
-                bottom: false,
-                sliver: SliverToBoxAdapter(
-                  child: _TopAppBar(),
+          goalsAsync.when(
+            loading: () => const Center(
+              child: CircularProgressIndicator(),
+            ),
+            error: (error, _) => Center(
+              child: Text(
+                'Hedefler yüklenirken bir hata oluştu.',
+                style: AppTextStyles.bodyMedium.copyWith(
+                  color: AppColors.error,
                 ),
               ),
-
-              // Filter/Sort Buttons
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.only(
-                    left: AppSpacing.md,
-                    right: AppSpacing.md,
-                    top: AppSpacing.md,
-                    bottom: AppSpacing.sm,
+            ),
+            data: (goals) {
+              return CustomScrollView(
+                slivers: [
+                  // SafeArea for status bar
+                  SliverSafeArea(
+                    bottom: false,
+                    sliver: SliverToBoxAdapter(
+                      child: _TopAppBar(),
+                    ),
                   ),
-                  child: _FilterSortButtons(),
-                ),
-              ),
 
-              // Goals List
-              if (goals.isEmpty)
-                SliverFillRemaining(
-                  hasScrollBody: false,
-                  child: _EmptyState(),
-                )
-              else
-                SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) {
-                      final goal = goals[index];
-                      return Padding(
-                        padding: const EdgeInsets.only(
-                          left: AppSpacing.md,
-                          right: AppSpacing.md,
-                          bottom: AppSpacing.md,
-                        ),
-                        child: _GoalCard(goal: goal),
-                      );
-                    },
-                    childCount: goals.length,
+                  // Filter/Sort Buttons
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.only(
+                        left: AppSpacing.md,
+                        right: AppSpacing.md,
+                        top: AppSpacing.md,
+                        bottom: AppSpacing.sm,
+                      ),
+                      child: _FilterSortButtons(),
+                    ),
                   ),
-                ),
 
-              // Bottom padding for FAB and navigation bar
-              const SliverToBoxAdapter(
-                child: SizedBox(height: 100),
-              ),
-            ],
+                  // Goals List
+                  if (goals.isEmpty)
+                    SliverFillRemaining(
+                      hasScrollBody: false,
+                      child: _EmptyState(),
+                    )
+                  else
+                    SliverList(
+                      delegate: SliverChildBuilderDelegate(
+                        (context, index) {
+                          final goal = goals[index];
+                          return Padding(
+                            padding: const EdgeInsets.only(
+                              left: AppSpacing.md,
+                              right: AppSpacing.md,
+                              bottom: AppSpacing.md,
+                            ),
+                            child: _GoalCard(goal: goal),
+                          );
+                        },
+                        childCount: goals.length,
+                      ),
+                    ),
+
+                  // Bottom padding for FAB and navigation bar
+                  const SliverToBoxAdapter(
+                    child: SizedBox(height: 100),
+                  ),
+                ],
+              );
+            },
           ),
           // Floating Action Button - Premium styling
           Positioned(
@@ -94,7 +112,8 @@ class GoalsPage extends ConsumerWidget {
                 onPressed: () {
                   context.push(AppRoutes.goalCreate);
                 },
-                backgroundColor: AppColors.primary.withOpacity(0.9), // Softer pastel blue
+                backgroundColor: AppColors.primary
+                    .withOpacity(0.9), // Softer pastel blue
                 elevation: 0,
                 child: const Icon(
                   Icons.add,
@@ -131,7 +150,8 @@ class _TopAppBar extends StatelessWidget {
             ),
           ),
           IconButton(
-            icon: const Icon(Icons.notifications_none), // More minimal icon
+            icon:
+                const Icon(Icons.notifications_none), // More minimal icon
             onPressed: () {
               // TODO: Navigate to notifications
             },
@@ -234,65 +254,24 @@ class _ActionButton extends StatelessWidget {
   }
 }
 
-/// Goal Card Model
-class _GoalData {
-  const _GoalData({
-    required this.title,
-    required this.category,
-    required this.progress,
-    required this.lastCheckIn,
-    required this.categoryColor,
-    required this.categoryBackgroundColor,
-  });
-
-  final String title;
-  final String category;
-  final double progress;
-  final String lastCheckIn;
-  final Color categoryColor;
-  final Color categoryBackgroundColor;
-}
-
-/// Mock goals data
-final _mockGoals = [
-  const _GoalData(
-    title: 'Haftada 3 Gün Spor Yap',
-    category: 'Sağlık',
-    progress: 75,
-    lastCheckIn: '3 gün önce',
-    categoryColor: Color(0xFF4CAF50), // Green
-    categoryBackgroundColor: Color(0xFFE8F5E9), // Light green
-  ),
-  const _GoalData(
-    title: 'Aylık 1 Kitap Oku',
-    category: 'Kişisel Gelişim',
-    progress: 50,
-    lastCheckIn: '1 hafta önce',
-    categoryColor: Color(0xFF9C27B0), // Purple
-    categoryBackgroundColor: Color(0xFFF3E5F5), // Light purple
-  ),
-  const _GoalData(
-    title: 'Yeni Bir Programlama Dili Öğren',
-    category: 'Kariyer',
-    progress: 20,
-    lastCheckIn: 'dün',
-    categoryColor: Color(0xFF2196F3), // Blue
-    categoryBackgroundColor: Color(0xFFE3F2FD), // Light blue
-  ),
-];
-
 /// Goal Card Widget - Premium styling
 class _GoalCard extends StatelessWidget {
   const _GoalCard({required this.goal});
 
-  final _GoalData goal;
+  final Goal goal;
 
   @override
   Widget build(BuildContext context) {
+    final baseColor = _categoryColor(goal.category);
+    final backgroundColor = baseColor.withOpacity(0.12);
+    const lastCheckInLabel =
+        'Son check-in: yakında'; // TODO: derive from check-ins
+
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(18), // Softer corner radius (18px)
+        borderRadius:
+            BorderRadius.circular(18), // Softer corner radius (18px)
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.06),
@@ -306,7 +285,7 @@ class _GoalCard extends StatelessWidget {
         color: Colors.transparent,
         child: InkWell(
           onTap: () {
-            context.push(AppRoutes.goalDetailPath('1'));
+            context.push(AppRoutes.goalDetailPath(goal.id));
           },
           borderRadius: BorderRadius.circular(18),
           child: Padding(
@@ -334,13 +313,14 @@ class _GoalCard extends StatelessWidget {
                         vertical: 5,
                       ),
                       decoration: BoxDecoration(
-                        color: goal.categoryBackgroundColor,
-                        borderRadius: BorderRadius.circular(16), // Softer pill shape
+                        color: backgroundColor,
+                        borderRadius:
+                            BorderRadius.circular(16), // Softer pill shape
                       ),
                       child: Text(
-                        goal.category,
+                        goal.category.label,
                         style: AppTextStyles.labelSmall.copyWith(
-                          color: goal.categoryColor,
+                          color: baseColor,
                           fontWeight: FontWeight.w500,
                           fontSize: 11, // Smaller font
                         ),
@@ -354,7 +334,7 @@ class _GoalCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Text(
-                      'Son Check-in: ${goal.lastCheckIn}',
+                      lastCheckInLabel,
                       style: AppTextStyles.bodySmall.copyWith(
                         color: const Color(0xFF6B7280), // Softer gray
                         fontWeight: FontWeight.w500, // Medium weight
@@ -364,7 +344,8 @@ class _GoalCard extends StatelessWidget {
                     Text(
                       '${goal.progress.toInt()}%',
                       style: AppTextStyles.bodyMedium.copyWith(
-                        color: AppColors.primary.withOpacity(0.9), // Softer blue
+                        color: AppColors.primary
+                            .withOpacity(0.9), // Softer blue
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -379,7 +360,8 @@ class _GoalCard extends StatelessWidget {
                     minHeight: 10,
                     backgroundColor: AppColors.gray200,
                     valueColor: AlwaysStoppedAnimation<Color>(
-                      AppColors.primary.withOpacity(0.85), // Softer modern blue
+                      AppColors.primary
+                          .withOpacity(0.85), // Softer modern blue
                     ),
                   ),
                 ),
@@ -392,6 +374,25 @@ class _GoalCard extends StatelessWidget {
   }
 }
 
+Color _categoryColor(GoalCategory category) {
+  switch (category) {
+    case GoalCategory.health:
+      return const Color(0xFF4CAF50);
+    case GoalCategory.finance:
+      return const Color(0xFF009688);
+    case GoalCategory.career:
+      return const Color(0xFF2196F3);
+    case GoalCategory.relationship:
+      return const Color(0xFFE91E63);
+    case GoalCategory.learning:
+      return const Color(0xFF9C27B0);
+    case GoalCategory.habit:
+      return const Color(0xFFFF9800);
+    case GoalCategory.personalGrowth:
+      return const Color(0xFF3B82F6);
+  }
+}
+
 /// Empty State
 class _EmptyState extends StatelessWidget {
   @override
@@ -401,7 +402,7 @@ class _EmptyState extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
+          const Icon(
             Icons.add_circle_outline,
             size: 64,
             color: AppColors.gray400,
