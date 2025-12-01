@@ -19,6 +19,9 @@ class AppRoutes {
   static const String reports = '/reports';
   static const String settings = '/settings';
 
+  // Settings
+  static const String profile = '/settings/profile';
+
   // Goals
   static const String goalDetail = '/goal/:id';
   static const String goalCreate = '/goal/create';

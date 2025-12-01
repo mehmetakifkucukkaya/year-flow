@@ -12,6 +12,8 @@ import '../../features/goals/presentation/goals_page.dart';
 import '../../features/home/presentation/home_page.dart';
 import '../../features/onboarding/presentation/onboarding_page.dart';
 import '../../features/reports/presentation/reports_page.dart';
+import '../../features/settings/presentation/settings_page.dart';
+import '../../features/settings/presentation/profile_page.dart';
 import 'app_routes.dart';
 
 /// Router provider
@@ -78,8 +80,7 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: AppRoutes.settings,
             name: 'settings',
-            builder: (context, state) =>
-                const _PlaceholderScreen(title: 'Ayarlar'),
+            builder: (context, state) => const SettingsPage(),
           ),
         ],
       ),
@@ -135,6 +136,13 @@ final routerProvider = Provider<GoRouter>((ref) {
         name: 'premium',
         builder: (context, state) =>
             const _PlaceholderScreen(title: "Premium'a Geç"),
+      ),
+
+      // Profile
+      GoRoute(
+        path: AppRoutes.profile,
+        name: 'profile',
+        builder: (context, state) => const ProfilePage(),
       ),
     ],
     errorBuilder: (context, state) => Scaffold(
