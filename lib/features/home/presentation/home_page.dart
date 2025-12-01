@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../core/router/app_routes.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_radius.dart';
 import '../../../core/theme/app_spacing.dart';
@@ -308,7 +310,8 @@ class _DailyQuestionCard extends StatelessWidget {
               width: double.infinity,
               child: OutlinedButton(
                 onPressed: () {
-                  // TODO: Navigate to check-in
+                  // GoalsPage'e yönlendir - kullanıcı oradan bir goal seçip check-in yapabilir
+                  context.push(AppRoutes.goals);
                 },
                 style: OutlinedButton.styleFrom(
                   backgroundColor: AppColors.primary.withOpacity(0.1),

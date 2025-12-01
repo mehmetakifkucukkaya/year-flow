@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 
 import '../../../core/constants/app_constants.dart';
 import '../../../core/router/app_routes.dart';
@@ -278,7 +279,16 @@ class _TopAppBar extends StatelessWidget {
             icon:
                 const Icon(Icons.notifications_none), // More minimal icon
             onPressed: () {
-              // TODO: Navigate to notifications
+              // Şimdilik basit bir snackbar göster
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: const Text('Bildirimler yakında eklenecek'),
+                  behavior: SnackBarBehavior.floating,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+              );
             },
             iconSize: 22, // Reduced size
             padding: EdgeInsets.zero,
@@ -508,17 +518,47 @@ class _ActionButton extends StatelessWidget {
 }
 
 /// Goal Card Widget - Premium styling
-class _GoalCard extends StatelessWidget {
+class _GoalCard extends ConsumerWidget {
   const _GoalCard({required this.goal});
 
   final Goal goal;
 
+  String _formatLastCheckIn(DateTime? date) {
+    if (date == null) return 'Henüz check-in yok';
+
+    final now = DateTime.now();
+    final difference = now.difference(date);
+
+    if (difference.inDays == 0) {
+      return 'Bugün';
+    } else if (difference.inDays == 1) {
+      return 'Dün';
+    } else if (difference.inDays < 7) {
+      return '${difference.inDays} gün önce';
+    } else if (difference.inDays < 30) {
+      final weeks = (difference.inDays / 7).floor();
+      return '$weeks hafta önce';
+    } else {
+      return DateFormat('d MMMM', 'tr_TR').format(date);
+    }
+  }
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final baseColor = _categoryColor(goal.category);
     final backgroundColor = baseColor.withOpacity(0.12);
-    const lastCheckInLabel =
-        'Son check-in: yakında'; // TODO: derive from check-ins
+
+    final checkInsAsync = ref.watch(checkInsStreamProvider(goal.id));
+    final lastCheckInLabel = checkInsAsync.when(
+      loading: () => 'Yükleniyor...',
+      error: (_, __) => 'Henüz check-in yok',
+      data: (checkIns) {
+        if (checkIns.isEmpty) return 'Henüz check-in yok';
+        final sorted = checkIns
+          ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+        return 'Son check-in: ${_formatLastCheckIn(sorted.first.createdAt)}';
+      },
+    );
 
     return Container(
       decoration: BoxDecoration(
