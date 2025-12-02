@@ -615,7 +615,7 @@ class _GoalCard extends ConsumerWidget {
                         style: AppTextStyles.labelSmall.copyWith(
                           color: baseColor,
                           fontWeight: FontWeight.w500,
-                          fontSize: 11, // Smaller font
+                          fontSize: 12, // Slightly larger font
                         ),
                       ),
                     ),

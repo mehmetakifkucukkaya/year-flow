@@ -99,11 +99,14 @@ class HomePage extends ConsumerWidget {
                 );
               }
 
+              // Ana sayfada sadece son eklenen birkaç hedefi göster
+              final displayGoals = goals.take(3).toList();
+
               return SliverList(
                 delegate: SliverChildBuilderDelegate(
                   (context, index) {
-                    if (index >= goals.length) return null;
-                    final goal = goals[index];
+                    if (index >= displayGoals.length) return null;
+                    final goal = displayGoals[index];
                     return Padding(
                       padding: const EdgeInsets.only(
                         left: AppSpacing.md,
@@ -113,7 +116,7 @@ class HomePage extends ConsumerWidget {
                       child: _GoalCard(goal: goal),
                     );
                   },
-                  childCount: goals.length,
+                  childCount: displayGoals.length,
                 ),
               );
             },
@@ -265,6 +268,7 @@ class _GoalCard extends StatelessWidget {
                               style: AppTextStyles.labelMedium.copyWith(
                                 color: _categoryColor,
                                 fontWeight: FontWeight.w600,
+                                fontSize: 14,
                               ),
                             ),
                           ),
@@ -397,7 +401,8 @@ class _UpcomingCheckInsSection extends ConsumerWidget {
   String _formatRemaining(DateTime targetDate) {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
-    final targetDay = DateTime(targetDate.year, targetDate.month, targetDate.day);
+    final targetDay =
+        DateTime(targetDate.year, targetDate.month, targetDate.day);
     final diff = targetDay.difference(today).inDays;
 
     if (diff < 0) {
@@ -507,7 +512,8 @@ class _UpcomingCheckInsSection extends ConsumerWidget {
                   const SizedBox(height: AppSpacing.md),
                   ...upcomingGoals.map((goal) {
                     return Padding(
-                      padding: const EdgeInsets.only(bottom: AppSpacing.xs),
+                      padding:
+                          const EdgeInsets.only(bottom: AppSpacing.xs),
                       child: Material(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(14),
@@ -530,8 +536,8 @@ class _UpcomingCheckInsSection extends ConsumerWidget {
                                     children: [
                                       Text(
                                         goal.title,
-                                        style:
-                                            AppTextStyles.bodyMedium.copyWith(
+                                        style: AppTextStyles.bodyMedium
+                                            .copyWith(
                                           fontWeight: FontWeight.w600,
                                         ),
                                         maxLines: 1,
@@ -540,8 +546,8 @@ class _UpcomingCheckInsSection extends ConsumerWidget {
                                       const SizedBox(height: 2),
                                       Text(
                                         _formatRemaining(goal.targetDate!),
-                                        style:
-                                            AppTextStyles.bodySmall.copyWith(
+                                        style: AppTextStyles.bodySmall
+                                            .copyWith(
                                           color: AppColors.gray600,
                                         ),
                                       ),
@@ -555,9 +561,10 @@ class _UpcomingCheckInsSection extends ConsumerWidget {
                                     vertical: 6,
                                   ),
                                   decoration: BoxDecoration(
-                                    color:
-                                        AppColors.primary.withOpacity(0.08),
-                                    borderRadius: BorderRadius.circular(999),
+                                    color: AppColors.primary
+                                        .withOpacity(0.08),
+                                    borderRadius:
+                                        BorderRadius.circular(999),
                                   ),
                                   child: Text(
                                     'Check-in Yap',
@@ -675,7 +682,8 @@ class _DailyQuestionCard extends ConsumerWidget {
                               padding: const EdgeInsets.all(AppSpacing.md),
                               child: Column(
                                 mainAxisSize: MainAxisSize.min,
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                                crossAxisAlignment:
+                                    CrossAxisAlignment.start,
                                 children: [
                                   Text(
                                     'Hangi hedef için check-in yapmak istersin?',
@@ -727,9 +735,11 @@ class _DailyQuestionCard extends ConsumerWidget {
                                             color: AppColors.gray500,
                                           ),
                                           onTap: () {
-                                            Navigator.of(sheetContext).pop();
+                                            Navigator.of(sheetContext)
+                                                .pop();
                                             context.push(
-                                              AppRoutes.checkInPath(goal.id),
+                                              AppRoutes.checkInPath(
+                                                  goal.id),
                                             );
                                           },
                                         );

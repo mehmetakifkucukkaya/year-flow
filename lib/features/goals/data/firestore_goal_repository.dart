@@ -96,6 +96,7 @@ class FirestoreGoalRepository implements GoalRepository {
       category: goal.category,
       createdAt: goal.createdAt,
       targetDate: goal.targetDate,
+      description: goal.description,
       motivation: goal.motivation,
       subGoals: goal.subGoals,
       progress: goal.progress,
@@ -162,13 +163,6 @@ class FirestoreGoalRepository implements GoalRepository {
 
     await docRef.set(_checkInToFirestore(checkInWithId));
 
-    // Progress'i güncelle
-    final goal = await fetchGoalById(checkIn.goalId);
-    if (goal != null) {
-      final newProgress = (goal.progress + checkIn.progressDelta).clamp(0, 100);
-      await updateGoal(goal.copyWith(progress: newProgress));
-    }
-
     return checkInWithId;
   }
 
@@ -231,6 +225,7 @@ class FirestoreGoalRepository implements GoalRepository {
       'targetDate': goal.targetDate != null
           ? Timestamp.fromDate(goal.targetDate!)
           : null,
+      'description': goal.description,
       'motivation': goal.motivation,
       'subGoals': goal.subGoals.map((sg) => _subGoalToMap(sg)).toList(),
       'progress': goal.progress,
@@ -251,6 +246,7 @@ class FirestoreGoalRepository implements GoalRepository {
       targetDate: data['targetDate'] != null
           ? (data['targetDate'] as Timestamp).toDate()
           : null,
+      description: data['description'] as String? ?? data['motivation'] as String?,
       motivation: data['motivation'] as String?,
       subGoals: (data['subGoals'] as List<dynamic>?)
               ?.map((sg) => _subGoalFromMap(sg as Map<String, dynamic>))

@@ -9,6 +9,7 @@ import '../../../core/theme/app_radius.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/index.dart';
+import '../../../shared/models/goal.dart';
 import '../../../shared/providers/goal_providers.dart';
 import 'widgets/ai_optimize_bottom_sheet.dart';
 
@@ -31,6 +32,7 @@ class _GoalEditPageState extends ConsumerState<GoalEditPage> {
 
   GoalCategory? _selectedCategory;
   DateTime? _completionDate;
+  List<SubGoal> _subGoals = const [];
 
   // Premium background color
   static const Color _premiumBackground = Color(0xFFF9FAFB);
@@ -55,9 +57,10 @@ class _GoalEditPageState extends ConsumerState<GoalEditPage> {
       data: (goal) {
         if (goal != null && mounted) {
           _titleController.text = goal.title;
-          _reasonController.text = goal.motivation ?? '';
+          _reasonController.text = goal.description ?? '';
           _selectedCategory = goal.category;
           _completionDate = goal.targetDate;
+          _subGoals = goal.subGoals;
           setState(() {});
         }
       },
@@ -121,9 +124,10 @@ class _GoalEditPageState extends ConsumerState<GoalEditPage> {
         title: _titleController.text.trim(),
         category: _selectedCategory!,
         targetDate: _completionDate,
-        motivation: _reasonController.text.trim().isEmpty
+        description: _reasonController.text.trim().isEmpty
             ? null
             : _reasonController.text.trim(),
+        subGoals: _subGoals,
       );
 
       await repository.updateGoal(updatedGoal);
@@ -174,9 +178,14 @@ class _GoalEditPageState extends ConsumerState<GoalEditPage> {
         onApply: (result) {
           // Apply AI optimization to form
           setState(() {
+            // Kısa başlık
             _titleController.text = result.optimizedTitle;
-            // Update sub-goals if needed (for future use)
-            // For now, we just update the title
+            // Alt görevleri güncelle
+            _subGoals = result.subGoals;
+            // Detaylı SMART açıklamasını motivasyon alanına öneri olarak doldur
+            if (_reasonController.text.trim().isEmpty) {
+              _reasonController.text = result.explanation;
+            }
           });
 
           AppSnackbar.showSuccess(

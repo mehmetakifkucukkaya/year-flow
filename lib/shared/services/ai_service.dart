@@ -168,6 +168,7 @@ class AIService {
       'title': goal.title,
       'category': goal.category.name,
       'createdAt': goal.createdAt.toIso8601String(),
+      if (goal.description != null) 'description': goal.description,
       if (goal.targetDate != null)
         'targetDate': goal.targetDate!.toIso8601String(),
       if (goal.motivation != null) 'motivation': goal.motivation,

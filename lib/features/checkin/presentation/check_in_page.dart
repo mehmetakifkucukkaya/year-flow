@@ -55,8 +55,8 @@ class _CheckInPageState extends ConsumerState<CheckInPage> {
     try {
       final repository = ref.read(goalRepositoryProvider);
 
-      // Progress delta hesapla (score'a göre basit bir formül)
-      // Score 1-10 arası, progress delta -5 ile +10 arası olabilir
+      // Progress delta hesapla (ileride kullanmak üzere kaydediyoruz
+      // ama şimdilik hedef yüzdesini etkilemiyor)
       final progressDelta = ((_score - 5) * 2).round().clamp(-5, 10);
 
       // Note: progress ve challenge text'lerini birleştir

@@ -11,6 +11,7 @@ class Goal {
     required this.category,
     required this.createdAt,
     this.targetDate,
+    this.description,
     this.motivation,
     this.subGoals = const [],
     this.progress = 0,
@@ -23,6 +24,7 @@ class Goal {
   final GoalCategory category;
   final DateTime createdAt;
   final DateTime? targetDate;
+  final String? description;
   final String? motivation;
   final List<SubGoal> subGoals;
   final int progress; // 0–100
@@ -35,6 +37,7 @@ class Goal {
     GoalCategory? category,
     DateTime? createdAt,
     DateTime? targetDate,
+    String? description,
     String? motivation,
     List<SubGoal>? subGoals,
     int? progress,
@@ -47,6 +50,7 @@ class Goal {
       category: category ?? this.category,
       createdAt: createdAt ?? this.createdAt,
       targetDate: targetDate ?? this.targetDate,
+      description: description ?? this.description,
       motivation: motivation ?? this.motivation,
       subGoals: subGoals ?? this.subGoals,
       progress: progress ?? this.progress,

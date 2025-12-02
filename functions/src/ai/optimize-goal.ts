@@ -36,7 +36,7 @@ Kurallar:
 
 JSON ŞEMASI (bire bir bu alanları kullan):
 {
-  "optimizedTitle": "SMART formatında, net ve motive edici hedef başlığı (Türkçe)",
+  "optimizedTitle": "Kısa, net ve motive edici hedef adı (Türkçe, en fazla 5–8 kelime; örn. 'Düzenli yürüyüş yapmak', 'Düzenli meditasyon alışkanlığı kazanmak')",
   "subGoals": [
     {
       "id": "benzersiz-bir-id",
@@ -45,11 +45,12 @@ JSON ŞEMASI (bire bir bu alanları kullan):
       "dueDate": "YYYY-MM-DD veya null"
     }
   ],
-  "explanation": "Hedefin nasıl optimize edildiğini ve neden daha güçlü olduğunu açıklayan 2-3 cümlelik kısa özet (Türkçe)."
+  "explanation": "Hedefin tam SMART versiyonu. Kullanıcının hedef detay/ açıklama alanına yazılabilecek, 1–2 cümlelik net bir metin (örn: 'Önümüzdeki 3 ay boyunca haftada 3 gün, 30 dakika tempolu yürüyüş yaparak genel sağlığımı iyileştirmek.')."
 }
 
 ÖNEMLİ:
-- optimizedTitle SMART kriterlerine tam uymalı (zaman sınırı ve ölçülebilirlik mutlaka olsun).
+- optimizedTitle her zaman KISA bir isim olmalı; mümkünse 3–4 kelime, en fazla 5 kelime kullan. Zamanı, miktarı ve ölçülebilirliği explanation alanına bırak.
+- explanation alanı, hedefin SMART detayını içerir ve uzun cümle olabilir.
 - 3 ile 5 arasında alt görev üret.
 - Alt görevler birbirini tamamlayan, adım adım ilerleme sağlayan bir yol haritası gibi olmalı.
 - Sadece yukarıdaki JSON şemasına uygun, parse edilebilir bir JSON döndür.`;

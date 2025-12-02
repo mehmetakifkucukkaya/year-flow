@@ -68,11 +68,8 @@ class _GoalDetailPageState extends ConsumerState<GoalDetailPage>
       for (final checkIn in checkIns) {
         final checkInDate =
             DateFormat('d MMMM', 'tr_TR').format(checkIn.createdAt);
-        final progressText = checkIn.progressDelta > 0
-            ? '+${checkIn.progressDelta}% İlerleme'
-            : '${checkIn.progressDelta}% İlerleme';
         items.add(_TimelineItem(
-          title: 'Check-in Yapıldı: $progressText',
+          title: 'Check-in Yapıldı: Skor ${checkIn.score}/10',
           date: checkInDate,
           type: _TimelineItemType.checkIn,
           note: checkIn.note,
@@ -123,6 +120,7 @@ class _GoalDetailPageState extends ConsumerState<GoalDetailPage>
                   goal: goal != null
                       ? _GoalDetail(
                           title: goal.title,
+                          description: goal.description,
                           category: goal.category.label,
                           progress: goal.progress.toDouble(),
                           nextCheckIn: _formatNextCheckIn(goal),
@@ -151,6 +149,7 @@ class _GoalDetailPageState extends ConsumerState<GoalDetailPage>
                   goal: goal != null
                       ? _GoalDetail(
                           title: goal.title,
+                          description: goal.description,
                           category: goal.category.label,
                           progress: goal.progress.toDouble(),
                           nextCheckIn: _formatNextCheckIn(goal),
@@ -177,6 +176,7 @@ class _GoalDetailPageState extends ConsumerState<GoalDetailPage>
               final goalDetail = goal != null
                   ? _GoalDetail(
                       title: goal.title,
+                      description: goal.description,
                       category: goal.category.label,
                       progress: goal.progress.toDouble(),
                       nextCheckIn: _formatNextCheckIn(goal),
@@ -222,7 +222,16 @@ class _GoalDetailPageState extends ConsumerState<GoalDetailPage>
                         children: [
                           _TimelineTab(timelineItems: timelineItems),
                           _NotesTab(goalId: goalDetail.goalId),
-                          _SubtasksTab(subtasks: goalDetail.subtasks),
+                          if (goal != null)
+                            _SubtasksTab(
+                              goalId: goalDetail.goalId,
+                              subGoals: goal.subGoals,
+                            )
+                          else
+                            const _SubtasksTab(
+                              goalId: '',
+                              subGoals: [],
+                            ),
                         ],
                       ),
                     ),
@@ -261,7 +270,8 @@ class _GoalDetailPageState extends ConsumerState<GoalDetailPage>
   }
 
   void _handleCheckInCompleted() {
-    // Check-in zaten Firestore'a kaydedildi, stream otomatik güncellenecek
+    // Check-in sonrası hedef detayını tazele
+    ref.invalidate(goalDetailProvider(widget.goalId));
     AppSnackbar.showSuccess(
       context,
       message: 'Check-in kaydedildi! ✅',
@@ -386,35 +396,41 @@ class _PremiumHeaderSection extends StatelessWidget {
       color: _GoalDetailPageState._premiumBackground,
       padding: const EdgeInsets.symmetric(
         horizontal: AppSpacing.lg,
-        vertical: AppSpacing.lg,
+        vertical: AppSpacing.md,
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Goal Title - Emoji + compact spacing
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Text(
-                '🌍',
-                style: TextStyle(fontSize: 26),
-              ),
-              const SizedBox(width: AppSpacing.xs),
-              Flexible(
-                child: Text(
-                  goal.title,
-                  style: AppTextStyles.headlineLarge.copyWith(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 28,
-                    letterSpacing: -0.6,
-                    height: 1.2,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ),
-            ],
+          // Goal Title - compact spacing
+          Text(
+            goal.title,
+            style: AppTextStyles.headlineLarge.copyWith(
+              fontWeight: FontWeight.bold,
+              fontSize: 22,
+              letterSpacing: -0.6,
+              height: 1.2,
+            ),
+            textAlign: TextAlign.center,
+            maxLines: 3,
           ),
-          const SizedBox(height: AppSpacing.md),
+          const SizedBox(height: AppSpacing.sm),
+
+          if (goal.description != null && goal.description!.isNotEmpty) ...[
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+              child: Text(
+                goal.description!,
+                style: AppTextStyles.bodySmall.copyWith(
+                  color: AppColors.gray700,
+                  height: 1.4,
+                ),
+                textAlign: TextAlign.center,
+                maxLines: 3,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            const SizedBox(height: AppSpacing.md),
+          ],
 
           // Category Chip - Softer pastel colors
           Container(
@@ -431,11 +447,11 @@ class _PremiumHeaderSection extends StatelessWidget {
               style: AppTextStyles.labelMedium.copyWith(
                 color: goal.categoryColor,
                 fontWeight: FontWeight.w600,
-                fontSize: 13,
+                fontSize: 14,
               ),
             ),
           ),
-          const SizedBox(height: AppSpacing.xl),
+          const SizedBox(height: AppSpacing.lg),
 
           // Premium Progress Ring - Smaller size
           _PremiumCircularProgress(
@@ -526,7 +542,7 @@ class _PremiumCircularProgress extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const size = 170.0;
+    const size = 150.0;
     return Container(
       width: size,
       height: size,
@@ -716,6 +732,7 @@ class _PremiumTabBar extends StatelessWidget {
 class _GoalDetail {
   const _GoalDetail({
     required this.title,
+    this.description,
     required this.category,
     required this.progress,
     required this.nextCheckIn,
@@ -727,6 +744,7 @@ class _GoalDetail {
   });
 
   final String title;
+  final String? description;
   final String category;
   final double progress;
   final String nextCheckIn;
@@ -748,7 +766,7 @@ class _Note {
   final String date;
 }
 
-/// Subtask Model
+/// Subtask Model (kept for legacy mock data)
 class _Subtask {
   const _Subtask({
     required this.title,
@@ -785,6 +803,8 @@ enum _TimelineItemType {
 /// Mock goal data
 final _mockGoal = _GoalDetail(
   title: 'Yeni Bir Dil Öğren',
+  description:
+      'Önümüzdeki 6 ay boyunca düzenli çalışarak yeni bir dilde temel seviye iletişim kurabilmek.',
   category: 'Kişisel Gelişim',
   progress: 65,
   nextCheckIn: '25 Aralık',
@@ -1167,9 +1187,30 @@ class _NotesTab extends ConsumerWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  Row(
+                    children: [
+                      const Icon(
+                        Icons.info_outline_rounded,
+                        size: 16,
+                        color: AppColors.gray500,
+                      ),
+                      const SizedBox(width: AppSpacing.xs),
+                      Expanded(
+                        child: Text(
+                          'Notu düzenlemek için karta dokun, silmek için sağdaki çöp ikonuna bas.',
+                          style: AppTextStyles.bodySmall.copyWith(
+                            color: AppColors.gray500,
+                            fontSize: 13,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: AppSpacing.md),
                   for (int i = 0; i < notes.length; i++) ...[
                     _NoteCard(
                       note: notes[i],
+                      onTap: () => _editNote(context, ref, notes[i]),
                       onDelete: () =>
                           _deleteNote(context, ref, notes[i].id),
                     ),
@@ -1220,7 +1261,27 @@ class _NotesTab extends ConsumerWidget {
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
-      builder: (context) => _AddNoteBottomSheet(goalId: goalId, ref: ref),
+      builder: (context) => _AddNoteBottomSheet(
+        goalId: goalId,
+        ref: ref,
+      ),
+    );
+  }
+
+  Future<void> _editNote(
+    BuildContext context,
+    WidgetRef ref,
+    Note note,
+  ) async {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) => _AddNoteBottomSheet(
+        goalId: goalId,
+        ref: ref,
+        existingNote: note,
+      ),
     );
   }
 
@@ -1363,95 +1424,372 @@ class _NotesTab extends ConsumerWidget {
 class _NoteCard extends StatelessWidget {
   const _NoteCard({
     required this.note,
+    this.onTap,
     this.onDelete,
   });
 
   final Note note;
+  final VoidCallback? onTap;
   final VoidCallback? onDelete;
 
   @override
   Widget build(BuildContext context) {
     final dateFormat = DateFormat('d MMMM yyyy, HH:mm', 'tr_TR');
 
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.md),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Color(0xFFFFFFFF),
-            Color(0xFFF3F7FF),
-          ],
-        ),
-        borderRadius: BorderRadius.circular(18),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.03),
-            offset: const Offset(0, 8),
-            blurRadius: 18,
-            spreadRadius: -4,
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              const Icon(
-                Icons.note_outlined,
-                size: 18,
-                color: AppColors.gray600,
-              ),
-              const SizedBox(width: AppSpacing.xs),
-              Expanded(
-                child: Text(
-                  dateFormat.format(note.createdAt),
-                  style: AppTextStyles.bodySmall.copyWith(
-                    color: AppColors.gray600,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
-              if (onDelete != null)
-                IconButton(
-                  onPressed: onDelete,
-                  icon: const Icon(
-                    Icons.delete_outline_rounded,
-                    size: 18,
-                    color: AppColors.error,
-                  ),
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
-                ),
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(AppSpacing.md),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Color(0xFFFFFFFF),
+              Color(0xFFF3F7FF),
             ],
           ),
-          const SizedBox(height: AppSpacing.sm),
-          Text(
-            note.content,
-            style: AppTextStyles.bodyMedium.copyWith(
-              color: AppColors.gray900,
-              fontSize: 14,
-              height: 1.6,
+          borderRadius: BorderRadius.circular(18),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.03),
+              offset: const Offset(0, 8),
+              blurRadius: 18,
+              spreadRadius: -4,
             ),
-          ),
-        ],
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Icon(
+                  Icons.note_outlined,
+                  size: 18,
+                  color: AppColors.gray600,
+                ),
+                const SizedBox(width: AppSpacing.xs),
+                Expanded(
+                  child: Text(
+                    dateFormat.format(note.createdAt),
+                    style: AppTextStyles.bodySmall.copyWith(
+                      color: AppColors.gray600,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+                if (onDelete != null)
+                  IconButton(
+                    onPressed: onDelete,
+                    icon: const Icon(
+                      Icons.delete_outline_rounded,
+                      size: 18,
+                      color: AppColors.error,
+                    ),
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                  ),
+              ],
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            Text(
+              note.content,
+              style: AppTextStyles.bodyMedium.copyWith(
+                color: AppColors.gray900,
+                fontSize: 14,
+                height: 1.6,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 }
 
-/// Subtasks Tab - Scrollable to prevent overflow
-class _SubtasksTab extends StatelessWidget {
-  const _SubtasksTab({required this.subtasks});
+/// Subtasks Tab - Scrollable + CRUD
+class _SubtasksTab extends ConsumerStatefulWidget {
+  const _SubtasksTab({
+    required this.goalId,
+    required this.subGoals,
+  });
 
-  final List<_Subtask> subtasks;
+  final String goalId;
+  final List<SubGoal> subGoals;
+
+  @override
+  ConsumerState<_SubtasksTab> createState() => _SubtasksTabState();
+}
+
+class _SubtasksTabState extends ConsumerState<_SubtasksTab> {
+  late List<SubGoal> _subGoals;
+
+  @override
+  void initState() {
+    super.initState();
+    _subGoals = List<SubGoal>.from(widget.subGoals);
+  }
+
+  Future<void> _saveSubGoals() async {
+    if (widget.goalId.isEmpty) return;
+    final repository = ref.read(goalRepositoryProvider);
+    final current = await repository.fetchGoalById(widget.goalId);
+    if (current == null) return;
+
+    // Alt görevler tek ilerleme kaynağı: oran neyse progress de o olmalı.
+    int newProgress = current.progress;
+    if (_subGoals.isNotEmpty) {
+      final completedCount =
+          _subGoals.where((sg) => sg.isCompleted).length.toDouble();
+      final ratio = completedCount / _subGoals.length;
+      newProgress = (ratio * 100).round().clamp(0, 100);
+    } else {
+      newProgress = 0;
+    }
+
+    await repository.updateGoal(
+      current.copyWith(
+        subGoals: _subGoals,
+        progress: newProgress,
+      ),
+    );
+    ref.invalidate(goalsStreamProvider);
+    ref.invalidate(goalDetailProvider(widget.goalId));
+
+    if (!mounted) return;
+    AppSnackbar.showSuccess(
+      context,
+      message: 'Alt görevler güncellendi.',
+    );
+  }
+
+  Future<void> _toggleCompleted(SubGoal subGoal) async {
+    setState(() {
+      _subGoals = _subGoals
+          .map(
+            (sg) => sg.id == subGoal.id
+                ? SubGoal(
+                    id: sg.id,
+                    title: sg.title,
+                    isCompleted: !sg.isCompleted,
+                    dueDate: sg.dueDate,
+                  )
+                : sg,
+          )
+          .toList();
+    });
+    await _saveSubGoals();
+  }
+
+  Future<void> _deleteSubGoal(SubGoal subGoal) async {
+    final shouldDelete = await showDialog<bool>(
+      context: context,
+      barrierColor: Colors.black.withOpacity(0.5),
+      builder: (context) => AlertDialog(
+        title: const Text('Alt görevi sil'),
+        content:
+            const Text('Bu alt görevi silmek istediğine emin misin?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('İptal'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text(
+              'Sil',
+              style: TextStyle(color: AppColors.error),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (shouldDelete != true) return;
+
+    setState(() {
+      _subGoals = _subGoals.where((sg) => sg.id != subGoal.id).toList();
+    });
+    await _saveSubGoals();
+  }
+
+  Future<void> _showEditDialog({SubGoal? existing}) async {
+    final controller = TextEditingController(text: existing?.title ?? '');
+    final result = await showModalBottomSheet<String>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        final bottomInset = MediaQuery.of(context).viewInsets.bottom;
+        return Container(
+          color: Colors.black.withOpacity(0.35),
+          child: SafeArea(
+            top: false,
+            child: Padding(
+              padding: EdgeInsets.only(bottom: bottomInset),
+              child: Center(
+                child: Container(
+                  margin: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.lg,
+                  ),
+                  padding: const EdgeInsets.all(AppSpacing.lg),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: AppRadius.borderRadiusXl,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.15),
+                        blurRadius: 30,
+                        offset: const Offset(0, 16),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Text(
+                            existing == null
+                                ? 'Alt Görev Ekle'
+                                : 'Alt Görevi Düzenle',
+                            style: AppTextStyles.titleLarge.copyWith(
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          const Spacer(),
+                          IconButton(
+                            icon: const Icon(Icons.close_rounded),
+                            onPressed: () => Navigator.of(context).pop(),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: AppSpacing.sm),
+                      Text(
+                        'Bu hedefe ait küçük, uygulanabilir bir adım tanımla.',
+                        style: AppTextStyles.bodySmall.copyWith(
+                          color: AppColors.gray600,
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.lg),
+                      TextField(
+                        controller: controller,
+                        maxLines: 3,
+                        decoration: InputDecoration(
+                          hintText:
+                              'Örn: Haftada 3 gün 30 dakika İngilizce çalışmak',
+                          hintStyle: AppTextStyles.bodyMedium.copyWith(
+                            color: AppColors.gray400,
+                          ),
+                          contentPadding: const EdgeInsets.all(
+                            AppSpacing.md,
+                          ),
+                          border: const OutlineInputBorder(
+                            borderRadius: AppRadius.borderRadiusLg,
+                          ),
+                          focusedBorder: const OutlineInputBorder(
+                            borderRadius: AppRadius.borderRadiusLg,
+                            borderSide: BorderSide(
+                              color: AppColors.primary,
+                              width: 2,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.lg),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: OutlinedButton(
+                              onPressed: () => Navigator.of(context).pop(),
+                              style: OutlinedButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 14,
+                                ),
+                                shape: const RoundedRectangleBorder(
+                                  borderRadius: AppRadius.borderRadiusLg,
+                                ),
+                              ),
+                              child: Text(
+                                'İptal',
+                                style: AppTextStyles.bodyMedium.copyWith(
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: AppSpacing.md),
+                          Expanded(
+                            child: FilledButton(
+                              onPressed: () {
+                                final text = controller.text.trim();
+                                if (text.isEmpty) return;
+                                Navigator.of(context).pop(text);
+                              },
+                              style: FilledButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 14,
+                                ),
+                                shape: const RoundedRectangleBorder(
+                                  borderRadius: AppRadius.borderRadiusLg,
+                                ),
+                              ),
+                              child: Text(
+                                'Kaydet',
+                                style: AppTextStyles.bodyMedium.copyWith(
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+
+    if (result == null || result.trim().isEmpty) return;
+
+    setState(() {
+      if (existing == null) {
+        _subGoals = [
+          ..._subGoals,
+          SubGoal(
+            id: const Uuid().v4(),
+            title: result.trim(),
+          ),
+        ];
+      } else {
+        _subGoals = _subGoals
+            .map(
+              (sg) => sg.id == existing.id
+                  ? SubGoal(
+                      id: sg.id,
+                      title: result.trim(),
+                      isCompleted: sg.isCompleted,
+                      dueDate: sg.dueDate,
+                    )
+                  : sg,
+            )
+            .toList();
+      }
+    });
+
+    await _saveSubGoals();
+  }
 
   @override
   Widget build(BuildContext context) {
-    if (subtasks.isEmpty) {
+    if (_subGoals.isEmpty) {
       return SingleChildScrollView(
         child: ConstrainedBox(
           constraints: BoxConstraints(
@@ -1473,6 +1811,12 @@ class _SubtasksTab extends StatelessWidget {
                     color: AppColors.gray600,
                   ),
                 ),
+                const SizedBox(height: AppSpacing.lg),
+                FilledButton.icon(
+                  onPressed: () => _showEditDialog(),
+                  icon: const Icon(Icons.add_rounded),
+                  label: const Text('Alt Görev Ekle'),
+                ),
               ],
             ),
           ),
@@ -1480,139 +1824,186 @@ class _SubtasksTab extends StatelessWidget {
       );
     }
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(AppSpacing.lg),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          for (int i = 0; i < subtasks.length; i++) ...[
-            _SubtaskCard(subtask: subtasks[i]),
-            if (i < subtasks.length - 1)
+    return Stack(
+      children: [
+        SingleChildScrollView(
+          padding: const EdgeInsets.all(AppSpacing.lg),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  const Icon(
+                    Icons.info_outline_rounded,
+                    size: 16,
+                    color: AppColors.gray500,
+                  ),
+                  const SizedBox(width: AppSpacing.xs),
+                  Expanded(
+                    child: Text(
+                      'Alt görevi düzenlemek için karta dokun, tamamlamak için soldaki çembere bas.',
+                      style: AppTextStyles.bodySmall.copyWith(
+                        color: AppColors.gray500,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
               const SizedBox(height: AppSpacing.md),
-          ],
-        ],
-      ),
+              for (int i = 0; i < _subGoals.length; i++) ...[
+                _SubtaskCard(
+                  subGoal: _subGoals[i],
+                  onToggle: () => _toggleCompleted(_subGoals[i]),
+                  onEdit: () => _showEditDialog(existing: _subGoals[i]),
+                  onDelete: () => _deleteSubGoal(_subGoals[i]),
+                ),
+                if (i < _subGoals.length - 1)
+                  const SizedBox(height: AppSpacing.md),
+              ],
+              const SizedBox(height: 80),
+            ],
+          ),
+        ),
+        Positioned(
+          bottom: 24,
+          right: 16,
+          child: FloatingActionButton(
+            onPressed: () => _showEditDialog(),
+            backgroundColor: AppColors.primary,
+            elevation: 0,
+            child: const Icon(
+              Icons.add_rounded,
+              color: Colors.white,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
 
 /// Subtask Card Widget
 class _SubtaskCard extends StatelessWidget {
-  const _SubtaskCard({required this.subtask});
+  const _SubtaskCard({
+    required this.subGoal,
+    required this.onToggle,
+    required this.onEdit,
+    required this.onDelete,
+  });
 
-  final _Subtask subtask;
+  final SubGoal subGoal;
+  final VoidCallback onToggle;
+  final VoidCallback onEdit;
+  final VoidCallback onDelete;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.md),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Color(0xFFF5F8FF),
-            Color(0xFFE8F0FF),
+    return GestureDetector(
+      onTap: onEdit,
+      child: Container(
+        padding: const EdgeInsets.all(AppSpacing.md),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Color(0xFFF5F8FF),
+              Color(0xFFE8F0FF),
+            ],
+          ),
+          borderRadius: BorderRadius.circular(18),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.03),
+              offset: const Offset(0, 8),
+              blurRadius: 18,
+              spreadRadius: -4,
+            ),
           ],
         ),
-        borderRadius: BorderRadius.circular(18),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.03),
-            offset: const Offset(0, 8),
-            blurRadius: 18,
-            spreadRadius: -4,
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          // Checkbox
-          Container(
-            width: 24,
-            height: 24,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: subtask.isCompleted
-                  ? const LinearGradient(
-                      colors: [
-                        Color(0xFF3B82F6),
-                        Color(0xFF2563EB),
-                      ],
-                    )
-                  : const LinearGradient(
-                      colors: [
-                        Color(0xFFFFFFFF),
-                        Color(0xFFE5EDFF),
-                      ],
-                    ),
-              border: Border.all(
-                color: subtask.isCompleted
-                    ? AppColors.primary
-                    : AppColors.gray300,
-                width: 2,
-              ),
-              boxShadow: subtask.isCompleted
-                  ? [
-                      BoxShadow(
-                        color: AppColors.primary.withOpacity(0.35),
-                        offset: const Offset(0, 4),
-                        blurRadius: 10,
-                      ),
-                    ]
-                  : null,
-            ),
-            child: subtask.isCompleted
-                ? const Icon(
-                    Icons.check,
-                    size: 16,
-                    color: Colors.white,
-                  )
-                : null,
-          ),
-          const SizedBox(width: AppSpacing.md),
-          // Task content
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  subtask.title,
-                  style: AppTextStyles.bodyMedium.copyWith(
-                    color: subtask.isCompleted
-                        ? AppColors.gray600
-                        : AppColors.gray900,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    decoration: subtask.isCompleted
-                        ? TextDecoration.lineThrough
-                        : null,
-                  ),
-                ),
-                if (subtask.dueDate != null) ...[
-                  const SizedBox(height: AppSpacing.xs),
-                  Row(
-                    children: [
-                      const Icon(
-                        Icons.calendar_today_outlined,
-                        size: 14,
-                        color: AppColors.gray500,
-                      ),
-                      const SizedBox(width: AppSpacing.xs),
-                      Text(
-                        'Bitiş: ${subtask.dueDate}',
-                        style: AppTextStyles.bodySmall.copyWith(
-                          color: AppColors.gray600,
-                          fontSize: 12,
+        child: Row(
+          children: [
+            // Checkbox
+            InkWell(
+              onTap: () {
+                onToggle();
+              },
+              child: Container(
+                width: 24,
+                height: 24,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: subGoal.isCompleted
+                      ? const LinearGradient(
+                          colors: [
+                            Color(0xFF3B82F6),
+                            Color(0xFF2563EB),
+                          ],
+                        )
+                      : const LinearGradient(
+                          colors: [
+                            Color(0xFFFFFFFF),
+                            Color(0xFFE5EDFF),
+                          ],
                         ),
-                      ),
-                    ],
+                  border: Border.all(
+                    color: subGoal.isCompleted
+                        ? AppColors.primary
+                        : AppColors.gray300,
+                    width: 2,
+                  ),
+                  boxShadow: subGoal.isCompleted
+                      ? [
+                          BoxShadow(
+                            color: AppColors.primary.withOpacity(0.35),
+                            offset: const Offset(0, 4),
+                            blurRadius: 10,
+                          ),
+                        ]
+                      : null,
+                ),
+                child: subGoal.isCompleted
+                    ? const Icon(
+                        Icons.check,
+                        size: 16,
+                        color: Colors.white,
+                      )
+                    : null,
+              ),
+            ),
+            const SizedBox(width: AppSpacing.md),
+            // Task content
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    subGoal.title,
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      color: subGoal.isCompleted
+                          ? AppColors.gray600
+                          : AppColors.gray900,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      decoration: subGoal.isCompleted
+                          ? TextDecoration.lineThrough
+                          : null,
+                    ),
                   ),
                 ],
-              ],
+              ),
             ),
-          ),
-        ],
+            IconButton(
+              onPressed: onDelete,
+              icon: const Icon(
+                Icons.delete_outline_rounded,
+                size: 20,
+                color: AppColors.error,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -1623,10 +2014,12 @@ class _AddNoteBottomSheet extends ConsumerStatefulWidget {
   const _AddNoteBottomSheet({
     required this.goalId,
     required this.ref,
+    this.existingNote,
   });
 
   final String goalId;
   final WidgetRef ref;
+  final Note? existingNote;
 
   @override
   ConsumerState<_AddNoteBottomSheet> createState() =>
@@ -1635,7 +2028,8 @@ class _AddNoteBottomSheet extends ConsumerStatefulWidget {
 
 class _AddNoteBottomSheetState extends ConsumerState<_AddNoteBottomSheet> {
   final _formKey = GlobalKey<FormState>();
-  final _contentController = TextEditingController();
+  late final TextEditingController _contentController =
+      TextEditingController(text: widget.existingNote?.content ?? '');
   bool _isLoading = false;
 
   @override
@@ -1663,13 +2057,21 @@ class _AddNoteBottomSheetState extends ConsumerState<_AddNoteBottomSheet> {
 
     try {
       final repository = widget.ref.read(goalRepositoryProvider);
-      final note = Note(
-        id: const Uuid().v4(),
-        goalId: widget.goalId,
-        userId: userId,
-        createdAt: DateTime.now(),
-        content: content,
-      );
+      final note = widget.existingNote == null
+          ? Note(
+              id: const Uuid().v4(),
+              goalId: widget.goalId,
+              userId: userId,
+              createdAt: DateTime.now(),
+              content: content,
+            )
+          : Note(
+              id: widget.existingNote!.id,
+              goalId: widget.existingNote!.goalId,
+              userId: widget.existingNote!.userId,
+              createdAt: widget.existingNote!.createdAt,
+              content: content,
+            );
 
       await repository.addNote(note);
 
@@ -1704,14 +2106,14 @@ class _AddNoteBottomSheetState extends ConsumerState<_AddNoteBottomSheet> {
         top: AppSpacing.lg,
         bottom: MediaQuery.of(context).viewInsets.bottom + AppSpacing.lg,
       ),
-      child: Column(
+          child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
               Text(
-                'Yeni Not Ekle',
+                widget.existingNote == null ? 'Yeni Not Ekle' : 'Notu Düzenle',
                 style: AppTextStyles.titleLarge.copyWith(
                   fontWeight: FontWeight.w700,
                 ),

@@ -8,6 +8,34 @@ import '../../../../core/widgets/index.dart';
 import '../../../../shared/providers/ai_providers.dart';
 import '../../../../shared/services/ai_service.dart';
 
+String _shortenGoalTitle(String input) {
+  var text = input.trim();
+  if (text.isEmpty) return text;
+
+  var words = text.split(RegExp(r'\s+'));
+
+  // Çok kelimeli süre ifadelerini baştan kırp (örn. "3 ay içinde", "6 ay boyunca")
+  if (words.length > 3) {
+    final lower = words.map((w) => w.toLowerCase()).toList();
+    final isNumber = RegExp(r'^\d+$').hasMatch(lower[0]);
+    final isTimeUnit = ['gün', 'hafta', 'ay', 'yıl'].contains(lower[1]);
+    if (isNumber && isTimeUnit) {
+      var start = 2;
+      if (lower.length > 2 &&
+          (lower[2] == 'içinde' || lower[2] == 'boyunca')) {
+        start = 3;
+      }
+      words = words.sublist(start);
+    }
+  }
+
+  if (words.length > 5) {
+    words = words.sublist(0, 5);
+  }
+
+  return words.join(' ');
+}
+
 /// AI Optimize Bottom Sheet
 /// Shows AI-optimized goal suggestions and allows user to apply them
 class AIOptimizeBottomSheet extends ConsumerStatefulWidget {
@@ -32,6 +60,7 @@ class AIOptimizeBottomSheet extends ConsumerStatefulWidget {
 class _AIOptimizeBottomSheetState
     extends ConsumerState<AIOptimizeBottomSheet> {
   late final OptimizeGoalParams _params;
+  TextEditingController? _titleController;
 
   @override
   void initState() {
@@ -41,6 +70,12 @@ class _AIOptimizeBottomSheetState
       category: widget.category,
       motivation: widget.motivation,
     );
+  }
+
+  @override
+  void dispose() {
+    _titleController?.dispose();
+    super.dispose();
   }
 
   @override
@@ -153,6 +188,11 @@ class _AIOptimizeBottomSheetState
                         );
                       }
 
+                      // Initialize editable title controller once with shortened title
+                      _titleController ??= TextEditingController(
+                        text: _shortenGoalTitle(result.optimizedTitle),
+                      );
+
                       return Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -161,7 +201,7 @@ class _AIOptimizeBottomSheetState
                           const SizedBox(height: AppSpacing.sm),
                           Container(
                             width: double.infinity,
-                            padding: AppSpacing.paddingMd,
+                            padding: EdgeInsets.zero,
                             decoration: BoxDecoration(
                               gradient: LinearGradient(
                                 colors: [
@@ -184,12 +224,18 @@ class _AIOptimizeBottomSheetState
                                 ),
                               ],
                             ),
-                            child: Text(
-                              result.optimizedTitle,
+                            child: TextField(
+                              controller: _titleController,
+                              maxLines: 2,
                               style: AppTextStyles.bodyLarge.copyWith(
                                 fontWeight: FontWeight.w600,
                                 color: AppColors.primary,
                                 height: 1.4,
+                              ),
+                              decoration: const InputDecoration(
+                                contentPadding: AppSpacing.paddingMd,
+                                border: InputBorder.none,
+                                hintText: 'Kısa bir hedef adı yazın…',
                               ),
                             ),
                           ),
@@ -372,6 +418,14 @@ class _AIOptimizeBottomSheetState
                 if (result == null) {
                   return const SizedBox.shrink();
                 }
+                final editedTitle = _titleController?.text.trim().isEmpty ?? true
+                    ? result.optimizedTitle
+                    : _titleController!.text.trim();
+                final optimizedResult = OptimizeGoalResponse(
+                  optimizedTitle: editedTitle,
+                  subGoals: result.subGoals,
+                  explanation: result.explanation,
+                );
                 return Row(
                   children: [
                     Expanded(
@@ -420,7 +474,7 @@ class _AIOptimizeBottomSheetState
                           color: Colors.transparent,
                           child: InkWell(
                             onTap: () {
-                              widget.onApply(result);
+                              widget.onApply(optimizedResult);
                               Navigator.of(context).pop();
                             },
                             borderRadius: AppRadius.borderRadiusMd,

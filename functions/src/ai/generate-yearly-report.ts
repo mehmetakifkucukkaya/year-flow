@@ -60,7 +60,11 @@ ${goals
   .map(
     (g) =>
       `- "${g.title}" (${g.category}): %${g.progress} ilerleme${
-        g.motivation ? `, Motivasyon: ${g.motivation}` : ''
+        g.description
+          ? `, Açıklama: ${g.description}`
+          : g.motivation
+          ? `, Motivasyon: ${g.motivation}`
+          : ''
       }`
   )
   .join('\n')}

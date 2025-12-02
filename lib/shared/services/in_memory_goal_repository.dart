@@ -32,6 +32,8 @@ class InMemoryGoalRepository implements GoalRepository {
         category: GoalCategory.health,
         createdAt: now.subtract(const Duration(days: 40)),
         targetDate: now.add(const Duration(days: 200)),
+        description:
+            'Önümüzdeki 12 ay boyunca haftada 3 gün spor yaparak daha enerjik ve sağlıklı bir rutin oluşturmak.',
         motivation: 'Daha enerjik hissetmek ve sağlıklı bir rutin oluşturmak.',
         subGoals: const [
           SubGoal(
@@ -54,6 +56,8 @@ class InMemoryGoalRepository implements GoalRepository {
         category: GoalCategory.personalGrowth,
         createdAt: now.subtract(const Duration(days: 60)),
         targetDate: now.add(const Duration(days: 300)),
+        description:
+            'Bir yıl boyunca her ay en az 1 kitap okuyarak bilgi birikimimi ve bakış açımı genişletmek.',
         motivation: 'Kendimi geliştirmek ve yeni bakış açıları kazanmak.',
         subGoals: const [
           SubGoal(
@@ -71,6 +75,8 @@ class InMemoryGoalRepository implements GoalRepository {
         category: GoalCategory.career,
         createdAt: now.subtract(const Duration(days: 20)),
         targetDate: now.add(const Duration(days: 180)),
+        description:
+            '6 ay içinde yeni bir programlama dilinde temel projeler geliştirebilecek seviyeye gelmek.',
         motivation: 'Kariyerimde yeni fırsatlar yaratmak.',
         subGoals: const [
           SubGoal(
@@ -157,6 +163,7 @@ class InMemoryGoalRepository implements GoalRepository {
         category: goal.category,
         createdAt: goal.createdAt,
         targetDate: goal.targetDate,
+        description: goal.description,
         motivation: goal.motivation,
         subGoals: goal.subGoals,
         progress: goal.progress,

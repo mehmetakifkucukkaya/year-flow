@@ -50,6 +50,7 @@ export interface Goal {
   category: string;
   createdAt: string;
   targetDate?: string;
+  description?: string;
   motivation?: string;
   progress: number;
   isArchived: boolean;

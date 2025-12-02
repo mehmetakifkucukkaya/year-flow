@@ -103,7 +103,7 @@ class ExportService {
       
       // Goals CSV
       csvLines.add('=== GOALS ===');
-      csvLines.add('ID,Title,Category,Created At,Target Date,Progress,Is Archived,Motivation');
+      csvLines.add('ID,Title,Category,Created At,Target Date,Progress,Is Archived,Description');
       for (final goal in goals) {
         csvLines.add([
           goal.id,
@@ -113,7 +113,7 @@ class ExportService {
           goal.targetDate?.toIso8601String() ?? '',
           goal.progress.toString(),
           goal.isArchived.toString(),
-          _escapeCsv(goal.motivation ?? ''),
+          _escapeCsv(goal.description ?? ''),
         ].join(','));
       }
 
@@ -284,7 +284,7 @@ class ExportService {
       'category': goal.category.name,
       'createdAt': goal.createdAt.toIso8601String(),
       'targetDate': goal.targetDate?.toIso8601String(),
-      'motivation': goal.motivation,
+      'description': goal.description,
       'progress': goal.progress,
       'isArchived': goal.isArchived,
       'subGoals': goal.subGoals.map((sg) => {

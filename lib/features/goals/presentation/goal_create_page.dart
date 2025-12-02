@@ -13,8 +13,6 @@ import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/index.dart';
 import '../../../shared/models/goal.dart';
 import '../../../shared/providers/goal_providers.dart';
-import '../../../shared/providers/ai_providers.dart';
-import '../../../shared/services/ai_service.dart';
 import 'widgets/ai_optimize_bottom_sheet.dart';
 
 class GoalCreatePage extends ConsumerStatefulWidget {
@@ -28,7 +26,7 @@ class _GoalCreatePageState extends ConsumerState<GoalCreatePage> {
   final _formKey = GlobalKey<FormState>();
   final _titleController = TextEditingController();
   final _reasonController = TextEditingController();
-  
+  List<SubGoal> _subGoals = const [];
   GoalCategory? _selectedCategory;
   DateTime? _completionDate;
 
@@ -90,10 +88,10 @@ class _GoalCreatePageState extends ConsumerState<GoalCreatePage> {
         category: _selectedCategory!,
         createdAt: DateTime.now(),
         targetDate: _completionDate,
-        motivation: _reasonController.text.trim().isEmpty
+        description: _reasonController.text.trim().isEmpty
             ? null
             : _reasonController.text.trim(),
-        subGoals: const [],
+        subGoals: _subGoals,
         progress: 0,
         isArchived: false,
       );
@@ -143,9 +141,14 @@ class _GoalCreatePageState extends ConsumerState<GoalCreatePage> {
         onApply: (result) {
           // Apply AI optimization to form
           setState(() {
+            // Kısa başlık
             _titleController.text = result.optimizedTitle;
-            // Update sub-goals if needed (for future use)
-            // For now, we just update the title
+            // Alt görevleri kaydet
+            _subGoals = result.subGoals;
+            // Detaylı SMART açıklamasını motivasyon alanına öneri olarak doldur
+            if (_reasonController.text.trim().isEmpty) {
+              _reasonController.text = result.explanation;
+            }
           });
 
           AppSnackbar.showSuccess(
