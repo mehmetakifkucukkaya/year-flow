@@ -13,6 +13,9 @@ import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/index.dart';
 import '../../../shared/models/goal.dart';
 import '../../../shared/providers/goal_providers.dart';
+import '../../../shared/providers/ai_providers.dart';
+import '../../../shared/services/ai_service.dart';
+import 'widgets/ai_optimize_bottom_sheet.dart';
 
 class GoalCreatePage extends ConsumerStatefulWidget {
   const GoalCreatePage({super.key});
@@ -114,10 +117,43 @@ class _GoalCreatePageState extends ConsumerState<GoalCreatePage> {
     }
   }
 
-  void _handleAIOptimize() {
-    // TODO: AI optimization
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('AI optimizasyonu yakında eklenecek')),
+  Future<void> _handleAIOptimize() async {
+    // Validate required fields
+    if (_titleController.text.trim().isEmpty) {
+      AppSnackbar.showError(context, message: 'Lütfen hedef başlığı girin');
+      return;
+    }
+
+    if (_selectedCategory == null) {
+      AppSnackbar.showError(context, message: 'Lütfen bir kategori seçin');
+      return;
+    }
+
+    // Show bottom sheet with AI optimization
+    await showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => AIOptimizeBottomSheet(
+        goalTitle: _titleController.text.trim(),
+        category: _selectedCategory!.name,
+        motivation: _reasonController.text.trim().isEmpty
+            ? null
+            : _reasonController.text.trim(),
+        onApply: (result) {
+          // Apply AI optimization to form
+          setState(() {
+            _titleController.text = result.optimizedTitle;
+            // Update sub-goals if needed (for future use)
+            // For now, we just update the title
+          });
+
+          AppSnackbar.showSuccess(
+            context,
+            message: 'Hedef optimize edildi! ✨',
+          );
+        },
+      ),
     );
   }
 
