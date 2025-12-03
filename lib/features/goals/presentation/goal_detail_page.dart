@@ -349,11 +349,35 @@ class _PremiumAppBar extends ConsumerWidget {
 
                     if (shouldDelete == true && context.mounted) {
                       try {
-                        final repository =
-                            ref.read(goalRepositoryProvider);
-                        await repository.deleteGoal(goalId);
+                        // Goal'u al ve userId'yi kullanarak direkt sil
+                        final goalAsync = ref.read(goalDetailProvider(goalId));
+                        final goal = goalAsync.maybeWhen(
+                          data: (goal) => goal,
+                          orElse: () => null,
+                        );
+                        
+                        if (goal == null) {
+                          if (context.mounted) {
+                            AppSnackbar.showError(
+                              context,
+                              message: 'Hedef bulunamadı',
+                            );
+                          }
+                          return;
+                        }
+                        
+                        // userId ile direkt sil (yeni Firestore yapısı: users/{userId}/goals/{goalId})
+                        final firestore = ref.read(firestoreProvider);
+                        await firestore
+                            .collection('users')
+                            .doc(goal.userId)
+                            .collection('goals')
+                            .doc(goalId)
+                            .delete();
+                            
                         if (context.mounted) {
                           ref.invalidate(goalsStreamProvider);
+                          ref.invalidate(goalDetailProvider(goalId));
                           AppSnackbar.showSuccess(
                             context,
                             message: 'Hedef başarıyla silindi',
@@ -1223,7 +1247,7 @@ class _NotesTab extends ConsumerWidget {
                       note: notes[i],
                       onTap: () => _editNote(context, ref, notes[i]),
                       onDelete: () =>
-                          _deleteNote(context, ref, notes[i].id),
+                          _deleteNote(context, ref, notes[i]),
                     ),
                     if (i < notes.length - 1)
                       const SizedBox(height: AppSpacing.md),
@@ -1299,7 +1323,7 @@ class _NotesTab extends ConsumerWidget {
   Future<void> _deleteNote(
     BuildContext context,
     WidgetRef ref,
-    String noteId,
+    Note note,
   ) async {
     final shouldDelete = await showDialog<bool>(
       context: context,
@@ -1414,8 +1438,14 @@ class _NotesTab extends ConsumerWidget {
 
     if (shouldDelete == true && context.mounted) {
       try {
-        final repository = ref.read(goalRepositoryProvider);
-        await repository.deleteNote(noteId);
+        // userId ile direkt sil (yeni Firestore yapısı: users/{userId}/notes/{noteId})
+        final firestore = ref.read(firestoreProvider);
+        await firestore
+            .collection('users')
+            .doc(note.userId)
+            .collection('notes')
+            .doc(note.id)
+            .delete();
         if (context.mounted) {
           AppSnackbar.showSuccess(context, message: 'Not silindi');
         }
@@ -1814,9 +1844,10 @@ class _SubtasksTabState extends ConsumerState<_SubtasksTab> {
 
   Future<void> _saveSubGoals() async {
     if (widget.goalId.isEmpty) return;
-    final repository = ref.read(goalRepositoryProvider);
-    final current = await repository.fetchGoalById(widget.goalId);
+    final current = await ref.read(goalDetailProvider(widget.goalId).future);
     if (current == null) return;
+    
+    final repository = ref.read(goalRepositoryProvider);
 
     // Alt görevler tek ilerleme kaynağı: oran neyse progress de o olmalı.
     int newProgress = current.progress;

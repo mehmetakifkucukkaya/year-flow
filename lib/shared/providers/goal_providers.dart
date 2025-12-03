@@ -43,7 +43,19 @@ final goalsStreamProvider = StreamProvider<List<Goal>>((ref) {
 final goalDetailProvider =
     FutureProvider.family<Goal?, String>((ref, goalId) async {
   final repo = ref.watch(goalRepositoryProvider);
-  return repo.fetchGoalById(goalId);
+  final userId = ref.watch(currentUserIdProvider);
+  
+  if (userId == null) {
+    return null;
+  }
+  
+  // Sadece mevcut kullanıcının goals'ında ara
+  final goals = await repo.fetchGoals(userId);
+  try {
+    return goals.firstWhere((goal) => goal.id == goalId);
+  } catch (_) {
+    return null;
+  }
 });
 
 /// Check-ins stream provider for a specific goal

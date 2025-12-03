@@ -109,7 +109,10 @@ class FirebaseAuthRepository implements AuthRepository {
     final user = credential.user;
     if (user == null) return null;
     // Email ile giriş her zaman mevcut kullanıcıdır (yeni kullanıcı değil)
-    return AppUser.fromFirebaseUser(user, isNewUser: false);
+    final appUser = AppUser.fromFirebaseUser(user, isNewUser: false);
+    // Users collection'ına kaydet/güncelle (bilgiler güncellenmiş olabilir)
+    await _saveUserToFirestore(appUser);
+    return appUser;
   }
 
   @override
@@ -238,39 +241,36 @@ class FirebaseAuthRepository implements AuthRepository {
 
     final userId = user.uid;
 
-    // Firestore'dan tüm kullanıcı verilerini sil
+    // Firestore'dan tüm kullanıcı verilerini sil (yeni yapı: users/{userId}/subcollections)
     try {
       final batch = _firestore.batch();
+      final userDocRef = _firestore.collection('users').doc(userId);
 
-      // Goals'ları sil
-      final goalsSnapshot = await _firestore
-          .collection('goals')
-          .where('userId', isEqualTo: userId)
-          .get();
+      // Goals'ları sil (users/{userId}/goals)
+      final goalsSnapshot = await userDocRef.collection('goals').get();
       for (final goalDoc in goalsSnapshot.docs) {
         batch.delete(goalDoc.reference);
       }
 
-      // Check-ins'leri sil (ayrı collection olarak)
-      final checkInsSnapshot = await _firestore
-          .collection('checkIns')
-          .where('userId', isEqualTo: userId)
-          .get();
+      // Check-ins'leri sil (users/{userId}/checkIns)
+      final checkInsSnapshot = await userDocRef.collection('checkIns').get();
       for (final checkInDoc in checkInsSnapshot.docs) {
         batch.delete(checkInDoc.reference);
       }
 
-      // Yearly reports'ları sil
-      final reportsSnapshot = await _firestore
-          .collection('yearlyReports')
-          .where('userId', isEqualTo: userId)
-          .get();
+      // Yearly reports'ları sil (users/{userId}/yearlyReports)
+      final reportsSnapshot = await userDocRef.collection('yearlyReports').get();
       for (final reportDoc in reportsSnapshot.docs) {
         batch.delete(reportDoc.reference);
       }
 
+      // Notes'ları sil (users/{userId}/notes)
+      final notesSnapshot = await userDocRef.collection('notes').get();
+      for (final noteDoc in notesSnapshot.docs) {
+        batch.delete(noteDoc.reference);
+      }
+
       // User document'ını sil
-      final userDocRef = _firestore.collection('users').doc(userId);
       batch.delete(userDocRef);
 
       await batch.commit();

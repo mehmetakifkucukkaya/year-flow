@@ -139,34 +139,9 @@ class HomePage extends ConsumerWidget {
             },
           ),
 
-          // Yaklaşan Check-in Section
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.only(
-                left: AppSpacing.md,
-                right: AppSpacing.md,
-                top: AppSpacing.xl,
-                bottom: AppSpacing.md,
-              ),
-              child: Text(
-                'Yaklaşan Check-in\'lerin',
-                style: AppTextStyles.headlineMedium.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ),
-
-          // Yaklaşan Check-in + Günün Sorusu
+          // Yaklaşan Check-in Section (sadece yaklaşan hedef varsa göster)
           const SliverToBoxAdapter(
-            child: Padding(
-              padding: EdgeInsets.only(
-                left: AppSpacing.md,
-                right: AppSpacing.md,
-                bottom: AppSpacing.md,
-              ),
-              child: _UpcomingCheckInsSection(),
-            ),
+            child: _UpcomingCheckInsSection(),
           ),
 
           // Bottom padding for navigation bar
@@ -562,19 +537,43 @@ class _UpcomingCheckInsSection extends ConsumerWidget {
 
     final upcoming = goals.where((goal) {
       final target = goal.targetDate;
+
+      // targetDate yoksa gösterilmez
       if (target == null) return false;
 
       final targetDay = DateTime(target.year, target.month, target.day);
       final diff = targetDay.difference(today).inDays;
-      // Bugün–önümüzdeki 7 gün arası (0–7 gün kaldı)
-      return diff >= 0 && diff <= 7;
+      // 7 günden az kalmış hedefler (geçmişte kalanlar dahil, bugün ve önümüzdeki 7 gün)
+      // -7 gün (1 hafta önce) ile +7 gün (1 hafta sonra) arası
+      return diff >= -7 && diff <= 7;
     }).toList();
 
-    upcoming.sort((a, b) => a.targetDate!.compareTo(b.targetDate!));
+    // Sıralama: önce geçmişte kalanlar (en yakın olanlar önce), sonra gelecekteki hedefler
+    upcoming.sort((a, b) {
+      final diffA = DateTime(
+              a.targetDate!.year, a.targetDate!.month, a.targetDate!.day)
+          .difference(today)
+          .inDays;
+      final diffB = DateTime(
+              b.targetDate!.year, b.targetDate!.month, b.targetDate!.day)
+          .difference(today)
+          .inDays;
+
+      // Geçmişte kalanlar önce (negatif değerler), sonra gelecekteki hedefler
+      if (diffA < 0 && diffB >= 0) return -1;
+      if (diffA >= 0 && diffB < 0) return 1;
+      // Aynı kategorideyse (ikisi de geçmişte veya ikisi de gelecekte), yakın olan önce
+      return diffA.abs().compareTo(diffB.abs());
+    });
+
     return upcoming.take(3).toList();
   }
 
-  String _formatRemaining(DateTime targetDate) {
+  String _formatRemaining(DateTime? targetDate) {
+    if (targetDate == null) {
+      return 'Check-in yap';
+    }
+
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final targetDay =
@@ -595,174 +594,277 @@ class _UpcomingCheckInsSection extends ConsumerWidget {
     final goalsAsync = ref.watch(goalsStreamProvider);
 
     return goalsAsync.when(
-      loading: () => const _DailyQuestionCard(),
-      error: (_, __) => const _DailyQuestionCard(),
+      loading: () => const SizedBox.shrink(),
+      error: (_, __) => const SizedBox.shrink(),
       data: (goals) {
         final upcomingGoals = _getUpcomingGoals(goals);
-
-        if (upcomingGoals.isEmpty) {
-          return const _DailyQuestionCard();
-        }
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    Color(0xFFF4F7FF),
-                    Color(0xFFFFFFFF),
-                  ],
-                ),
-                borderRadius: AppRadius.borderRadiusLg,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.04),
-                    offset: const Offset(0, 6),
-                    blurRadius: 16,
-                  ),
-                ],
+            // Başlık
+            Padding(
+              padding: const EdgeInsets.only(
+                left: AppSpacing.md,
+                right: AppSpacing.md,
+                top: AppSpacing.xl,
+                bottom: AppSpacing.md,
               ),
-              padding: const EdgeInsets.all(18),
+              child: Text(
+                'Yaklaşan Check-in\'lerin',
+                style: AppTextStyles.headlineMedium.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            // İçerik
+            Padding(
+              padding: const EdgeInsets.only(
+                left: AppSpacing.md,
+                right: AppSpacing.md,
+                bottom: AppSpacing.md,
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    children: [
-                      Container(
-                        width: 32,
-                        height: 32,
-                        decoration: BoxDecoration(
-                          color: AppColors.primary.withOpacity(0.12),
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(
-                          Icons.calendar_month_rounded,
-                          size: 18,
-                          color: AppColors.primary,
-                        ),
-                      ),
-                      const SizedBox(width: AppSpacing.sm),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Bu hafta odaklanman gereken hedefler',
-                              style: AppTextStyles.titleSmall.copyWith(
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              'Önümüzdeki 7 gün içinde tamamlanması planlanan hedeflerin',
-                              style: AppTextStyles.bodySmall.copyWith(
-                                color: AppColors.gray600,
-                              ),
-                            ),
+                  // Eğer yaklaşan hedef yoksa bilgilendirici mesaj göster
+                  if (upcomingGoals.isEmpty)
+                    Container(
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            Color(0xFFF4F7FF),
+                            Color(0xFFFFFFFF),
                           ],
                         ),
-                      ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.primary.withOpacity(0.08),
-                          borderRadius: BorderRadius.circular(999),
-                        ),
-                        child: Text(
-                          '${upcomingGoals.length} hedef',
-                          style: AppTextStyles.labelSmall.copyWith(
-                            color: AppColors.primary,
-                            fontWeight: FontWeight.w600,
+                        borderRadius: AppRadius.borderRadiusLg,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.04),
+                            offset: const Offset(0, 6),
+                            blurRadius: 16,
                           ),
-                        ),
+                        ],
                       ),
-                    ],
-                  ),
-                  const SizedBox(height: AppSpacing.md),
-                  ...upcomingGoals.map((goal) {
-                    return Padding(
-                      padding:
-                          const EdgeInsets.only(bottom: AppSpacing.xs),
-                      child: Material(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(14),
-                        child: InkWell(
-                          borderRadius: BorderRadius.circular(14),
-                          onTap: () {
-                            context.push(AppRoutes.checkInPath(goal.id));
-                          },
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 10,
+                      padding: const EdgeInsets.all(18),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 32,
+                            height: 32,
+                            decoration: BoxDecoration(
+                              color: AppColors.primary.withOpacity(0.12),
+                              shape: BoxShape.circle,
                             ),
-                            child: Row(
-                              children: [
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        goal.title,
-                                        style: AppTextStyles.bodyMedium
-                                            .copyWith(
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                      const SizedBox(height: 2),
-                                      Text(
-                                        _formatRemaining(goal.targetDate!),
-                                        style: AppTextStyles.bodySmall
-                                            .copyWith(
-                                          color: AppColors.gray600,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                const SizedBox(width: AppSpacing.sm),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 10,
-                                    vertical: 6,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: AppColors.primary
-                                        .withOpacity(0.08),
-                                    borderRadius:
-                                        BorderRadius.circular(999),
-                                  ),
-                                  child: Text(
-                                    'Check-in Yap',
-                                    style:
-                                        AppTextStyles.labelSmall.copyWith(
-                                      color: AppColors.primary,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ),
+                            child: const Icon(
+                              Icons.info_outline_rounded,
+                              size: 18,
+                              color: AppColors.primary,
+                            ),
+                          ),
+                          const SizedBox(width: AppSpacing.sm),
+                          Expanded(
+                            child: Text(
+                              'Hedeflerinin bitmesine 7 gün kalınca burada gözükecekler',
+                              style: AppTextStyles.bodyMedium.copyWith(
+                                color: AppColors.gray700,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                  else
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [
+                                Color(0xFFF4F7FF),
+                                Color(0xFFFFFFFF),
                               ],
                             ),
+                            borderRadius: AppRadius.borderRadiusLg,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.04),
+                                offset: const Offset(0, 6),
+                                blurRadius: 16,
+                              ),
+                            ],
+                          ),
+                          padding: const EdgeInsets.all(18),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Container(
+                                    width: 32,
+                                    height: 32,
+                                    decoration: BoxDecoration(
+                                      color: AppColors.primary
+                                          .withOpacity(0.12),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: const Icon(
+                                      Icons.calendar_month_rounded,
+                                      size: 18,
+                                      color: AppColors.primary,
+                                    ),
+                                  ),
+                                  const SizedBox(width: AppSpacing.sm),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          'Yaklaşan check-in\'lerin',
+                                          style: AppTextStyles.titleSmall
+                                              .copyWith(
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 2),
+                                        Text(
+                                          '7 günden az kalmış hedeflerin check-in\'lerini yap',
+                                          style: AppTextStyles.bodySmall
+                                              .copyWith(
+                                            color: AppColors.gray600,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 10,
+                                      vertical: 4,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.primary
+                                          .withOpacity(0.08),
+                                      borderRadius:
+                                          BorderRadius.circular(999),
+                                    ),
+                                    child: Text(
+                                      '${upcomingGoals.length} hedef',
+                                      style: AppTextStyles.labelSmall
+                                          .copyWith(
+                                        color: AppColors.primary,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: AppSpacing.md),
+                              ...upcomingGoals.map((goal) {
+                                return Padding(
+                                  padding: const EdgeInsets.only(
+                                      bottom: AppSpacing.xs),
+                                  child: Material(
+                                    color: Colors.white,
+                                    borderRadius:
+                                        BorderRadius.circular(14),
+                                    child: InkWell(
+                                      borderRadius:
+                                          BorderRadius.circular(14),
+                                      onTap: () {
+                                        context.push(AppRoutes.checkInPath(
+                                            goal.id));
+                                      },
+                                      child: Padding(
+                                        padding:
+                                            const EdgeInsets.symmetric(
+                                          horizontal: 12,
+                                          vertical: 10,
+                                        ),
+                                        child: Row(
+                                          children: [
+                                            Expanded(
+                                              child: Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment
+                                                        .start,
+                                                children: [
+                                                  Text(
+                                                    goal.title,
+                                                    style: AppTextStyles
+                                                        .bodyMedium
+                                                        .copyWith(
+                                                      fontWeight:
+                                                          FontWeight.w600,
+                                                    ),
+                                                    maxLines: 1,
+                                                    overflow: TextOverflow
+                                                        .ellipsis,
+                                                  ),
+                                                  const SizedBox(
+                                                      height: 2),
+                                                  Text(
+                                                    _formatRemaining(
+                                                        goal.targetDate),
+                                                    style: AppTextStyles
+                                                        .bodySmall
+                                                        .copyWith(
+                                                      color: AppColors
+                                                          .gray600,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                            const SizedBox(
+                                                width: AppSpacing.sm),
+                                            Container(
+                                              padding: const EdgeInsets
+                                                  .symmetric(
+                                                horizontal: 10,
+                                                vertical: 6,
+                                              ),
+                                              decoration: BoxDecoration(
+                                                color: AppColors.primary
+                                                    .withOpacity(0.08),
+                                                borderRadius:
+                                                    BorderRadius.circular(
+                                                        999),
+                                              ),
+                                              child: Text(
+                                                'Check-in Yap',
+                                                style: AppTextStyles
+                                                    .labelSmall
+                                                    .copyWith(
+                                                  color: AppColors.primary,
+                                                  fontWeight:
+                                                      FontWeight.w600,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              }),
+                            ],
                           ),
                         ),
-                      ),
-                    );
-                  }),
+                        const SizedBox(height: AppSpacing.md),
+                        const _DailyQuestionCard(),
+                      ],
+                    ),
                 ],
               ),
             ),
-            const SizedBox(height: AppSpacing.md),
-            const _DailyQuestionCard(),
           ],
         );
       },

@@ -104,7 +104,7 @@ class _GoalEditPageState extends ConsumerState<GoalEditPage> {
 
     try {
       final repository = ref.read(goalRepositoryProvider);
-      final currentGoal = await repository.fetchGoalById(widget.goalId);
+      final currentGoal = await ref.read(goalDetailProvider(widget.goalId).future);
 
       if (currentGoal == null) {
         if (mounted) {

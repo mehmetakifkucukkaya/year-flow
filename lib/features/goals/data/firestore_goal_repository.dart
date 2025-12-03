@@ -9,10 +9,28 @@ import '../../../shared/services/goal_repository.dart';
 
 /// Firestore koleksiyon isimleri
 class _FirestoreCollections {
+  static const String users = 'users';
   static const String goals = 'goals';
   static const String checkIns = 'checkIns';
   static const String yearlyReports = 'yearlyReports';
   static const String notes = 'notes';
+  
+  /// Kullanıcıya özel koleksiyon referansı al
+  static CollectionReference _userGoalsCollection(FirebaseFirestore firestore, String userId) {
+    return firestore.collection(users).doc(userId).collection(goals);
+  }
+  
+  static CollectionReference _userCheckInsCollection(FirebaseFirestore firestore, String userId) {
+    return firestore.collection(users).doc(userId).collection(checkIns);
+  }
+  
+  static CollectionReference _userYearlyReportsCollection(FirebaseFirestore firestore, String userId) {
+    return firestore.collection(users).doc(userId).collection(yearlyReports);
+  }
+  
+  static CollectionReference _userNotesCollection(FirebaseFirestore firestore, String userId) {
+    return firestore.collection(users).doc(userId).collection(notes);
+  }
 }
 
 /// Firestore tabanlı GoalRepository implementasyonu
@@ -27,10 +45,10 @@ class FirestoreGoalRepository implements GoalRepository {
   @override
   Stream<List<Goal>> watchGoals(String userId) async* {
     try {
-      yield* _firestore
-          .collection(_FirestoreCollections.goals)
-          .where('userId', isEqualTo: userId)
-          .where('isArchived', isEqualTo: false)
+      // Önce tüm goal'ları al (isArchived filtresi olmadan)
+      // Sonra memory'de filtrele (index gerektirmemek için)
+      yield* _FirestoreCollections
+          ._userGoalsCollection(_firestore, userId)
           .orderBy('createdAt', descending: true)
           .snapshots()
           .map((snapshot) {
@@ -38,7 +56,12 @@ class FirestoreGoalRepository implements GoalRepository {
           return snapshot.docs
               .map((doc) {
                 try {
-                  return _goalFromFirestore(doc.id, doc.data());
+                  final data = doc.data();
+                  if (data == null) return null;
+                  final goal = _goalFromFirestore(doc.id, data as Map<String, dynamic>);
+                  // isArchived filtresini memory'de yap
+                  if (goal.isArchived) return null;
+                  return goal;
                 } catch (e) {
                   print('Error parsing goal ${doc.id}: $e');
                   return null;
@@ -62,33 +85,59 @@ class FirestoreGoalRepository implements GoalRepository {
 
   @override
   Future<List<Goal>> fetchGoals(String userId) async {
-    final snapshot = await _firestore
-        .collection(_FirestoreCollections.goals)
-        .where('userId', isEqualTo: userId)
-        .where('isArchived', isEqualTo: false)
+    final snapshot = await _FirestoreCollections
+        ._userGoalsCollection(_firestore, userId)
         .orderBy('createdAt', descending: true)
         .get();
 
     return snapshot.docs
-        .map((doc) => _goalFromFirestore(doc.id, doc.data()))
+        .map((doc) {
+          final data = doc.data();
+          if (data == null) return null;
+          final goal = _goalFromFirestore(doc.id, data as Map<String, dynamic>);
+          // isArchived filtresini memory'de yap
+          if (goal.isArchived) return null;
+          return goal;
+        })
+        .whereType<Goal>()
         .toList();
   }
 
   @override
   Future<Goal?> fetchGoalById(String goalId) async {
-    final doc = await _firestore
-        .collection(_FirestoreCollections.goals)
-        .doc(goalId)
-        .get();
-
-    if (!doc.exists) return null;
-
-    return _goalFromFirestore(doc.id, doc.data()!);
+    // GoalId ile direkt erişim için tüm kullanıcıların goals koleksiyonlarında arama yapmalıyız
+    // Ancak bu verimsiz olabilir. Alternatif: goalId'yi userId ile birlikte saklamak
+    // Şimdilik eski yapıyı koruyoruz ama userId'yi de parametre olarak almalıyız
+    // Ancak interface'de userId yok, bu yüzden tüm kullanıcılarda arama yapacağız
+    // Bu geçici bir çözüm - ideal olarak goalId userId içermeli veya interface güncellenmeli
+    
+    // Önce mevcut kullanıcının goals'ında ara
+    // Not: Bu metodun çağrıldığı yerlerde userId bilgisi olmalı
+    // Şimdilik tüm users collection'ında arama yapacağız (verimsiz ama çalışır)
+    final usersSnapshot = await _firestore.collection(_FirestoreCollections.users).get();
+    
+    for (final userDoc in usersSnapshot.docs) {
+      final goalDoc = await userDoc.reference
+          .collection(_FirestoreCollections.goals)
+          .doc(goalId)
+          .get();
+      
+      if (goalDoc.exists) {
+        final data = goalDoc.data();
+        if (data != null) {
+          return _goalFromFirestore(goalDoc.id, data as Map<String, dynamic>);
+        }
+      }
+    }
+    
+    return null;
   }
 
   @override
   Future<Goal> createGoal(Goal goal) async {
-    final docRef = _firestore.collection(_FirestoreCollections.goals).doc();
+    final docRef = _FirestoreCollections
+        ._userGoalsCollection(_firestore, goal.userId)
+        .doc();
     final goalWithId = Goal(
       id: docRef.id,
       userId: goal.userId,
@@ -109,8 +158,8 @@ class FirestoreGoalRepository implements GoalRepository {
 
   @override
   Future<Goal> updateGoal(Goal goal) async {
-    await _firestore
-        .collection(_FirestoreCollections.goals)
+    await _FirestoreCollections
+        ._userGoalsCollection(_firestore, goal.userId)
         .doc(goal.id)
         .update(_goalToFirestore(goal));
 
@@ -119,38 +168,70 @@ class FirestoreGoalRepository implements GoalRepository {
 
   @override
   Future<void> archiveGoal(String goalId) async {
-    await _firestore
-        .collection(_FirestoreCollections.goals)
-        .doc(goalId)
-        .update({'isArchived': true});
+    // archiveGoal için userId gerekli, ama interface'de yok
+    // Tüm kullanıcılarda arama yapmak yerine, mevcut kullanıcının goals'ında ara
+    // Not: Bu metodun çağrıldığı yerlerde userId bilgisi olmalı
+    // Şimdilik tüm users collection'ında arama yapacağız ama sadece kendi verilerine erişebiliriz
+    final usersSnapshot = await _firestore.collection(_FirestoreCollections.users).get();
+    
+    for (final userDoc in usersSnapshot.docs) {
+      final goalDoc = await userDoc.reference
+          .collection(_FirestoreCollections.goals)
+          .doc(goalId)
+          .get();
+      
+      if (goalDoc.exists) {
+        await goalDoc.reference.update({'isArchived': true});
+        return;
+      }
+    }
   }
 
   @override
   Future<void> deleteGoal(String goalId) async {
-    await _firestore
-        .collection(_FirestoreCollections.goals)
-        .doc(goalId)
-        .delete();
+    // deleteGoal için userId gerekli, ama interface'de yok
+    // Tüm kullanıcılarda arama yapmak yerine, mevcut kullanıcının goals'ında ara
+    // Not: Bu metodun çağrıldığı yerlerde userId bilgisi olmalı
+    // Şimdilik tüm users collection'ında arama yapacağız ama sadece kendi verilerine erişebiliriz
+    final usersSnapshot = await _firestore.collection(_FirestoreCollections.users).get();
+    
+    for (final userDoc in usersSnapshot.docs) {
+      final goalDoc = await userDoc.reference
+          .collection(_FirestoreCollections.goals)
+          .doc(goalId)
+          .get();
+      
+      if (goalDoc.exists) {
+        await goalDoc.reference.delete();
+        return;
+      }
+    }
   }
 
   // ==================== Check-ins ====================
 
   @override
   Stream<List<CheckIn>> watchCheckIns(String goalId, String userId) {
-    return _firestore
-            .collection(_FirestoreCollections.checkIns)
-            .where('goalId', isEqualTo: goalId)
-            .where('userId', isEqualTo: userId)
-            .orderBy('createdAt', descending: true)
-            .snapshots()
-            .map((snapshot) => snapshot.docs
-                .map((doc) => _checkInFromFirestore(doc.id, doc.data()))
-                .toList());
+    return _FirestoreCollections
+        ._userCheckInsCollection(_firestore, userId)
+        .where('goalId', isEqualTo: goalId)
+        .orderBy('createdAt', descending: true)
+        .snapshots()
+        .map((snapshot) => snapshot.docs
+            .map((doc) {
+              final data = doc.data();
+              if (data == null) return null;
+              return _checkInFromFirestore(doc.id, data as Map<String, dynamic>);
+            })
+            .whereType<CheckIn>()
+            .toList());
   }
 
   @override
   Future<CheckIn> addCheckIn(CheckIn checkIn) async {
-    final docRef = _firestore.collection(_FirestoreCollections.checkIns).doc();
+    final docRef = _FirestoreCollections
+        ._userCheckInsCollection(_firestore, checkIn.userId)
+        .doc();
     final checkInWithId = CheckIn(
       id: docRef.id,
       goalId: checkIn.goalId,
@@ -169,12 +250,16 @@ class FirestoreGoalRepository implements GoalRepository {
   @override
   Stream<List<CheckIn>> watchAllCheckIns(String userId) {
     try {
-      return _firestore
-          .collection(_FirestoreCollections.checkIns)
-          .where('userId', isEqualTo: userId)
+      return _FirestoreCollections
+          ._userCheckInsCollection(_firestore, userId)
           .snapshots()
           .map((snapshot) => snapshot.docs
-              .map((doc) => _checkInFromFirestore(doc.id, doc.data()))
+              .map((doc) {
+                final data = doc.data();
+                if (data == null) return null;
+                return _checkInFromFirestore(doc.id, data as Map<String, dynamic>);
+              })
+              .whereType<CheckIn>()
               .toList());
     } catch (e, stackTrace) {
       print('Firestore watchAllCheckIns error: $e');
@@ -190,16 +275,17 @@ class FirestoreGoalRepository implements GoalRepository {
     required String userId,
     required int year,
   }) {
-    return _firestore
-        .collection(_FirestoreCollections.yearlyReports)
-        .where('userId', isEqualTo: userId)
+    return _FirestoreCollections
+        ._userYearlyReportsCollection(_firestore, userId)
         .where('year', isEqualTo: year)
         .limit(1)
         .snapshots()
         .map((snapshot) {
       if (snapshot.docs.isEmpty) return null;
       final doc = snapshot.docs.first;
-      return _yearlyReportFromFirestore(doc.id, doc.data());
+      final data = doc.data();
+      if (data == null) return null;
+      return _yearlyReportFromFirestore(doc.id, data as Map<String, dynamic>);
     });
   }
 
@@ -208,9 +294,8 @@ class FirestoreGoalRepository implements GoalRepository {
     required String userId,
     required int year,
   }) async {
-    final snapshot = await _firestore
-        .collection(_FirestoreCollections.yearlyReports)
-        .where('userId', isEqualTo: userId)
+    final snapshot = await _FirestoreCollections
+        ._userYearlyReportsCollection(_firestore, userId)
         .where('year', isEqualTo: year)
         .limit(1)
         .get();
@@ -218,13 +303,15 @@ class FirestoreGoalRepository implements GoalRepository {
     if (snapshot.docs.isEmpty) return null;
 
     final doc = snapshot.docs.first;
-    return _yearlyReportFromFirestore(doc.id, doc.data());
+    final data = doc.data();
+    if (data == null) return null;
+    return _yearlyReportFromFirestore(doc.id, data as Map<String, dynamic>);
   }
 
   @override
   Future<YearlyReport> saveYearlyReport(YearlyReport report) async {
-    final docRef = _firestore
-        .collection(_FirestoreCollections.yearlyReports)
+    final docRef = _FirestoreCollections
+        ._userYearlyReportsCollection(_firestore, report.userId)
         .doc(report.id);
 
     await docRef.set(_yearlyReportToFirestore(report));
@@ -341,23 +428,24 @@ class FirestoreGoalRepository implements GoalRepository {
   @override
   Stream<List<Note>> watchNotes(String goalId, String userId) {
     try {
-      return _firestore
-          .collection(_FirestoreCollections.notes)
+      return _FirestoreCollections
+          ._userNotesCollection(_firestore, userId)
           .where('goalId', isEqualTo: goalId)
-          .where('userId', isEqualTo: userId)
           .orderBy('createdAt', descending: true)
           .snapshots()
           .map((snapshot) {
         return snapshot.docs.map((doc) {
           final data = doc.data();
+          if (data == null) return null;
+          final dataMap = data as Map<String, dynamic>;
           return Note(
             id: doc.id,
-            goalId: data['goalId'] as String,
-            userId: data['userId'] as String,
-            createdAt: (data['createdAt'] as Timestamp).toDate(),
-            content: data['content'] as String,
+            goalId: dataMap['goalId'] as String? ?? '',
+            userId: dataMap['userId'] as String? ?? '',
+            createdAt: (dataMap['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+            content: dataMap['content'] as String? ?? '',
           );
-        }).toList();
+        }).whereType<Note>().toList();
       });
     } catch (e) {
       print('Error watching notes: $e');
@@ -368,7 +456,10 @@ class FirestoreGoalRepository implements GoalRepository {
   @override
   Future<void> addNote(Note note) async {
     try {
-      await _firestore.collection(_FirestoreCollections.notes).doc(note.id).set({
+      await _FirestoreCollections
+          ._userNotesCollection(_firestore, note.userId)
+          .doc(note.id)
+          .set({
         'goalId': note.goalId,
         'userId': note.userId,
         'createdAt': Timestamp.fromDate(note.createdAt),
@@ -382,8 +473,23 @@ class FirestoreGoalRepository implements GoalRepository {
 
   @override
   Future<void> deleteNote(String noteId) async {
+    // deleteNote için userId gerekli, ama interface'de yok
+    // Not: Bu metodun çağrıldığı yerlerde userId bilgisi olmalı
+    // Şimdilik tüm kullanıcılarda arama yapacağız
     try {
-      await _firestore.collection(_FirestoreCollections.notes).doc(noteId).delete();
+      final usersSnapshot = await _firestore.collection(_FirestoreCollections.users).get();
+      
+      for (final userDoc in usersSnapshot.docs) {
+        final noteDoc = await userDoc.reference
+            .collection(_FirestoreCollections.notes)
+            .doc(noteId)
+            .get();
+        
+        if (noteDoc.exists) {
+          await noteDoc.reference.delete();
+          return;
+        }
+      }
     } catch (e) {
       print('Error deleting note: $e');
       rethrow;

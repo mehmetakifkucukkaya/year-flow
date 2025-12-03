@@ -111,52 +111,52 @@ class _GoalsPageState extends ConsumerState<GoalsPage> {
 
     return Container(
       color: _premiumBackground,
-      child: Stack(
-        children: [
-          goalsAsync.when(
-            loading: () => const Center(
-              child: CircularProgressIndicator(),
-            ),
-            error: (error, stackTrace) {
-              // Hata detaylarını logla
-              debugPrint('GoalsPage error: $error');
-              debugPrint('Stack trace: $stackTrace');
+      child: goalsAsync.when(
+        loading: () => const Center(
+          child: CircularProgressIndicator(),
+        ),
+        error: (error, stackTrace) {
+          // Hata detaylarını logla
+          debugPrint('GoalsPage error: $error');
+          debugPrint('Stack trace: $stackTrace');
 
-              return Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(AppSpacing.lg),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(
-                        Icons.error_outline_rounded,
-                        size: 48,
-                        color: AppColors.error,
-                      ),
-                      const SizedBox(height: AppSpacing.md),
-                      Text(
-                        'Hedefler yüklenirken bir hata oluştu.',
-                        style: AppTextStyles.bodyMedium.copyWith(
-                          color: AppColors.error,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: AppSpacing.sm),
-                      TextButton(
-                        onPressed: () {
-                          // Stream'i yeniden başlat
-                          ref.invalidate(goalsStreamProvider);
-                        },
-                        child: const Text('Yeniden Dene'),
-                      ),
-                    ],
+          return Center(
+            child: Padding(
+              padding: const EdgeInsets.all(AppSpacing.lg),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(
+                    Icons.error_outline_rounded,
+                    size: 48,
+                    color: AppColors.error,
                   ),
-                ),
-              );
-            },
-            data: (goals) {
-              final filteredAndSortedGoals = _filterAndSortGoals(goals);
-              return CustomScrollView(
+                  const SizedBox(height: AppSpacing.md),
+                  Text(
+                    'Hedefler yüklenirken bir hata oluştu.',
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      color: AppColors.error,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
+                  TextButton(
+                    onPressed: () {
+                      // Stream'i yeniden başlat
+                      ref.invalidate(goalsStreamProvider);
+                    },
+                    child: const Text('Yeniden Dene'),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+        data: (goals) {
+          final filteredAndSortedGoals = _filterAndSortGoals(goals);
+          return Stack(
+            children: [
+              CustomScrollView(
                 slivers: [
                   // SafeArea for status bar
                   SliverSafeArea(
@@ -221,41 +221,42 @@ class _GoalsPageState extends ConsumerState<GoalsPage> {
                     child: SizedBox(height: 100),
                   ),
                 ],
-              );
-            },
-          ),
-          // Floating Action Button - Premium styling
-          Positioned(
-            bottom: 24,
-            right: 16,
-            child: Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(28),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.primary.withOpacity(0.3),
-                    offset: const Offset(0, 4),
-                    blurRadius: 12,
-                    spreadRadius: 0,
+              ),
+              // Floating Action Button - Premium styling (sadece hedef varsa göster)
+              if (filteredAndSortedGoals.isNotEmpty)
+                Positioned(
+                  bottom: 24,
+                  right: 16,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(28),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.primary.withOpacity(0.3),
+                          offset: const Offset(0, 4),
+                          blurRadius: 12,
+                          spreadRadius: 0,
+                        ),
+                      ],
+                    ),
+                    child: FloatingActionButton(
+                      onPressed: () {
+                        context.push(AppRoutes.goalCreate);
+                      },
+                      backgroundColor: AppColors.primary
+                          .withOpacity(0.9), // Softer pastel blue
+                      elevation: 0,
+                      child: const Icon(
+                        Icons.add,
+                        color: Colors.white,
+                        size: 24, // Slightly smaller icon
+                      ),
+                    ),
                   ),
-                ],
-              ),
-              child: FloatingActionButton(
-                onPressed: () {
-                  context.push(AppRoutes.goalCreate);
-                },
-                backgroundColor: AppColors.primary
-                    .withOpacity(0.9), // Softer pastel blue
-                elevation: 0,
-                child: const Icon(
-                  Icons.add,
-                  color: Colors.white,
-                  size: 24, // Slightly smaller icon
                 ),
-              ),
-            ),
-          ),
-        ],
+            ],
+          );
+        },
       ),
     );
   }
@@ -721,25 +722,49 @@ class _EmptyState extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(
-            Icons.add_circle_outline,
-            size: 64,
-            color: AppColors.gray400,
+          Container(
+            width: 80,
+            height: 80,
+            decoration: BoxDecoration(
+              color: AppColors.primary.withOpacity(0.1),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.flag_outlined,
+              size: 40,
+              color: AppColors.primary,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.xl),
+          Text(
+            'Henüz hedef eklemedin',
+            style: AppTextStyles.titleLarge.copyWith(
+              fontWeight: FontWeight.w700,
+              color: AppColors.gray900,
+            ),
+            textAlign: TextAlign.center,
           ),
           const SizedBox(height: AppSpacing.md),
           Text(
-            'Henüz bir hedefin yok',
-            style: AppTextStyles.titleLarge.copyWith(
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          const SizedBox(height: AppSpacing.xs),
-          Text(
-            'Hadi, ilk hedefini ekleyerek yolculuğuna başla!',
+            'Yeni bir hedef ekleyerek başarı yolculuğuna başla',
             style: AppTextStyles.bodyMedium.copyWith(
               color: AppColors.gray600,
             ),
             textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: AppSpacing.xl),
+          FilledButton.icon(
+            onPressed: () {
+              context.push(AppRoutes.goalCreate);
+            },
+            icon: const Icon(Icons.add_rounded),
+            label: const Text('Yeni Hedef Ekle'),
+            style: FilledButton.styleFrom(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.xl,
+                vertical: AppSpacing.md,
+              ),
+            ),
           ),
         ],
       ),
