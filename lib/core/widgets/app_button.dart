@@ -52,7 +52,7 @@ class AppButton extends StatelessWidget {
           onPressed: onPressed,
           style: FilledButton.styleFrom(
             minimumSize: Size(0, minHeight),
-            shape: RoundedRectangleBorder(
+            shape: const RoundedRectangleBorder(
               borderRadius: AppRadius.borderRadiusMd,
             ),
           ),
@@ -63,7 +63,7 @@ class AppButton extends StatelessWidget {
           onPressed: onPressed,
           style: OutlinedButton.styleFrom(
             minimumSize: Size(0, minHeight),
-            shape: RoundedRectangleBorder(
+            shape: const RoundedRectangleBorder(
               borderRadius: AppRadius.borderRadiusMd,
             ),
           ),
@@ -74,7 +74,7 @@ class AppButton extends StatelessWidget {
           onPressed: onPressed,
           style: TextButton.styleFrom(
             minimumSize: Size(0, minHeight),
-            shape: RoundedRectangleBorder(
+            shape: const RoundedRectangleBorder(
               borderRadius: AppRadius.borderRadiusMd,
             ),
           ),

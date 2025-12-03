@@ -30,7 +30,7 @@ class ReportsPage extends ConsumerWidget {
             ],
           ),
         ),
-        child: CustomScrollView(
+        child: const CustomScrollView(
           slivers: [
             // Status bar alanı için safe area
             SliverSafeArea(
@@ -39,7 +39,7 @@ class ReportsPage extends ConsumerWidget {
                 child: _ReportsTopAppBar(),
               ),
             ),
-            const SliverToBoxAdapter(
+            SliverToBoxAdapter(
               child: Padding(
                 padding: EdgeInsets.symmetric(
                   horizontal: AppSpacing.md,
@@ -64,7 +64,7 @@ class ReportsPage extends ConsumerWidget {
                 ),
               ),
             ),
-            const SliverToBoxAdapter(
+            SliverToBoxAdapter(
               child: SizedBox(height: AppSpacing.xl),
             ),
           ],
@@ -233,7 +233,10 @@ class _HeaderHero extends StatelessWidget {
                           error: (_, __) => const SizedBox.shrink(),
                           data: (stats) {
                             final completionRate = stats.totalGoals > 0
-                                ? ((stats.completedGoals / stats.totalGoals) * 100).round()
+                                ? ((stats.completedGoals /
+                                            stats.totalGoals) *
+                                        100)
+                                    .round()
                                 : 0;
                             final message = completionRate >= 75
                                 ? 'Harika bir yıl geçirdin 🎉'
@@ -279,7 +282,7 @@ class _OverviewSection extends ConsumerWidget {
       ),
       error: (error, _) => Container(
         padding: const EdgeInsets.all(AppSpacing.lg),
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           color: Colors.white,
           borderRadius: AppRadius.borderRadiusXl,
         ),
@@ -464,7 +467,7 @@ class _CategoryProgressSection extends ConsumerWidget {
     return statsAsync.when(
       loading: () => Container(
         padding: const EdgeInsets.all(AppSpacing.lg),
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           color: AppColors.white,
           borderRadius: AppRadius.borderRadiusXl,
         ),
@@ -472,7 +475,7 @@ class _CategoryProgressSection extends ConsumerWidget {
       ),
       error: (error, _) => Container(
         padding: const EdgeInsets.all(AppSpacing.lg),
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           color: AppColors.white,
           borderRadius: AppRadius.borderRadiusXl,
         ),
@@ -489,7 +492,7 @@ class _CategoryProgressSection extends ConsumerWidget {
         if (categories.isEmpty) {
           return Container(
             padding: const EdgeInsets.all(AppSpacing.lg),
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               color: AppColors.white,
               borderRadius: AppRadius.borderRadiusXl,
             ),
@@ -1075,7 +1078,8 @@ class _ReportsExportBottomSheetState
             children: [
               Expanded(
                 child: OutlinedButton.icon(
-                  onPressed: _isLoading ? null : () => _handleExport('json'),
+                  onPressed:
+                      _isLoading ? null : () => _handleExport('json'),
                   icon: const Icon(Icons.code_rounded),
                   label: const Text('JSON'),
                   style: OutlinedButton.styleFrom(
@@ -1093,7 +1097,8 @@ class _ReportsExportBottomSheetState
               const SizedBox(width: AppSpacing.md),
               Expanded(
                 child: OutlinedButton.icon(
-                  onPressed: _isLoading ? null : () => _handleExport('csv'),
+                  onPressed:
+                      _isLoading ? null : () => _handleExport('csv'),
                   icon: const Icon(Icons.table_chart_rounded),
                   label: const Text('CSV'),
                   style: OutlinedButton.styleFrom(

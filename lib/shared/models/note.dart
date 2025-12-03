@@ -16,4 +16,3 @@ class Note {
   final DateTime createdAt;
   final String content;
 }
-

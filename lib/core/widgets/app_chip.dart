@@ -90,10 +90,9 @@ class AppChip extends StatelessWidget {
       backgroundColor: backgroundColor,
       labelStyle: TextStyle(color: textColor),
       avatar: icon,
-      shape: RoundedRectangleBorder(
+      shape: const RoundedRectangleBorder(
         borderRadius: AppRadius.borderRadiusFull,
       ),
     );
   }
 }
-

@@ -117,7 +117,10 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                       const SizedBox(height: 16),
                       Text(
                         'YearFlow',
-                        style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+                        style: Theme.of(context)
+                            .textTheme
+                            .headlineLarge
+                            ?.copyWith(
                               color: AppColors.gray900,
                               fontWeight: FontWeight.bold,
                             ),
@@ -129,10 +132,11 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                 // Başlık
                 Text(
                   'Kayıt Ol',
-                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                        color: AppColors.gray900,
-                        fontWeight: FontWeight.bold,
-                      ),
+                  style:
+                      Theme.of(context).textTheme.headlineMedium?.copyWith(
+                            color: AppColors.gray900,
+                            fontWeight: FontWeight.bold,
+                          ),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 32),
@@ -230,7 +234,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                 // Separator
                 Row(
                   children: [
-                    Expanded(
+                    const Expanded(
                       child: Divider(
                         color: AppColors.gray200,
                       ),
@@ -238,12 +242,13 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                     const SizedBox(width: 8),
                     Text(
                       'veya',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: AppColors.gray500,
-                          ),
+                      style:
+                          Theme.of(context).textTheme.bodySmall?.copyWith(
+                                color: AppColors.gray500,
+                              ),
                     ),
                     const SizedBox(width: 8),
-                    Expanded(
+                    const Expanded(
                       child: Divider(
                         color: AppColors.gray200,
                       ),
@@ -259,10 +264,10 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                       : _handleGoogleSignIn,
                   variant: AppButtonVariant.outlined,
                   isLoading: authState.isGoogleLoading,
-                  child: Row(
+                  child: const Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     mainAxisSize: MainAxisSize.min,
-                    children: const [
+                    children: [
                       Icon(
                         Icons.login,
                         size: 18,
@@ -297,4 +302,3 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
     );
   }
 }
-

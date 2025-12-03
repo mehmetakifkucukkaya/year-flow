@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_radius.dart';
 import '../../../../core/theme/app_spacing.dart';
@@ -197,7 +198,7 @@ class _AIOptimizeBottomSheetState
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           // Optimized Title
-                          _SectionTitle('Optimize Edilmiş Hedef'),
+                          const _SectionTitle('Optimize Edilmiş Hedef'),
                           const SizedBox(height: AppSpacing.sm),
                           Container(
                             width: double.infinity,
@@ -218,7 +219,8 @@ class _AIOptimizeBottomSheetState
                               ),
                               boxShadow: [
                                 BoxShadow(
-                                  color: AppColors.primary.withOpacity(0.05),
+                                  color:
+                                      AppColors.primary.withOpacity(0.05),
                                   blurRadius: 8,
                                   offset: const Offset(0, 2),
                                 ),
@@ -243,7 +245,7 @@ class _AIOptimizeBottomSheetState
                           const SizedBox(height: AppSpacing.xl),
 
                           // Explanation
-                          _SectionTitle('Açıklama'),
+                          const _SectionTitle('Açıklama'),
                           const SizedBox(height: AppSpacing.sm),
                           Container(
                             width: double.infinity,
@@ -267,13 +269,14 @@ class _AIOptimizeBottomSheetState
                           const SizedBox(height: AppSpacing.xl),
 
                           // Sub Goals
-                          _SectionTitle('Önerilen Alt Görevler'),
+                          const _SectionTitle('Önerilen Alt Görevler'),
                           const SizedBox(height: AppSpacing.md),
                           ...result.subGoals.asMap().entries.map((entry) {
                             final index = entry.key;
                             final subGoal = entry.value;
                             return Padding(
-                              padding: const EdgeInsets.only(bottom: AppSpacing.md),
+                              padding: const EdgeInsets.only(
+                                  bottom: AppSpacing.md),
                               child: Container(
                                 padding: AppSpacing.paddingMd,
                                 decoration: BoxDecoration(
@@ -285,14 +288,16 @@ class _AIOptimizeBottomSheetState
                                   ),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: Colors.black.withOpacity(0.03),
+                                      color:
+                                          Colors.black.withOpacity(0.03),
                                       blurRadius: 4,
                                       offset: const Offset(0, 2),
                                     ),
                                   ],
                                 ),
                                 child: Row(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.start,
                                   children: [
                                     Container(
                                       width: 28,
@@ -301,13 +306,15 @@ class _AIOptimizeBottomSheetState
                                         gradient: LinearGradient(
                                           colors: [
                                             AppColors.primary,
-                                            AppColors.primary.withOpacity(0.8),
+                                            AppColors.primary
+                                                .withOpacity(0.8),
                                           ],
                                         ),
                                         shape: BoxShape.circle,
                                         boxShadow: [
                                           BoxShadow(
-                                            color: AppColors.primary.withOpacity(0.3),
+                                            color: AppColors.primary
+                                                .withOpacity(0.3),
                                             blurRadius: 4,
                                             offset: const Offset(0, 2),
                                           ),
@@ -316,7 +323,8 @@ class _AIOptimizeBottomSheetState
                                       child: Center(
                                         child: Text(
                                           '${index + 1}',
-                                          style: AppTextStyles.bodySmall.copyWith(
+                                          style: AppTextStyles.bodySmall
+                                              .copyWith(
                                             fontWeight: FontWeight.w700,
                                             color: Colors.white,
                                           ),
@@ -326,10 +334,12 @@ class _AIOptimizeBottomSheetState
                                     const SizedBox(width: AppSpacing.md),
                                     Expanded(
                                       child: Padding(
-                                        padding: const EdgeInsets.only(top: 2),
+                                        padding:
+                                            const EdgeInsets.only(top: 2),
                                         child: Text(
                                           subGoal.title,
-                                          style: AppTextStyles.bodyMedium.copyWith(
+                                          style: AppTextStyles.bodyMedium
+                                              .copyWith(
                                             height: 1.4,
                                             color: AppColors.gray800,
                                           ),
@@ -340,7 +350,7 @@ class _AIOptimizeBottomSheetState
                                 ),
                               ),
                             );
-                          }).toList(),
+                          }),
 
                           // Bottom spacing for action buttons
                           const SizedBox(height: AppSpacing.xl),
@@ -363,7 +373,7 @@ class _AIOptimizeBottomSheetState
                               color: AppColors.error.withOpacity(0.1),
                               shape: BoxShape.circle,
                             ),
-                            child: Icon(
+                            child: const Icon(
                               Icons.error_outline,
                               size: 48,
                               color: AppColors.error,
@@ -404,7 +414,7 @@ class _AIOptimizeBottomSheetState
           // Fixed Action Buttons
           Container(
             padding: AppSpacing.paddingMd,
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               color: Colors.white,
               border: Border(
                 top: BorderSide(
@@ -418,9 +428,10 @@ class _AIOptimizeBottomSheetState
                 if (result == null) {
                   return const SizedBox.shrink();
                 }
-                final editedTitle = _titleController?.text.trim().isEmpty ?? true
-                    ? result.optimizedTitle
-                    : _titleController!.text.trim();
+                final editedTitle =
+                    _titleController?.text.trim().isEmpty ?? true
+                        ? result.optimizedTitle
+                        : _titleController!.text.trim();
                 final optimizedResult = OptimizeGoalResponse(
                   optimizedTitle: editedTitle,
                   subGoals: result.subGoals,
@@ -433,10 +444,10 @@ class _AIOptimizeBottomSheetState
                         onPressed: () => Navigator.of(context).pop(),
                         style: OutlinedButton.styleFrom(
                           minimumSize: const Size(0, 56),
-                          shape: RoundedRectangleBorder(
+                          shape: const RoundedRectangleBorder(
                             borderRadius: AppRadius.borderRadiusMd,
                           ),
-                          side: BorderSide(
+                          side: const BorderSide(
                             color: AppColors.gray300,
                             width: 1.5,
                           ),
@@ -522,4 +533,3 @@ class _SectionTitle extends StatelessWidget {
     );
   }
 }
-

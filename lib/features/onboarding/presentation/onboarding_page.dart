@@ -57,7 +57,8 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
                 alignment: Alignment.topRight,
                 child: TextButton(
                   onPressed: () {
-                    ref.read(onboardingCompletedProvider.notifier).state = true;
+                    ref.read(onboardingCompletedProvider.notifier).state =
+                        true;
                     context.go(AppRoutes.login);
                   },
                   child: const Text('Atla'),
@@ -197,10 +198,11 @@ class _OnboardingSlide1 extends StatelessWidget {
               children: [
                 Text(
                   'Bu yıl hedeflerini somutlaştır.',
-                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                        color: AppColors.gray900,
-                        fontWeight: FontWeight.bold,
-                      ),
+                  style:
+                      Theme.of(context).textTheme.headlineMedium?.copyWith(
+                            color: AppColors.gray900,
+                            fontWeight: FontWeight.bold,
+                          ),
                   textAlign: TextAlign.center,
                 ),
                 AppSpacers.md,
@@ -278,7 +280,7 @@ class _OnboardingSlide2 extends StatelessWidget {
                       color: Colors.white.withOpacity(0.9),
                     ),
                     AppSpacers.md,
-                    Row(
+                    const Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         _ProgressStep(isCompleted: true),
@@ -304,10 +306,11 @@ class _OnboardingSlide2 extends StatelessWidget {
               children: [
                 Text(
                   'Düzenli ilerlemelerle yolculuğunu takip et.',
-                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                        color: AppColors.gray900,
-                        fontWeight: FontWeight.bold,
-                      ),
+                  style:
+                      Theme.of(context).textTheme.headlineMedium?.copyWith(
+                            color: AppColors.gray900,
+                            fontWeight: FontWeight.bold,
+                          ),
                   textAlign: TextAlign.center,
                 ),
                 AppSpacers.md,
@@ -339,7 +342,9 @@ class _ProgressStep extends StatelessWidget {
       width: 40,
       height: 40,
       decoration: BoxDecoration(
-        color: isCompleted ? Colors.green.shade300 : Colors.white.withOpacity(0.3),
+        color: isCompleted
+            ? Colors.green.shade300
+            : Colors.white.withOpacity(0.3),
         shape: BoxShape.circle,
       ),
       child: isCompleted
@@ -434,10 +439,11 @@ class _OnboardingSlide3 extends StatelessWidget {
               children: [
                 Text(
                   'Yıl sonunda kişisel gelişim raporunu al.',
-                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                        color: AppColors.gray900,
-                        fontWeight: FontWeight.bold,
-                      ),
+                  style:
+                      Theme.of(context).textTheme.headlineMedium?.copyWith(
+                            color: AppColors.gray900,
+                            fontWeight: FontWeight.bold,
+                          ),
                   textAlign: TextAlign.center,
                 ),
                 AppSpacers.md,
@@ -456,4 +462,3 @@ class _OnboardingSlide3 extends StatelessWidget {
     );
   }
 }
-

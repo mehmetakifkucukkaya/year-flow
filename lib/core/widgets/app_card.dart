@@ -28,7 +28,7 @@ class AppCard extends StatelessWidget {
       elevation: elevation ?? 0,
       color: backgroundColor,
       margin: margin ?? EdgeInsets.zero,
-      shape: RoundedRectangleBorder(
+      shape: const RoundedRectangleBorder(
         borderRadius: AppRadius.borderRadiusMd,
       ),
       child: Padding(
@@ -48,4 +48,3 @@ class AppCard extends StatelessWidget {
     return card;
   }
 }
-

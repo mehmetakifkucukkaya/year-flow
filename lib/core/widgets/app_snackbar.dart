@@ -110,7 +110,7 @@ class AppSnackbar {
         behavior: SnackBarBehavior.floating,
         margin: const EdgeInsets.all(16),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        shape: RoundedRectangleBorder(
+        shape: const RoundedRectangleBorder(
           borderRadius: AppRadius.borderRadiusXl,
         ),
         elevation: 8,
@@ -119,4 +119,3 @@ class AppSnackbar {
     );
   }
 }
-
