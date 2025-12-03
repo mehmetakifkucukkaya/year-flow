@@ -41,6 +41,7 @@ abstract class AuthRepository {
   Future<AppUser?> signUpWithEmail({
     required String email,
     required String password,
+    required String name,
   });
 
   Future<void> sendPasswordResetEmail({required String email});
@@ -119,6 +120,7 @@ class FirebaseAuthRepository implements AuthRepository {
   Future<AppUser?> signUpWithEmail({
     required String email,
     required String password,
+    required String name,
   }) async {
     final credential = await _firebaseAuth.createUserWithEmailAndPassword(
       email: email,
@@ -126,8 +128,14 @@ class FirebaseAuthRepository implements AuthRepository {
     );
     final user = credential.user;
     if (user == null) return null;
+    
+    // Kullanıcı adını güncelle
+    await user.updateProfile(displayName: name);
+    await user.reload();
+    final updatedUser = _firebaseAuth.currentUser;
+    
     // Email ile kayıt her zaman yeni kullanıcıdır
-    final appUser = AppUser.fromFirebaseUser(user, isNewUser: true);
+    final appUser = AppUser.fromFirebaseUser(updatedUser ?? user, isNewUser: true);
     // Users collection'ına kaydet
     await _saveUserToFirestore(appUser);
     return appUser;
@@ -242,45 +250,73 @@ class FirebaseAuthRepository implements AuthRepository {
     final userId = user.uid;
 
     // Firestore'dan tüm kullanıcı verilerini sil (yeni yapı: users/{userId}/subcollections)
+    // ÖNEMLİ: Firestore silme işlemi başarısız olursa auth hesabını silme
     try {
-      final batch = _firestore.batch();
       final userDocRef = _firestore.collection('users').doc(userId);
 
+      // Tüm subcollection'ları sil
+      // Batch işlemi 500 doküman limitine sahip, bu yüzden her subcollection için ayrı batch kullanıyoruz
+      
       // Goals'ları sil (users/{userId}/goals)
       final goalsSnapshot = await userDocRef.collection('goals').get();
-      for (final goalDoc in goalsSnapshot.docs) {
-        batch.delete(goalDoc.reference);
+      if (goalsSnapshot.docs.isNotEmpty) {
+        final goalsBatch = _firestore.batch();
+        for (final goalDoc in goalsSnapshot.docs) {
+          goalsBatch.delete(goalDoc.reference);
+        }
+        await goalsBatch.commit();
       }
 
       // Check-ins'leri sil (users/{userId}/checkIns)
       final checkInsSnapshot = await userDocRef.collection('checkIns').get();
-      for (final checkInDoc in checkInsSnapshot.docs) {
-        batch.delete(checkInDoc.reference);
+      if (checkInsSnapshot.docs.isNotEmpty) {
+        final checkInsBatch = _firestore.batch();
+        for (final checkInDoc in checkInsSnapshot.docs) {
+          checkInsBatch.delete(checkInDoc.reference);
+        }
+        await checkInsBatch.commit();
       }
 
       // Yearly reports'ları sil (users/{userId}/yearlyReports)
       final reportsSnapshot = await userDocRef.collection('yearlyReports').get();
-      for (final reportDoc in reportsSnapshot.docs) {
-        batch.delete(reportDoc.reference);
+      if (reportsSnapshot.docs.isNotEmpty) {
+        final reportsBatch = _firestore.batch();
+        for (final reportDoc in reportsSnapshot.docs) {
+          reportsBatch.delete(reportDoc.reference);
+        }
+        await reportsBatch.commit();
       }
 
       // Notes'ları sil (users/{userId}/notes)
       final notesSnapshot = await userDocRef.collection('notes').get();
-      for (final noteDoc in notesSnapshot.docs) {
-        batch.delete(noteDoc.reference);
+      if (notesSnapshot.docs.isNotEmpty) {
+        final notesBatch = _firestore.batch();
+        for (final noteDoc in notesSnapshot.docs) {
+          notesBatch.delete(noteDoc.reference);
+        }
+        await notesBatch.commit();
       }
 
       // User document'ını sil
-      batch.delete(userDocRef);
-
-      await batch.commit();
-    } catch (e) {
+      await userDocRef.delete();
+      
+      print('User data successfully deleted from Firestore');
+    } catch (e, stackTrace) {
       print('Error deleting user data from Firestore: $e');
-      // Firestore hatası olsa bile auth hesabını silmeye devam et
+      print('Stack trace: $stackTrace');
+      // Firestore silme başarısız olursa auth hesabını silme - veri tutarlılığı için
+      throw Exception('Firestore verileri silinirken hata oluştu. Hesap silinemedi: $e');
     }
 
-    // Firebase Auth hesabını sil
-    await user.delete();
+    // Firebase Auth hesabını sil (sadece Firestore silme başarılı olduysa)
+    try {
+      await user.delete();
+      print('User account successfully deleted from Firebase Auth');
+    } catch (e) {
+      print('Error deleting user from Firebase Auth: $e');
+      // Auth silme başarısız olursa hata fırlat
+      throw Exception('Firebase Auth hesabı silinirken hata oluştu: $e');
+    }
   }
 }
 

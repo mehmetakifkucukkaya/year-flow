@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/router/app_routes.dart';
@@ -19,6 +20,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
+  String? _lastShownError; // Son gösterilen hata mesajını takip et
 
   @override
   void dispose() {
@@ -34,20 +36,12 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
     if (!mounted) return;
 
+    // Giriş işlemini başlat
+    // Hata mesajları ve başarılı giriş ref.listen ile handle edilecek
     await ref.read(authStateProvider.notifier).signInWithEmail(
           email: _emailController.text.trim(),
           password: _passwordController.text,
         );
-
-    if (!mounted) return;
-
-    final authState = ref.read(authStateProvider);
-
-    if (authState.errorMessage != null) {
-      AppSnackbar.showError(context, message: authState.errorMessage!);
-    } else if (authState.isAuthenticated) {
-      context.go(AppRoutes.home);
-    }
   }
 
   Future<void> _handleGoogleSignIn() async {
@@ -89,7 +83,32 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
-    final authState = ref.watch(authStateProvider);
+    // Sadece loading state'ini watch et, böylece form state'i korunur
+    final isEmailLoading = ref.watch(authStateProvider.select((s) => s.isEmailLoading));
+    final isGoogleLoading = ref.watch(authStateProvider.select((s) => s.isGoogleLoading));
+    
+    // State değişikliklerini dinle (sadece state değiştiğinde çağrılır)
+    ref.listenManual<AuthState>(authStateProvider, (previous, next) {
+      if (!mounted) return;
+      
+      // Hata mesajı varsa ve daha önce gösterilmemişse göster
+      if (next.errorMessage != null && 
+          next.errorMessage != previous?.errorMessage &&
+          next.errorMessage != _lastShownError) {
+        _lastShownError = next.errorMessage;
+        AppSnackbar.showError(context, message: next.errorMessage!);
+      }
+      
+      // Hata mesajı temizlendiğinde, son gösterilen hatayı da temizle
+      if (next.errorMessage == null && previous?.errorMessage != null) {
+        _lastShownError = null;
+      }
+      
+      // Başarılı giriş yapıldıysa yönlendir
+      if (next.isAuthenticated && !(previous?.isAuthenticated ?? false)) {
+        context.go(AppRoutes.home);
+      }
+    });
 
     return Scaffold(
       body: SafeArea(
@@ -97,6 +116,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
           padding: const EdgeInsets.all(24),
           child: Form(
             key: _formKey,
+            autovalidateMode: AutovalidateMode.disabled,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
@@ -179,6 +199,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     if (value == null || value.isEmpty) {
                       return 'Şifre gereklidir';
                     }
+                    if (value.length < 6) {
+                      return 'Şifre en az 6 karakter olmalı';
+                    }
                     return null;
                   },
                 ),
@@ -196,11 +219,10 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                 AppSpacers.lg,
                 // Login button
                 AppButton(
-                  onPressed: (authState.isEmailLoading ||
-                          authState.isGoogleLoading)
+                  onPressed: (isEmailLoading || isGoogleLoading)
                       ? null
                       : _handleLogin,
-                  isLoading: authState.isEmailLoading,
+                  isLoading: isEmailLoading,
                   child: const Text('Giriş Yap'),
                 ),
                 AppSpacers.lg,
@@ -231,21 +253,17 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                 AppSpacers.lg,
                 // Google Sign-In button
                 AppButton(
-                  onPressed: (authState.isEmailLoading ||
-                          authState.isGoogleLoading)
+                  onPressed: (isEmailLoading || isGoogleLoading)
                       ? null
                       : _handleGoogleSignIn,
                   variant: AppButtonVariant.outlined,
-                  isLoading: authState.isGoogleLoading,
+                  isLoading: isGoogleLoading,
                   child: const Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(
-                        Icons.login,
-                        size: 18,
-                        color: AppColors.gray800,
-                      ),
+                      // Google Icon
+                      _GoogleIcon(),
                       SizedBox(width: 8),
                       Text(
                         'Google ile devam et',
@@ -271,6 +289,27 @@ class _LoginPageState extends ConsumerState<LoginPage> {
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// Google ikonu widget'ı - Google'ın resmi logosunu kullanır
+class _GoogleIcon extends StatelessWidget {
+  const _GoogleIcon({this.size = 18});
+
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: size * 1.7,
+      height: size,
+      child: SvgPicture.asset(
+        'assets/icons/google_logo.svg',
+        width: size * 1.7,
+        height: size,
+        fit: BoxFit.contain,
       ),
     );
   }

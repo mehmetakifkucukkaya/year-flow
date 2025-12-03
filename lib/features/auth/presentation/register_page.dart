@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/router/app_routes.dart';
@@ -16,17 +17,16 @@ class RegisterPage extends ConsumerStatefulWidget {
 
 class _RegisterPageState extends ConsumerState<RegisterPage> {
   final _formKey = GlobalKey<FormState>();
+  final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  final _confirmPasswordController = TextEditingController();
   bool _obscurePassword = true;
-  bool _obscureConfirmPassword = true;
 
   @override
   void dispose() {
+    _nameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
-    _confirmPasswordController.dispose();
     super.dispose();
   }
 
@@ -40,18 +40,8 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
     await ref.read(authStateProvider.notifier).signUpWithEmail(
           email: _emailController.text.trim(),
           password: _passwordController.text,
-          confirmPassword: _confirmPasswordController.text,
+          name: _nameController.text.trim(),
         );
-
-    if (!mounted) return;
-
-    final authState = ref.read(authStateProvider);
-
-    if (authState.errorMessage != null) {
-      AppSnackbar.showError(context, message: authState.errorMessage!);
-    } else if (authState.isAuthenticated) {
-      context.go(AppRoutes.home);
-    }
   }
 
   Future<void> _handleGoogleSignIn() async {
@@ -93,7 +83,25 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
 
   @override
   Widget build(BuildContext context) {
-    final authState = ref.watch(authStateProvider);
+    // Sadece loading state'ini watch et, böylece form state'i korunur
+    final isEmailLoading = ref.watch(authStateProvider.select((s) => s.isEmailLoading));
+    final isGoogleLoading = ref.watch(authStateProvider.select((s) => s.isGoogleLoading));
+    
+    // State değişikliklerini dinle (sadece state değiştiğinde çağrılır)
+    ref.listenManual<AuthState>(authStateProvider, (previous, next) {
+      if (!mounted) return;
+      
+      // Hata mesajı varsa göster
+      if (next.errorMessage != null && 
+          next.errorMessage != previous?.errorMessage) {
+        AppSnackbar.showError(context, message: next.errorMessage!);
+      }
+      
+      // Başarılı kayıt yapıldıysa yönlendir
+      if (next.isAuthenticated && !(previous?.isAuthenticated ?? false)) {
+        context.go(AppRoutes.home);
+      }
+    });
 
     return Scaffold(
       body: SafeArea(
@@ -101,6 +109,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
           padding: const EdgeInsets.all(24),
           child: Form(
             key: _formKey,
+            autovalidateMode: AutovalidateMode.disabled,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
@@ -140,6 +149,25 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 32),
+                // Name field
+                AppTextField(
+                  label: 'İsim',
+                  hint: 'Adınızı ve soyadınızı girin',
+                  controller: _nameController,
+                  keyboardType: TextInputType.name,
+                  textInputAction: TextInputAction.next,
+                  prefixIcon: const Icon(Icons.person_outlined),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'İsim gereklidir';
+                    }
+                    if (value.trim().length < 2) {
+                      return 'İsim en az 2 karakter olmalıdır';
+                    }
+                    return null;
+                  },
+                ),
+                AppSpacers.md,
                 // Email field
                 AppTextField(
                   label: 'E-posta',
@@ -165,7 +193,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                   hint: 'Şifrenizi oluşturun',
                   controller: _passwordController,
                   obscureText: _obscurePassword,
-                  textInputAction: TextInputAction.next,
+                  textInputAction: TextInputAction.done,
                   prefixIcon: const Icon(Icons.lock_outlined),
                   suffixIcon: IconButton(
                     icon: Icon(
@@ -184,38 +212,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                       return 'Şifre gereklidir';
                     }
                     if (value.length < 6) {
-                      return 'Şifre en az 6 karakter olmalıdır';
-                    }
-                    return null;
-                  },
-                ),
-                AppSpacers.md,
-                // Confirm password field
-                AppTextField(
-                  label: 'Şifre Onayı',
-                  hint: 'Şifrenizi tekrar girin',
-                  controller: _confirmPasswordController,
-                  obscureText: _obscureConfirmPassword,
-                  textInputAction: TextInputAction.done,
-                  prefixIcon: const Icon(Icons.lock_outlined),
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      _obscureConfirmPassword
-                          ? Icons.visibility_outlined
-                          : Icons.visibility_off_outlined,
-                    ),
-                    onPressed: () {
-                      setState(() {
-                        _obscureConfirmPassword = !_obscureConfirmPassword;
-                      });
-                    },
-                  ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Şifre onayı gereklidir';
-                    }
-                    if (value != _passwordController.text) {
-                      return 'Şifreler eşleşmiyor';
+                      return 'Şifre en az 6 karakter olmalı';
                     }
                     return null;
                   },
@@ -223,11 +220,10 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                 AppSpacers.lg,
                 // Register button
                 AppButton(
-                  onPressed: (authState.isEmailLoading ||
-                          authState.isGoogleLoading)
+                  onPressed: (isEmailLoading || isGoogleLoading)
                       ? null
                       : _handleRegister,
-                  isLoading: authState.isEmailLoading,
+                  isLoading: isEmailLoading,
                   child: const Text('Kayıt Ol'),
                 ),
                 AppSpacers.lg,
@@ -258,21 +254,17 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                 AppSpacers.lg,
                 // Google Sign-Up (Sign-In) button
                 AppButton(
-                  onPressed: (authState.isEmailLoading ||
-                          authState.isGoogleLoading)
+                  onPressed: (isEmailLoading || isGoogleLoading)
                       ? null
                       : _handleGoogleSignIn,
                   variant: AppButtonVariant.outlined,
-                  isLoading: authState.isGoogleLoading,
+                  isLoading: isGoogleLoading,
                   child: const Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(
-                        Icons.login,
-                        size: 18,
-                        color: AppColors.gray800,
-                      ),
+                      // Google Icon
+                      _GoogleIcon(),
                       SizedBox(width: 8),
                       Text(
                         'Google ile kayıt ol / devam et',
@@ -298,6 +290,27 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// Google ikonu widget'ı - Google'ın resmi logosunu kullanır
+class _GoogleIcon extends StatelessWidget {
+  const _GoogleIcon({this.size = 18});
+
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: size * 1.7,
+      height: size,
+      child: SvgPicture.asset(
+        'assets/icons/google_logo.svg',
+        width: size * 1.7,
+        height: size,
+        fit: BoxFit.contain,
       ),
     );
   }

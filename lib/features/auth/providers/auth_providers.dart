@@ -156,18 +156,68 @@ class AuthNotifier extends StateNotifier<AuthState> {
         );
       }
     } on FirebaseAuthException catch (e) {
+      String errorMessage = 'Giriş sırasında bir hata oluştu.';
+      
+      // Firebase hata kodlarına göre Türkçe mesajlar
+      switch (e.code) {
+        case 'user-not-found':
+          errorMessage = 'Bu e-posta adresi ile kayıtlı kullanıcı bulunamadı.';
+          break;
+        case 'wrong-password':
+          errorMessage = 'Şifre yanlış. Lütfen tekrar deneyin.';
+          break;
+        case 'invalid-email':
+          errorMessage = 'Geçersiz e-posta adresi.';
+          break;
+        case 'invalid-credential':
+          // Şifre çok kısa olabilir, önce form validasyonu kontrol edilmeli
+          // Ama eğer buraya geldiyse, gerçekten yanlış bilgi girilmiş demektir
+          errorMessage = 'E-posta veya şifre hatalı. Lütfen bilgilerinizi kontrol edin.';
+          break;
+        case 'user-disabled':
+          errorMessage = 'Bu hesap devre dışı bırakılmış.';
+          break;
+        case 'too-many-requests':
+          errorMessage = 'Çok fazla başarısız giriş denemesi. Lütfen daha sonra tekrar deneyin.';
+          break;
+        case 'operation-not-allowed':
+          errorMessage = 'Bu giriş yöntemi şu anda kullanılamıyor.';
+          break;
+        case 'network-request-failed':
+          errorMessage = 'İnternet bağlantınızı kontrol edin.';
+          break;
+        case 'weak-password':
+          errorMessage = 'Şifre çok zayıf. Daha güçlü bir şifre seçin.';
+          break;
+        case 'email-already-in-use':
+          errorMessage = 'Bu e-posta adresi zaten kullanılıyor.';
+          break;
+        default:
+          // Eğer bilinmeyen bir hata kodu varsa, mesajı Türkçe'ye çevirmeye çalış
+          final englishMessage = e.message ?? '';
+          if (englishMessage.contains('incorrect') || englishMessage.contains('wrong')) {
+            errorMessage = 'E-posta veya şifre hatalı. Lütfen bilgilerinizi kontrol edin.';
+          } else if (englishMessage.contains('expired')) {
+            errorMessage = 'Oturum süresi dolmuş. Lütfen tekrar giriş yapın.';
+          } else if (englishMessage.contains('malformed')) {
+            errorMessage = 'Geçersiz giriş bilgileri. Lütfen bilgilerinizi kontrol edin.';
+          } else {
+            errorMessage = 'Giriş sırasında bir hata oluştu. Lütfen tekrar deneyin.';
+          }
+      }
+      
       state = state.copyWith(
         isEmailLoading: false,
         isLoading: false,
         isAuthenticated: false,
-        errorMessage: e.message ?? 'Giriş sırasında bir hata oluştu.',
+        errorMessage: errorMessage,
       );
-    } catch (_) {
+    } catch (e) {
       state = state.copyWith(
         isEmailLoading: false,
         isLoading: false,
         isAuthenticated: false,
-        errorMessage: 'Giriş sırasında beklenmeyen bir hata oluştu.',
+        errorMessage: 'Giriş sırasında beklenmeyen bir hata oluştu: ${e.toString()}',
       );
     }
   }
@@ -176,26 +226,19 @@ class AuthNotifier extends StateNotifier<AuthState> {
   Future<void> signUpWithEmail({
     required String email,
     required String password,
-    required String confirmPassword,
+    required String name,
   }) async {
     state = state.copyWith(
       isEmailLoading: true,
       isLoading: true,
       errorMessage: null,
     );
-    if (password != confirmPassword) {
-      state = state.copyWith(
-        isEmailLoading: false,
-        isLoading: false,
-        errorMessage: 'Şifreler eşleşmiyor',
-      );
-      return;
-    }
 
     try {
       final user = await authRepository.signUpWithEmail(
         email: email,
         password: password,
+        name: name,
       );
       if (user != null) {
         state = state.copyWith(
