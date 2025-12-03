@@ -25,6 +25,7 @@ final optimizedGoalProvider =
       goalTitle: params.goalTitle,
       category: params.category,
       motivation: params.motivation,
+      targetDate: params.targetDate,
     );
 
     debugPrint('AI Provider: Optimization completed successfully');
@@ -140,11 +141,13 @@ class OptimizeGoalParams {
   final String goalTitle;
   final String category;
   final String? motivation;
+  final DateTime? targetDate;
 
   OptimizeGoalParams({
     required this.goalTitle,
     required this.category,
     this.motivation,
+    this.targetDate,
   });
 
   @override
@@ -153,11 +156,13 @@ class OptimizeGoalParams {
     return other is OptimizeGoalParams &&
         other.goalTitle == goalTitle &&
         other.category == category &&
-        other.motivation == motivation;
+        other.motivation == motivation &&
+        other.targetDate == targetDate;
   }
 
   @override
-  int get hashCode => Object.hash(goalTitle, category, motivation);
+  int get hashCode =>
+      Object.hash(goalTitle, category, motivation, targetDate);
 }
 
 /// Parameters for yearly report generation

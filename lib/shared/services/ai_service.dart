@@ -1,8 +1,9 @@
-import 'package:flutter/foundation.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_functions/cloud_functions.dart';
-import '../models/goal.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
+
 import '../models/check_in.dart';
+import '../models/goal.dart';
 
 /// AI Service for interacting with Firebase Cloud Functions
 /// Handles goal optimization, AI suggestions, and yearly report generation
@@ -13,9 +14,10 @@ class AIService {
   AIService({
     FirebaseFunctions? functions,
     FirebaseAuth? auth,
-  })  : _functions = functions ?? FirebaseFunctions.instanceFor(
-          region: 'europe-west1',
-        ),
+  })  : _functions = functions ??
+            FirebaseFunctions.instanceFor(
+              region: 'europe-west1',
+            ),
         _auth = auth ?? FirebaseAuth.instance;
 
   /// Optimize a goal using AI
@@ -24,6 +26,7 @@ class AIService {
     required String goalTitle,
     required String category,
     String? motivation,
+    DateTime? targetDate,
   }) async {
     try {
       final user = _auth.currentUser;
@@ -41,7 +44,9 @@ class AIService {
       final result = await callable.call({
         'goalTitle': goalTitle,
         'category': category,
-        if (motivation != null && motivation.isNotEmpty) 'motivation': motivation,
+        if (motivation != null && motivation.isNotEmpty)
+          'motivation': motivation,
+        if (targetDate != null) 'targetDate': targetDate.toIso8601String(),
       });
 
       debugPrint('AI Service: Received result: ${result.data}');
@@ -64,9 +69,7 @@ class AIService {
             id: sg['id'] as String,
             title: sg['title'] as String,
             isCompleted: sg['isCompleted'] as bool? ?? false,
-            dueDate: sg['dueDate'] != null
-                ? DateTime.parse(sg['dueDate'] as String)
-                : null,
+            dueDate: _parseAiDueDate(sg['dueDate']),
           );
         }).toList(),
         explanation: data['explanation'] as String,
@@ -80,19 +83,70 @@ class AIService {
     } catch (e, stackTrace) {
       debugPrint('AI Service Error: $e');
       debugPrint('Stack trace: $stackTrace');
-      
+
       // Provide more specific error messages
       if (e.toString().contains('NOT_FOUND')) {
-        throw Exception('Cloud Function bulunamadı. Functions deploy edildi mi?');
+        throw Exception(
+            'Cloud Function bulunamadı. Functions deploy edildi mi?');
       } else if (e.toString().contains('PERMISSION_DENIED')) {
         throw Exception('Yetki hatası. Giriş yaptığınızdan emin olun.');
       } else if (e.toString().contains('UNAVAILABLE')) {
-        throw Exception('Cloud Function şu anda kullanılamıyor. Lütfen tekrar deneyin.');
+        throw Exception(
+            'Cloud Function şu anda kullanılamıyor. Lütfen tekrar deneyin.');
       } else if (e.toString().contains('DEADLINE_EXCEEDED')) {
-        throw Exception('İstek zaman aşımına uğradı. Lütfen tekrar deneyin.');
+        throw Exception(
+            'İstek zaman aşımına uğradı. Lütfen tekrar deneyin.');
       }
-      
-      throw Exception('Hedef optimizasyonu başarısız: ${e.toString()}');
+
+      final message = e.toString();
+      final normalized = message.toLowerCase();
+
+      // Hedef çok kısa / anlamsız ise daha açıklayıcı bir mesaj göster
+      final trimmedTitle = goalTitle.trim();
+      final wordCount = trimmedTitle.isEmpty
+          ? 0
+          : trimmedTitle.split(RegExp(r'\\s+')).length;
+      final isTooShort = trimmedTitle.length < 4 || wordCount < 2;
+
+      if (isTooShort ||
+          normalized.contains('invalid json response from ai') ||
+          normalized.contains('invalid response structure from ai') ||
+          normalized.contains('empty response from gemini api') ||
+          normalized.contains('goal optimization failed')) {
+        throw Exception(
+          'AI bu hedefi anlamakta zorlandı. '
+          'Hedef başlığını biraz daha açıklayıcı ve net yazmayı dene. '
+          'Örneğin: "İngilizce seviyemi B1\'den B2\'ye çıkarmak" gibi.',
+        );
+      }
+
+      // AI\'den gelen beklenmeyen tarih formatları için kullanıcı dostu mesaj
+      if (normalized.contains('invalid date format')) {
+        throw Exception(
+          'AI tarafından üretilen tarihler işlenemedi. '
+          'Lütfen daha sonra tekrar dene veya hedefi elle düzenle.',
+        );
+      }
+
+      throw Exception('Hedef optimizasyonu başarısız: $message');
+    }
+  }
+
+  /// Parse AI-generated dueDate field safely.
+  /// Accepts ISO string, "null", empty string or null and converts to DateTime?.
+  DateTime? _parseAiDueDate(dynamic raw) {
+    if (raw == null) return null;
+    if (raw is! String) return null;
+
+    final value = raw.trim();
+    if (value.isEmpty || value.toLowerCase() == 'null') {
+      return null;
+    }
+
+    try {
+      return DateTime.parse(value);
+    } catch (_) {
+      return null;
     }
   }
 
@@ -122,7 +176,8 @@ class AIService {
           'description': description,
       });
 
-      debugPrint('AI Service: suggestSubGoalsFunction result: ${result.data}');
+      debugPrint(
+          'AI Service: suggestSubGoalsFunction result: ${result.data}');
 
       if (result.data == null) {
         throw Exception('No data received from Cloud Function');
@@ -193,7 +248,8 @@ class AIService {
         throw Exception('User can only access own data');
       }
 
-      final callable = _functions.httpsCallable('generateSuggestionsFunction');
+      final callable =
+          _functions.httpsCallable('generateSuggestionsFunction');
 
       final result = await callable.call({
         'userId': userId,
@@ -225,7 +281,8 @@ class AIService {
         throw Exception('User can only access own data');
       }
 
-      final callable = _functions.httpsCallable('generateYearlyReportFunction');
+      final callable =
+          _functions.httpsCallable('generateYearlyReportFunction');
 
       final result = await callable.call({
         'userId': userId,
@@ -284,4 +341,3 @@ class OptimizeGoalResponse {
     required this.explanation,
   });
 }
-

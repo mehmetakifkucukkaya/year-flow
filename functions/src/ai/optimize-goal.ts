@@ -15,45 +15,79 @@ export async function optimizeGoal(
   request: OptimizeGoalRequest,
   geminiClient: GeminiClient
 ): Promise<OptimizeGoalResponse> {
-  const { goalTitle, category, motivation } = request;
+  const {goalTitle, category, motivation, targetDate} = request;
 
-  const prompt = `Sen Türkçe konuşan bir kişisel gelişim koçusun.
+  let timeConstraintText =
+    'No explicit deadline was provided. Choose a realistic timeframe (for example 8–12 weeks) and keep it consistent across the SMART goal and all sub-goals.';
+  let durationPhrase: string | undefined;
 
-Görev:
-- Kullanıcının verdiği hedefi tam bir SMART hedefine dönüştür (Specific, Measurable, Achievable, Relevant, Time-bound).
-- Bu hedefe ulaşmak için 3–5 tane, net ve uygulanabilir alt görev üret.
+  if (targetDate) {
+    try {
+      const now = new Date();
+      const target = new Date(targetDate);
+      const diffMs = target.getTime() - now.getTime();
+      const diffDays = Math.max(
+        1,
+        Math.round(diffMs / (1000 * 60 * 60 * 24))
+      );
+      const diffWeeks = Math.max(1, Math.round(diffDays / 7));
 
-Girdi:
-- Hedef: "${goalTitle}"
-- Kategori: ${category}
-- Motivasyon: ${motivation || 'Belirtilmemiş'}
+      // Build a human friendly Turkish duration phrase that we will force the model to reuse.
+      if (diffDays <= 45) {
+        // roughly up to 1.5 months → use weeks
+        durationPhrase =
+          diffWeeks === 1 ? '1 hafta boyunca' : `${diffWeeks} hafta boyunca`;
+      } else {
+        const approxMonths = Math.max(1, Math.round(diffDays / 30));
+        durationPhrase =
+          approxMonths === 1 ? '1 ay boyunca' : `${approxMonths} ay boyunca`;
+      }
+      const isoDate = target.toISOString().slice(0, 10);
+      timeConstraintText = `The user wants to complete this goal by ${isoDate}, which is about ${diffWeeks} weeks from now. The TOTAL duration of the plan MUST correspond to this timeframe. All sub-goals must also be scheduled within this same total timeframe.`;
+    } catch (e) {
+      logger.error('Failed to compute time constraint from targetDate', e);
+    }
+  }
 
-Kurallar:
-- Yanıtta SADECE geçerli JSON ver, markdown, açıklama, yorum, ekstra metin yok.
-- Tüm alanlar Türkçe olmalı.
-- Sağlık/egzersiz hedeflerinde güvenli ve makul öneriler ver; tıbbi tavsiye verme.
-- Tarih gerekiyorsa ISO formatı kullan (YYYY-MM-DD) veya null döndür.
+  const prompt = `You are a Turkish-speaking personal development coach.
 
-JSON ŞEMASI (bire bir bu alanları kullan):
+Task:
+- Convert the given goal into a full SMART goal (Specific, Measurable, Achievable, Relevant, Time-bound).
+- Generate 3–5 clear and actionable sub-goals that help the user reach this goal.
+
+Input:
+- Goal: "${goalTitle}"
+- Category: ${category}
+- Motivation: ${motivation || 'Belirtilmemiş'}
+- Target deadline information: ${timeConstraintText}
+
+Language & output rules:
+- OUTPUT LANGUAGE MUST BE TURKISH.
+- Respond with VALID JSON ONLY. No markdown, no code blocks, no comments, no extra text.
+- For health / exercise goals, give safe and reasonable suggestions. Do NOT give medical advice.
+- When you need a date, use ISO format (YYYY-MM-DD) or null.
+
+JSON SCHEMA (use exactly these fields):
 {
-  "optimizedTitle": "Kısa, net ve motive edici hedef adı (Türkçe, en fazla 5–8 kelime; örn. 'Düzenli yürüyüş yapmak', 'Düzenli meditasyon alışkanlığı kazanmak')",
+  "optimizedTitle": "Short, clear and motivating goal name in Turkish (max 5–8 words; e.g. 'Düzenli yürüyüş yapmak', 'Düzenli meditasyon alışkanlığı kazanmak')",
   "subGoals": [
     {
-      "id": "benzersiz-bir-id",
-      "title": "Net, kısa ve ölçülebilir alt görev (Türkçe)",
+      "id": "unique-id",
+      "title": "Short, clear and measurable sub-goal in Turkish",
       "isCompleted": false,
-      "dueDate": "YYYY-MM-DD veya null"
+      "dueDate": "YYYY-MM-DD or null"
     }
   ],
-  "explanation": "Hedefin tam SMART versiyonu. Kullanıcının hedef detay/ açıklama alanına yazılabilecek, 1–2 cümlelik net bir metin (örn: 'Önümüzdeki 3 ay boyunca haftada 3 gün, 30 dakika tempolu yürüyüş yaparak genel sağlığımı iyileştirmek.')."
+  "explanation": "The full SMART version of the goal, in Turkish. 1–2 clear sentences that can be used in the goal description field (e.g. 'Önümüzdeki 3 ay boyunca haftada 3 gün, 30 dakika tempolu yürüyüş yaparak genel sağlığımı iyileştirmek.')."
 }
 
-ÖNEMLİ:
-- optimizedTitle her zaman KISA bir isim olmalı; mümkünse 3–4 kelime, en fazla 5 kelime kullan. Zamanı, miktarı ve ölçülebilirliği explanation alanına bırak.
-- explanation alanı, hedefin SMART detayını içerir ve uzun cümle olabilir.
-- 3 ile 5 arasında alt görev üret.
-- Alt görevler birbirini tamamlayan, adım adım ilerleme sağlayan bir yol haritası gibi olmalı.
-- Sadece yukarıdaki JSON şemasına uygun, parse edilebilir bir JSON döndür.`;
+IMPORTANT:
+- "optimizedTitle" must always be a SHORT name; ideally 3–4 words, maximum 5. Leave time, amount and measurability details to the explanation field.
+- "explanation" contains the SMART details of the goal and can be a longer sentence.
+- Generate between 3 and 5 sub-goals.
+- Sub-goals should form a step-by-step roadmap that works together.
+- When you need to mention the TOTAL duration in Turkish, you MUST reuse exactly this phrase (if provided) for the overall period: "${durationPhrase ?? 'belirlenen süre boyunca'}". Do NOT invent a different total duration like "12 hafta", "3 ay" etc.
+- Return ONLY parseable JSON that exactly follows the schema above.`;
 
   try {
     const response = await geminiClient.generateStructuredText(prompt, 2000);

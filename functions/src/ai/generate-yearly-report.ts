@@ -35,27 +35,27 @@ export async function generateYearlyReport(
     return acc;
   }, {} as Record<number, number>);
 
-  const prompt = `Sen Türkçe konuşan deneyimli bir kişisel gelişim analisti ve koçusun. Görevin, ${year} yılı için kullanıcının kişisel gelişim yolculuğunu veriler üzerinden okuyup anlamlı, ilham verici ama aynı zamanda dengeli bir yıllık rapor yazmak.
+  const prompt = `You are an experienced Turkish-speaking personal development analyst and coach. Your task is to read the data for the year ${year} and write a meaningful, inspiring and balanced yearly report about the user's personal growth journey.
 
-ÖZET VERİLER:
-- Yıl: ${year}
-- Toplam Hedef: ${goals.length}
-- Tamamlanan Hedef: ${completedGoals.length}
-- Aktif Hedef: ${activeGoals.length}
-- Ortalama İlerleme: %${averageProgress.toFixed(1)}
+SUMMARY DATA (already in Turkish):
+- Year: ${year}
+- Total goals: ${goals.length}
+- Completed goals: ${completedGoals.length}
+- Active goals: ${activeGoals.length}
+- Average progress: %${averageProgress.toFixed(1)}
 
-Kategori Dağılımı:
+Goals by category:
 ${Object.entries(goalsByCategory)
   .map(([cat, count]) => `- ${cat}: ${count} hedef`)
   .join('\n')}
 
-Check-in Özeti:
-- Toplam Check-in: ${checkIns.length}
-- Aylık Dağılım: ${Object.entries(checkInsByMonth)
+Check-in summary:
+- Total check-ins: ${checkIns.length}
+- Monthly distribution: ${Object.entries(checkInsByMonth)
   .map(([month, count]) => `${month}. ay: ${count} check-in`)
   .join(', ')}
 
-Hedefler Detayı:
+Goal details:
 ${goals
   .map(
     (g) =>
@@ -69,43 +69,44 @@ ${goals
   )
   .join('\n')}
 
-Son 10 Check-in Notu:
+Last 10 check-in notes:
 ${checkIns
   .slice(-10)
   .map((ci) => `- ${ci.note || 'Not yok'} (Puan: ${ci.score}/10)`)
   .join('\n')}
 
-YAZIM KURALLARI:
-- Dil: Türkçe, samimi ve içten ama aşırı duygusal değil.
-- Biçim: Markdown başlıkları (#, ##, ###) kullan.
-- Uzunluk: Yaklaşık 700–1.000 kelime arasında tut.
+Writing rules:
+- OUTPUT LANGUAGE MUST BE TURKISH.
+- Tone: Warm, sincere and supportive, but not overly sentimental.
+- Format: Use Markdown headings (#, ##, ###).
+- Length: Around 700–1,000 words.
 
-RAPOR BÖLÜMLERİ (sırasıyla yaz):
+REPORT SECTIONS (write in this order, all in Turkish):
 
 # ${year} Yıllık Kişisel Gelişim Raporun
 
 ## 1. Yılın Genel Özeti
-Yılın genel tonunu, öne çıkan temaları ve önemli değişimleri özetle. Güçlü yönleri ve çabayı takdir et.
+Summarise the overall tone of the year, key themes and important changes. Acknowledge strengths and effort.
 
 ## 2. Hedeflerdeki İlerleme
-Kategorilere göre ilerlemeyi analiz et; tamamlanan hedefler, zorlanılan alanlar ve yarım kalan hedefler hakkında dürüst ama yapıcı bir değerlendirme yap.
+Analyse progress by category; discuss completed goals, challenging areas and unfinished goals in an honest but constructive way.
 
 ## 3. Duygusal ve Mental Yolculuk
-Check-in verilerini kullanarak motivasyon dalgalanmaları, zor dönemler ve toparlanma anlarını anlat. Kullanıcının gösterdiği dayanıklılığı vurgula.
+Using check-in data, describe motivation swings, difficult periods and recovery moments. Highlight the user's resilience.
 
 ## 4. En İyi Anlar ve Kilometre Taşları
-Yıl boyunca öne çıkan başarılar, ilkler ve küçük ama anlamlı zaferlerden bahset.
+Talk about highlights, firsts and small but meaningful victories throughout the year.
 
 ## 5. Öğrenilen Dersler
-Bu yıldan çıkarılabilecek 4–6 madde halinde net dersler ve içgörüler yaz.
+Write 4–6 clear lessons and insights that can be taken from this year, as a bullet list in Turkish.
 
 ## 6. ${year + 1} Yılı İçin Öneriler
-Bir sonraki yıl için 3–5 somut odak alanı, yeni hedef fikri ve uygulanabilir öneri ver.
+Give 3–5 concrete focus areas, new goal ideas and actionable suggestions for the next year, in Turkish.
 
 ## 7. Kendine Mektup
-Kullanıcının kendi emeğini takdir eden, şefkatli ama gerçekçi, motive edici kısa bir mektup yaz.
+Write a short, motivating letter in Turkish that helps the user appreciate their own effort, in a compassionate yet realistic tone.
 
-Metnin tamamında kişisel zamir olarak \"sen\" kullan ve okuyucuyla doğrudan konuş.`;
+Throughout the text, address the reader directly using the Turkish second person singular ("sen").`;
 
   try {
     const content = await geminiClient.generateText(prompt, 4000);

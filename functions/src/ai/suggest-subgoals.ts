@@ -16,36 +16,36 @@ export async function suggestSubGoals(
 ): Promise<SuggestSubGoalsResponse> {
   const {goalTitle, description, category} = request;
 
-  const prompt = `Sen Türkçe konuşan bir kişisel gelişim ve üretkenlik koçusun.
+  const prompt = `You are a Turkish-speaking personal development and productivity coach.
 
-Görev:
-- Kullanıcının verdiği hedef için, uygulanabilir ve net 3–6 adet alt görev (sub-goal) öner.
+Task:
+- For the given goal, suggest 3–6 practical and clear sub-goals.
 
-Girdi:
-- Hedef başlığı: "${goalTitle}"
-- Kategori: ${category}
-- Hedef açıklaması / bağlam: ${description || 'Belirtilmemiş'}
+Input:
+- Goal title: "${goalTitle}"
+- Category: ${category}
+- Goal description / context: ${description || 'Belirtilmemiş'}
 
-Kurallar:
-- Yanıtta SADECE geçerli JSON ver, markdown, açıklama, yorum veya ek metin verme.
-- Tüm içerik Türkçe olmalı.
-- Sağlık/egzersiz hedeflerinde güvenli, makul ve tıbbi tavsiye içermeyen öneriler ver.
-- Alt görevler:
-  - Kısa, net ve tek adımda yapılabilir olmalı.
-  - Kullanıcıya "bunu bugün yapabilirim" hissi vermeli.
+Language & safety rules:
+- OUTPUT LANGUAGE MUST BE TURKISH.
+- Respond with VALID JSON ONLY. No markdown, no explanations, no comments, no extra text.
+- For health / exercise goals, give safe and reasonable suggestions, without medical advice.
+- Sub-goals must be:
+  - Short, clear and doable in a single step.
+  - Concrete enough to make the user feel "I can do this today".
 
-JSON ŞEMASI (bire bir bu yapıyı kullan):
+JSON SCHEMA (use exactly this structure):
 {
   "subGoals": [
     {
-      "title": "Net ve uygulanabilir alt görev (Türkçe, tek cümle)"
+      "title": "Clear and actionable sub-goal in Turkish (single sentence)"
     }
   ]
 }
 
-ÖNEMLİ:
-- 3 ile 6 arasında alt görev üret.
-- Sadece yukarıdaki JSON şemasına uygun, parse edilebilir bir JSON döndür.`;
+IMPORTANT:
+- Generate between 3 and 6 sub-goals.
+- Return ONLY parseable JSON that exactly follows the schema above.`;
 
   try {
     const response = await geminiClient.generateStructuredText(prompt, 1200);

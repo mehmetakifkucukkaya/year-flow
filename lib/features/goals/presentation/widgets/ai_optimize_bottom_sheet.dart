@@ -44,12 +44,14 @@ class AIOptimizeBottomSheet extends ConsumerStatefulWidget {
     super.key,
     required this.goalTitle,
     required this.category,
+    this.targetDate,
     this.motivation,
     required this.onApply,
   });
 
   final String goalTitle;
   final String category;
+  final DateTime? targetDate;
   final String? motivation;
   final void Function(OptimizeGoalResponse) onApply;
 
@@ -70,6 +72,7 @@ class _AIOptimizeBottomSheetState
       goalTitle: widget.goalTitle,
       category: widget.category,
       motivation: widget.motivation,
+      targetDate: widget.targetDate,
     );
   }
 
@@ -387,12 +390,23 @@ class _AIOptimizeBottomSheetState
                             ),
                           ),
                           const SizedBox(height: AppSpacing.sm),
-                          Text(
-                            error.toString(),
-                            style: AppTextStyles.bodySmall.copyWith(
-                              color: AppColors.gray600,
-                            ),
-                            textAlign: TextAlign.center,
+                          Builder(
+                            builder: (_) {
+                              var message = error.toString();
+                              // "Exception: " önekini temizle
+                              if (message.startsWith('Exception:')) {
+                                message = message
+                                    .substring('Exception:'.length)
+                                    .trim();
+                              }
+                              return Text(
+                                message,
+                                style: AppTextStyles.bodySmall.copyWith(
+                                  color: AppColors.gray600,
+                                ),
+                                textAlign: TextAlign.center,
+                              );
+                            },
                           ),
                           const SizedBox(height: AppSpacing.lg),
                           AppButton(

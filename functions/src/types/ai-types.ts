@@ -6,6 +6,7 @@ export interface OptimizeGoalRequest {
   goalTitle: string;
   category: string;
   motivation?: string;
+  targetDate?: string;
 }
 
 export interface SubGoal {

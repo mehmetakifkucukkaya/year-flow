@@ -135,6 +135,7 @@ class _GoalCreatePageState extends ConsumerState<GoalCreatePage> {
       builder: (context) => AIOptimizeBottomSheet(
         goalTitle: _titleController.text.trim(),
         category: _selectedCategory!.name,
+        targetDate: _completionDate,
         motivation: _reasonController.text.trim().isEmpty
             ? null
             : _reasonController.text.trim(),
