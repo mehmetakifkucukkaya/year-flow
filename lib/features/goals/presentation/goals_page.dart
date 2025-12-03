@@ -23,11 +23,13 @@ enum _SortOption {
 enum _FilterOption {
   all,
   health,
+  mentalHealth,
   finance,
   career,
-  relationship,
+  relationships,
   learning,
-  habit,
+  creativity,
+  hobby,
   personalGrowth,
 }
 
@@ -84,16 +86,20 @@ class _GoalsPageState extends ConsumerState<GoalsPage> {
         return null;
       case _FilterOption.health:
         return GoalCategory.health;
+      case _FilterOption.mentalHealth:
+        return GoalCategory.mentalHealth;
       case _FilterOption.finance:
         return GoalCategory.finance;
       case _FilterOption.career:
         return GoalCategory.career;
-      case _FilterOption.relationship:
-        return GoalCategory.relationship;
+      case _FilterOption.relationships:
+        return GoalCategory.relationships;
       case _FilterOption.learning:
         return GoalCategory.learning;
-      case _FilterOption.habit:
-        return GoalCategory.habit;
+      case _FilterOption.creativity:
+        return GoalCategory.creativity;
+      case _FilterOption.hobby:
+        return GoalCategory.hobby;
       case _FilterOption.personalGrowth:
         return GoalCategory.personalGrowth;
     }
@@ -341,36 +347,42 @@ class _FilterSortButtons extends StatelessWidget {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
+      isScrollControlled: true,
       builder: (context) => Container(
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(context).size.height * 0.7,
+        ),
         decoration: const BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
         ),
-        padding: const EdgeInsets.all(AppSpacing.lg),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Sırala',
-              style: AppTextStyles.titleMedium.copyWith(
-                fontWeight: FontWeight.w700,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(AppSpacing.lg),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Sırala',
+                style: AppTextStyles.titleMedium.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
               ),
-            ),
-            const SizedBox(height: AppSpacing.md),
-            ..._SortOption.values
-                .map((option) => RadioListTile<_SortOption>(
-                      title: Text(_getSortLabel(option)),
-                      value: option,
-                      groupValue: sortOption,
-                      onChanged: (value) {
-                        if (value != null) {
-                          onSortChanged(value);
-                          Navigator.pop(context);
-                        }
-                      },
-                    )),
-          ],
+              const SizedBox(height: AppSpacing.md),
+              ..._SortOption.values
+                  .map((option) => RadioListTile<_SortOption>(
+                        title: Text(_getSortLabel(option)),
+                        value: option,
+                        groupValue: sortOption,
+                        onChanged: (value) {
+                          if (value != null) {
+                            onSortChanged(value);
+                            Navigator.pop(context);
+                          }
+                        },
+                      )),
+            ],
+          ),
         ),
       ),
     );
@@ -380,36 +392,42 @@ class _FilterSortButtons extends StatelessWidget {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
+      isScrollControlled: true,
       builder: (context) => Container(
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(context).size.height * 0.7,
+        ),
         decoration: const BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
         ),
-        padding: const EdgeInsets.all(AppSpacing.lg),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Filtrele',
-              style: AppTextStyles.titleMedium.copyWith(
-                fontWeight: FontWeight.w700,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(AppSpacing.lg),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Filtrele',
+                style: AppTextStyles.titleMedium.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
               ),
-            ),
-            const SizedBox(height: AppSpacing.md),
-            ..._FilterOption.values
-                .map((option) => RadioListTile<_FilterOption>(
-                      title: Text(_getFilterLabel(option)),
-                      value: option,
-                      groupValue: filterOption,
-                      onChanged: (value) {
-                        if (value != null) {
-                          onFilterChanged(value);
-                          Navigator.pop(context);
-                        }
-                      },
-                    )),
-          ],
+              const SizedBox(height: AppSpacing.md),
+              ..._FilterOption.values
+                  .map((option) => RadioListTile<_FilterOption>(
+                        title: Text(_getFilterLabel(option)),
+                        value: option,
+                        groupValue: filterOption,
+                        onChanged: (value) {
+                          if (value != null) {
+                            onFilterChanged(value);
+                            Navigator.pop(context);
+                          }
+                        },
+                      )),
+            ],
+          ),
         ),
       ),
     );
@@ -438,16 +456,20 @@ class _FilterSortButtons extends StatelessWidget {
         return 'Tümü';
       case _FilterOption.health:
         return 'Sağlık';
+      case _FilterOption.mentalHealth:
+        return 'Ruh Sağlığı';
       case _FilterOption.finance:
         return 'Finans';
       case _FilterOption.career:
         return 'Kariyer';
-      case _FilterOption.relationship:
+      case _FilterOption.relationships:
         return 'İlişkiler';
       case _FilterOption.learning:
         return 'Öğrenme';
-      case _FilterOption.habit:
-        return 'Alışkanlık';
+      case _FilterOption.creativity:
+        return 'Yaratıcılık';
+      case _FilterOption.hobby:
+        return 'Hobi';
       case _FilterOption.personalGrowth:
         return 'Kişisel Gelişim';
     }
@@ -671,15 +693,19 @@ Color _categoryColor(GoalCategory category) {
   switch (category) {
     case GoalCategory.health:
       return const Color(0xFF4CAF50);
+    case GoalCategory.mentalHealth:
+      return const Color(0xFF81C784);
     case GoalCategory.finance:
       return const Color(0xFF009688);
     case GoalCategory.career:
       return const Color(0xFF2196F3);
-    case GoalCategory.relationship:
+    case GoalCategory.relationships:
       return const Color(0xFFE91E63);
     case GoalCategory.learning:
       return const Color(0xFF9C27B0);
-    case GoalCategory.habit:
+    case GoalCategory.creativity:
+      return const Color(0xFFFF6B6B);
+    case GoalCategory.hobby:
       return const Color(0xFFFF9800);
     case GoalCategory.personalGrowth:
       return const Color(0xFF3B82F6);

@@ -261,15 +261,19 @@ class _GoalDetailPageState extends ConsumerState<GoalDetailPage>
     switch (category) {
       case GoalCategory.health:
         return const Color(0xFF4CAF50);
+      case GoalCategory.mentalHealth:
+        return const Color(0xFF81C784);
       case GoalCategory.finance:
         return const Color(0xFF009688);
       case GoalCategory.career:
         return const Color(0xFF2196F3);
-      case GoalCategory.relationship:
+      case GoalCategory.relationships:
         return const Color(0xFFE91E63);
       case GoalCategory.learning:
         return const Color(0xFF9C27B0);
-      case GoalCategory.habit:
+      case GoalCategory.creativity:
+        return const Color(0xFFFF6B6B);
+      case GoalCategory.hobby:
         return const Color(0xFFFF9800);
       case GoalCategory.personalGrowth:
         return AppColors.primary;

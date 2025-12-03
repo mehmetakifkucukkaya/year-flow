@@ -23,11 +23,13 @@ class AppConstants {
 /// Hedef kategorileri
 enum GoalCategory {
   health('Sağlık', '💪'),
+  mentalHealth('Ruh Sağlığı', '🧘'),
   finance('Finans', '💰'),
   career('Kariyer', '💼'),
-  relationship('İlişki', '❤️'),
+  relationships('İlişkiler', '❤️'),
   learning('Öğrenme', '📚'),
-  habit('Alışkanlık', '🎯'),
+  creativity('Yaratıcılık', '🎨'),
+  hobby('Hobi', '🎮'),
   personalGrowth('Kişisel Gelişim', '🌱');
 
   const GoalCategory(this.label, this.emoji);
