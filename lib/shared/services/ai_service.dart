@@ -5,6 +5,23 @@ import 'package:flutter/foundation.dart';
 import '../models/check_in.dart';
 import '../models/goal.dart';
 
+/// Conditional logger for debug mode only
+class _Logger {
+  static void debug(String message) {
+    if (kDebugMode) {
+      debugPrint(message);
+    }
+  }
+
+  static void error(String message, [StackTrace? stackTrace]) {
+    if (kDebugMode) {
+      debugPrint('ERROR: $message');
+      if (stackTrace != null) debugPrint(stackTrace.toString());
+    }
+    // In production, send to crashlytics or logging service
+  }
+}
+
 /// AI Service for interacting with Firebase Cloud Functions
 /// Handles goal optimization, AI suggestions, and yearly report generation
 class AIService {
@@ -29,19 +46,9 @@ class AIService {
     DateTime? targetDate,
   }) async {
     try {
-      final user = _auth.currentUser;
-      if (user == null) {
-        throw Exception('User must be authenticated');
-      }
 
-      final callable = _functions.httpsCallable('optimizeGoalFunction');
-
-      debugPrint('AI Service: Calling optimizeGoalFunction with:');
-      debugPrint('  goalTitle: $goalTitle');
-      debugPrint('  category: $category');
-      debugPrint('  motivation: $motivation');
-
-      final result = await callable.call({
+      final user = await _getAuthenticatedUser();
+      final result = await _callOptimizeFunction(user, {
         'goalTitle': goalTitle,
         'category': category,
         if (motivation != null && motivation.isNotEmpty)
@@ -49,86 +56,9 @@ class AIService {
         if (targetDate != null) 'targetDate': targetDate.toIso8601String(),
       });
 
-      debugPrint('AI Service: Received result: ${result.data}');
-
-      if (result.data == null) {
-        throw Exception('No data received from Cloud Function');
-      }
-
-      final data = result.data as Map<String, dynamic>;
-
-      debugPrint('AI Service: Parsing response data...');
-      debugPrint('  optimizedTitle: ${data['optimizedTitle']}');
-      debugPrint('  subGoals count: ${(data['subGoals'] as List).length}');
-      debugPrint('  explanation: ${data['explanation']}');
-
-      final response = OptimizeGoalResponse(
-        optimizedTitle: data['optimizedTitle'] as String,
-        subGoals: (data['subGoals'] as List<dynamic>).map((sg) {
-          return SubGoal(
-            id: sg['id'] as String,
-            title: sg['title'] as String,
-            isCompleted: sg['isCompleted'] as bool? ?? false,
-            dueDate: _parseAiDueDate(sg['dueDate']),
-          );
-        }).toList(),
-        explanation: data['explanation'] as String,
-      );
-
-      debugPrint('AI Service: Successfully created OptimizeGoalResponse');
-      debugPrint('  optimizedTitle: ${response.optimizedTitle}');
-      debugPrint('  subGoals count: ${response.subGoals.length}');
-
-      return response;
-    } catch (e, stackTrace) {
-      debugPrint('AI Service Error: $e');
-      debugPrint('Stack trace: $stackTrace');
-
-      // Provide more specific error messages
-      if (e.toString().contains('NOT_FOUND')) {
-        throw Exception(
-            'Cloud Function bulunamadı. Functions deploy edildi mi?');
-      } else if (e.toString().contains('PERMISSION_DENIED')) {
-        throw Exception('Yetki hatası. Giriş yaptığınızdan emin olun.');
-      } else if (e.toString().contains('UNAVAILABLE')) {
-        throw Exception(
-            'Cloud Function şu anda kullanılamıyor. Lütfen tekrar deneyin.');
-      } else if (e.toString().contains('DEADLINE_EXCEEDED')) {
-        throw Exception(
-            'İstek zaman aşımına uğradı. Lütfen tekrar deneyin.');
-      }
-
-      final message = e.toString();
-      final normalized = message.toLowerCase();
-
-      // Hedef çok kısa / anlamsız ise daha açıklayıcı bir mesaj göster
-      final trimmedTitle = goalTitle.trim();
-      final wordCount = trimmedTitle.isEmpty
-          ? 0
-          : trimmedTitle.split(RegExp(r'\\s+')).length;
-      final isTooShort = trimmedTitle.length < 4 || wordCount < 2;
-
-      if (isTooShort ||
-          normalized.contains('invalid json response from ai') ||
-          normalized.contains('invalid response structure from ai') ||
-          normalized.contains('empty response from gemini api') ||
-          normalized.contains('goal optimization failed')) {
-        throw Exception(
-          'AI bu hedefi anlamakta zorlandı. '
-          'Hedef başlığını biraz daha açıklayıcı ve net yazmayı dene. '
-          'Örneğin: "İngilizce seviyemi B1\'den B2\'ye çıkarmak" gibi.',
-        );
-      }
-
-      // AI\'den gelen beklenmeyen tarih formatları için kullanıcı dostu mesaj
-      if (normalized.contains('invalid date format')) {
-        throw Exception(
-          'AI tarafından üretilen tarihler işlenemedi. '
-          'Lütfen daha sonra tekrar dene veya hedefi elle düzenle.',
-        );
-      }
-
-      throw Exception('Hedef optimizasyonu başarısız: $message');
+      return _parseOptimizeResponse(result);
+    } catch (e) {
+      throw _handleOptimizeError(e, goalTitle);
     }
   }
 
@@ -164,10 +94,10 @@ class AIService {
 
       final callable = _functions.httpsCallable('suggestSubGoalsFunction');
 
-      debugPrint('AI Service: Calling suggestSubGoalsFunction with:');
-      debugPrint('  goalTitle: $goalTitle');
-      debugPrint('  category: $category');
-      debugPrint('  description: $description');
+      _Logger.debug('AI Service: Calling suggestSubGoalsFunction with:');
+      _Logger.debug('  goalTitle: $goalTitle');
+      _Logger.debug('  category: $category');
+      _Logger.debug('  description: $description');
 
       final result = await callable.call({
         'goalTitle': goalTitle,
@@ -176,7 +106,7 @@ class AIService {
           'description': description,
       });
 
-      debugPrint(
+      _Logger.debug(
           'AI Service: suggestSubGoalsFunction result: ${result.data}');
 
       if (result.data == null) {
@@ -191,10 +121,9 @@ class AIService {
 
       return list;
     } catch (e, stackTrace) {
-      debugPrint('AI Service suggestSubGoals Error: $e');
-      debugPrint('Stack trace: $stackTrace');
+      _Logger.error('AI Service suggestSubGoals Error: $e', stackTrace);
       if (_shouldFallbackToOptimizeGoal(e)) {
-        debugPrint(
+        _Logger.debug(
             'AI Service: Falling back to optimizeGoal for sub-goal suggestions');
         try {
           final optimized = await optimizeGoal(
@@ -212,9 +141,9 @@ class AIService {
             return fallbackList;
           }
         } catch (fallbackError, fallbackStackTrace) {
-          debugPrint(
-              'AI Service fallback via optimizeGoal failed: $fallbackError');
-          debugPrint('Fallback stack trace: $fallbackStackTrace');
+          _Logger.error(
+              'AI Service fallback via optimizeGoal failed: $fallbackError',
+              fallbackStackTrace);
           throw Exception(
             'Alt görev önerileri alınamadı: ${fallbackError.toString()}',
           );
@@ -326,6 +255,122 @@ class AIService {
       'progressDelta': checkIn.progressDelta,
       if (checkIn.note != null) 'note': checkIn.note,
     };
+  }
+
+  /// Get authenticated user
+  Future<User> _getAuthenticatedUser() async {
+    final user = _auth.currentUser;
+    if (user == null) {
+      throw Exception('User must be authenticated');
+    }
+    return user;
+  }
+
+  /// Call optimize goal function
+  Future<Map<String, dynamic>> _callOptimizeFunction(
+    User user,
+    Map<String, dynamic> data,
+  ) async {
+    final callable = _functions.httpsCallable('optimizeGoalFunction');
+
+    _Logger.debug('AI Service: Calling optimizeGoalFunction with:');
+    _Logger.debug('  goalTitle: ${data['goalTitle']}');
+    _Logger.debug('  category: ${data['category']}');
+    _Logger.debug('  motivation: ${data['motivation']}');
+
+    final result = await callable.call(data);
+
+    _Logger.debug('AI Service: Received result: ${result.data}');
+
+    if (result.data == null) {
+      throw Exception('No data received from Cloud Function');
+    }
+
+    return result.data as Map<String, dynamic>;
+  }
+
+  /// Parse optimize response
+  OptimizeGoalResponse _parseOptimizeResponse(Map<String, dynamic> data) {
+    _Logger.debug('AI Service: Parsing response data...');
+    _Logger.debug('  optimizedTitle: ${data['optimizedTitle']}');
+    _Logger.debug('  subGoals count: ${(data['subGoals'] as List).length}');
+    _Logger.debug('  explanation: ${data['explanation']}');
+
+    final response = OptimizeGoalResponse(
+      optimizedTitle: data['optimizedTitle'] as String,
+      subGoals: (data['subGoals'] as List<dynamic>).map((sg) {
+        return SubGoal(
+          id: sg['id'] as String,
+          title: sg['title'] as String,
+          isCompleted: sg['isCompleted'] as bool? ?? false,
+          dueDate: _parseAiDueDate(sg['dueDate']),
+        );
+      }).toList(),
+      explanation: data['explanation'] as String,
+    );
+
+    _Logger.debug('AI Service: Successfully created OptimizeGoalResponse');
+    _Logger.debug('  optimizedTitle: ${response.optimizedTitle}');
+    _Logger.debug('  subGoals count: ${response.subGoals.length}');
+
+    return response;
+  }
+
+  /// Handle optimize error
+  Exception _handleOptimizeError(Object error, String goalTitle) {
+    _Logger.error('AI Service Error: $error');
+
+    // Provide more specific error messages
+    if (error.toString().contains('NOT_FOUND')) {
+      return Exception(
+          'Cloud Function bulunamadı. Functions deploy edildi mi?');
+    } else if (error.toString().contains('PERMISSION_DENIED')) {
+      return Exception('Yetki hatası. Giriş yaptığınızdan emin olun.');
+    } else if (error.toString().contains('UNAVAILABLE')) {
+      return Exception(
+          'Cloud Function şu anda kullanılamıyor. Lütfen tekrar deneyin.');
+    } else if (error.toString().contains('DEADLINE_EXCEEDED')) {
+      return Exception(
+          'İstek zaman aşımına uğradı. Lütfen tekrar deneyin.');
+    }
+
+    final message = error.toString();
+    final normalized = message.toLowerCase();
+
+    // Hedef çok kısa / anlamsız ise daha açıklayıcı bir mesaj göster
+    if (_isGoalTooShort(goalTitle) || _isAiParsingError(normalized)) {
+      return Exception(
+        'AI bu hedefi anlamakta zorlandı. '
+        'Hedef başlığını biraz daha açıklayıcı ve net yazmayı dene. '
+        'Örneğin: "İngilizce seviyemi B1\'den B2\'ye çıkarmak" gibi.',
+      );
+    }
+
+    // AI'den gelen beklenmeyen tarih formatları için kullanıcı dostu mesaj
+    if (normalized.contains('invalid date format')) {
+      return Exception(
+        'AI tarafından üretilen tarihler işlenemedi. '
+        'Lütfen daha sonra tekrar dene veya hedefi elle düzenle.',
+      );
+    }
+
+    return Exception('Hedef optimizasyonu başarısız: $message');
+  }
+
+  /// Check if goal title is too short
+  bool _isGoalTooShort(String goalTitle) {
+    final trimmedTitle = goalTitle.trim();
+    if (trimmedTitle.isEmpty) return true;
+    final wordCount = trimmedTitle.split(RegExp(r'\s+')).length;
+    return trimmedTitle.length < 4 || wordCount < 2;
+  }
+
+  /// Check if error is AI parsing related
+  bool _isAiParsingError(String normalizedMessage) {
+    return normalizedMessage.contains('invalid json response from ai') ||
+        normalizedMessage.contains('invalid response structure from ai') ||
+        normalizedMessage.contains('empty response from gemini api') ||
+        normalizedMessage.contains('goal optimization failed');
   }
 }
 

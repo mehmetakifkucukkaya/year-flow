@@ -7,8 +7,20 @@ import {GeminiClient} from './gemini-client';
 import {
   GenerateYearlyReportRequest,
   GenerateYearlyReportResponse,
+  Goal,
+  CheckIn,
 } from '../types/ai-types';
 import * as logger from 'firebase-functions/logger';
+
+interface YearlyAnalytics {
+  completedGoals: Goal[];
+  activeGoals: Goal[];
+  averageProgress: number;
+  goalsByCategory: Record<string, number>;
+  checkInsByMonth: Record<number, number>;
+  totalGoals: number;
+  totalCheckIns: number;
+}
 
 export async function generateYearlyReport(
   request: GenerateYearlyReportRequest,
@@ -16,30 +28,85 @@ export async function generateYearlyReport(
 ): Promise<GenerateYearlyReportResponse> {
   const {year, goals, checkIns} = request;
 
-  // Prepare comprehensive data summary
+  const analytics = calculateYearlyAnalytics(goals, checkIns);
+  const prompt = buildYearlyReportPrompt(year, analytics, goals, checkIns);
+
+  try {
+    const content = await geminiClient.generateText(prompt, 4000);
+
+    return {
+      content: content.trim(),
+    };
+  } catch (error: any) {
+    logger.error('Error generating yearly report:', error);
+    throw new Error(`Yearly report generation failed: ${error.message}`);
+  }
+}
+
+function calculateYearlyAnalytics(
+  goals: Goal[],
+  checkIns: CheckIn[]
+): YearlyAnalytics {
   const completedGoals = goals.filter((g) => g.progress >= 100);
   const activeGoals = goals.filter((g) => !g.isArchived && g.progress < 100);
   const averageProgress =
     goals.length > 0
       ? goals.reduce((sum, g) => sum + g.progress, 0) / goals.length
       : 0;
+  const goalsByCategory = groupGoalsByCategory(goals);
+  const checkInsByMonth = groupCheckInsByMonth(checkIns);
 
-  const goalsByCategory = goals.reduce((acc, g) => {
+  return {
+    completedGoals,
+    activeGoals,
+    averageProgress,
+    goalsByCategory,
+    checkInsByMonth,
+    totalGoals: goals.length,
+    totalCheckIns: checkIns.length,
+  };
+}
+
+function groupGoalsByCategory(
+  goals: Goal[]
+): Record<string, number> {
+  return goals.reduce((acc, g) => {
     acc[g.category] = (acc[g.category] || 0) + 1;
     return acc;
   }, {} as Record<string, number>);
+}
 
-  const checkInsByMonth = checkIns.reduce((acc, ci) => {
+function groupCheckInsByMonth(
+  checkIns: CheckIn[]
+): Record<number, number> {
+  return checkIns.reduce((acc, ci) => {
     const month = new Date(ci.createdAt).getMonth() + 1;
     acc[month] = (acc[month] || 0) + 1;
     return acc;
   }, {} as Record<number, number>);
+}
 
-  const prompt = `You are an experienced Turkish-speaking personal development analyst and coach. Your task is to read the data for the year ${year} and write a meaningful, inspiring and balanced yearly report about the user's personal growth journey.
+function buildYearlyReportPrompt(
+  year: number,
+  analytics: YearlyAnalytics,
+  goals: Goal[],
+  checkIns: CheckIn[]
+): string {
+  const {
+    totalGoals,
+    completedGoals,
+    activeGoals,
+    averageProgress,
+    goalsByCategory,
+    totalCheckIns,
+    checkInsByMonth,
+  } = analytics;
+
+  return `You are an experienced Turkish-speaking personal development analyst and coach. Your task is to read the data for the year ${year} and write a meaningful, inspiring and balanced yearly report about the user's personal growth journey.
 
 SUMMARY DATA (already in Turkish):
 - Year: ${year}
-- Total goals: ${goals.length}
+- Total goals: ${totalGoals}
 - Completed goals: ${completedGoals.length}
 - Active goals: ${activeGoals.length}
 - Average progress: %${averageProgress.toFixed(1)}
@@ -50,7 +117,7 @@ ${Object.entries(goalsByCategory)
   .join('\n')}
 
 Check-in summary:
-- Total check-ins: ${checkIns.length}
+- Total check-ins: ${totalCheckIns}
 - Monthly distribution: ${Object.entries(checkInsByMonth)
   .map(([month, count]) => `${month}. ay: ${count} check-in`)
   .join(', ')}
@@ -107,16 +174,5 @@ Give 3–5 concrete focus areas, new goal ideas and actionable suggestions for t
 Write a short, motivating letter in Turkish that helps the user appreciate their own effort, in a compassionate yet realistic tone.
 
 Throughout the text, address the reader directly using the Turkish second person singular ("sen").`;
-
-  try {
-    const content = await geminiClient.generateText(prompt, 4000);
-
-    return {
-      content: content.trim(),
-    };
-  } catch (error: any) {
-    logger.error('Error generating yearly report:', error);
-    throw new Error(`Yearly report generation failed: ${error.message}`);
-  }
 }
 

@@ -2,8 +2,27 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../models/check_in.dart';
+import '../models/goal.dart';
 import '../services/ai_service.dart';
 import 'goal_providers.dart';
+
+/// Fetch all check-ins for multiple goals in parallel
+Future<List<CheckIn>> _fetchAllCheckIns(
+  Ref ref,
+  List<Goal> goals,
+) async {
+  final futures = goals.map((goal) async {
+    final checkInsAsync = ref.read(checkInsStreamProvider(goal.id));
+    return checkInsAsync.when(
+      data: (checkIns) => checkIns,
+      loading: () => <CheckIn>[],
+      error: (_, __) => <CheckIn>[],
+    );
+  }).toList();
+
+  final results = await Future.wait(futures);
+  return results.expand((checkIns) => checkIns).toList();
+}
 
 /// AI Service provider
 final aiServiceProvider = Provider<AIService>((ref) {
@@ -11,8 +30,9 @@ final aiServiceProvider = Provider<AIService>((ref) {
 });
 
 /// Optimized goal provider (family) - for goal optimization
+/// Uses autoDispose to automatically clean up when no longer needed
 final optimizedGoalProvider =
-    FutureProvider.family<OptimizeGoalResponse?, OptimizeGoalParams>(
+    FutureProvider.autoDispose.family<OptimizeGoalResponse?, OptimizeGoalParams>(
         (ref, params) async {
   final aiService = ref.watch(aiServiceProvider);
 
@@ -42,7 +62,8 @@ final optimizedGoalProvider =
 });
 
 /// AI Suggestions provider - generates personalized recommendations
-final aiSuggestionsProvider = FutureProvider<String?>((ref) async {
+/// Uses autoDispose to automatically clean up when no longer needed
+final aiSuggestionsProvider = FutureProvider.autoDispose<String?>((ref) async {
   final aiService = ref.watch(aiServiceProvider);
   final userId = ref.watch(currentUserIdProvider);
   final goalsAsync = ref.watch(goalsStreamProvider);
@@ -53,18 +74,10 @@ final aiSuggestionsProvider = FutureProvider<String?>((ref) async {
 
   return goalsAsync.when(
     data: (goals) async {
-      // Fetch all check-ins for all goals
-      final allCheckIns = <CheckIn>[];
-      for (final goal in goals) {
-        final checkInsAsync = ref.read(checkInsStreamProvider(goal.id));
-        checkInsAsync.when(
-          data: (checkIns) {
-            allCheckIns.addAll(checkIns);
-          },
-          loading: () => null,
-          error: (_, __) => null,
-        );
-      }
+      if (goals.isEmpty) return null;
+
+      // Fetch all check-ins for all goals in parallel
+      final allCheckIns = await _fetchAllCheckIns(ref, goals);
 
       try {
         final suggestions = await aiService.generateSuggestions(
@@ -83,8 +96,9 @@ final aiSuggestionsProvider = FutureProvider<String?>((ref) async {
 });
 
 /// Yearly report provider (family) - generates comprehensive yearly analysis
+/// Uses autoDispose to automatically clean up when no longer needed
 final yearlyReportProvider =
-    FutureProvider.family<String?, YearlyReportParams>(
+    FutureProvider.autoDispose.family<String?, YearlyReportParams>(
         (ref, params) async {
   final aiService = ref.watch(aiServiceProvider);
   final userId = ref.watch(currentUserIdProvider);
@@ -102,21 +116,22 @@ final yearlyReportProvider =
             (g.targetDate != null && g.targetDate!.year == params.year);
       }).toList();
 
-      // Fetch all check-ins for year goals
-      final allCheckIns = <CheckIn>[];
-      for (final goal in yearGoals) {
+      if (yearGoals.isEmpty) return null;
+
+      // Fetch all check-ins for year goals in parallel
+      final allCheckInsFutures = yearGoals.map((goal) async {
         final checkInsAsync = ref.read(checkInsStreamProvider(goal.id));
-        checkInsAsync.when(
-          data: (checkIns) {
-            // Filter check-ins by year
-            allCheckIns.addAll(
-              checkIns.where((ci) => ci.createdAt.year == params.year),
-            );
-          },
-          loading: () => null,
-          error: (_, __) => null,
+        return checkInsAsync.when(
+          data: (checkIns) => checkIns
+              .where((ci) => ci.createdAt.year == params.year)
+              .toList(),
+          loading: () => <CheckIn>[],
+          error: (_, __) => <CheckIn>[],
         );
-      }
+      }).toList();
+
+      final allCheckInsResults = await Future.wait(allCheckInsFutures);
+      final allCheckIns = allCheckInsResults.expand((checkIns) => checkIns).toList();
 
       try {
         final report = await aiService.generateYearlyReport(

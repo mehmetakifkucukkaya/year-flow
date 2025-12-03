@@ -10,6 +10,33 @@ import {
   SubGoal,
 } from '../types/ai-types';
 import { GeminiClient } from './gemini-client';
+import { cleanJsonResponse } from './json-utils';
+
+function calculateDurationPhrase(targetDate: string): {
+  phrase: string;
+  weeks: number;
+} {
+  const now = new Date();
+  const target = new Date(targetDate);
+  const diffMs = target.getTime() - now.getTime();
+  const diffDays = Math.max(
+    1,
+    Math.round(diffMs / (1000 * 60 * 60 * 24))
+  );
+  const diffWeeks = Math.max(1, Math.round(diffDays / 7));
+
+  if (diffDays <= 45) {
+    // roughly up to 1.5 months → use weeks
+    const phrase =
+      diffWeeks === 1 ? '1 hafta boyunca' : `${diffWeeks} hafta boyunca`;
+    return { phrase, weeks: diffWeeks };
+  } else {
+    const approxMonths = Math.max(1, Math.round(diffDays / 30));
+    const phrase =
+      approxMonths === 1 ? '1 ay boyunca' : `${approxMonths} ay boyunca`;
+    return { phrase, weeks: diffWeeks };
+  }
+}
 
 export async function optimizeGoal(
   request: OptimizeGoalRequest,
@@ -23,27 +50,10 @@ export async function optimizeGoal(
 
   if (targetDate) {
     try {
-      const now = new Date();
-      const target = new Date(targetDate);
-      const diffMs = target.getTime() - now.getTime();
-      const diffDays = Math.max(
-        1,
-        Math.round(diffMs / (1000 * 60 * 60 * 24))
-      );
-      const diffWeeks = Math.max(1, Math.round(diffDays / 7));
-
-      // Build a human friendly Turkish duration phrase that we will force the model to reuse.
-      if (diffDays <= 45) {
-        // roughly up to 1.5 months → use weeks
-        durationPhrase =
-          diffWeeks === 1 ? '1 hafta boyunca' : `${diffWeeks} hafta boyunca`;
-      } else {
-        const approxMonths = Math.max(1, Math.round(diffDays / 30));
-        durationPhrase =
-          approxMonths === 1 ? '1 ay boyunca' : `${approxMonths} ay boyunca`;
-      }
-      const isoDate = target.toISOString().slice(0, 10);
-      timeConstraintText = `The user wants to complete this goal by ${isoDate}, which is about ${diffWeeks} weeks from now. The TOTAL duration of the plan MUST correspond to this timeframe. All sub-goals must also be scheduled within this same total timeframe.`;
+      const {phrase, weeks} = calculateDurationPhrase(targetDate);
+      durationPhrase = phrase;
+      const isoDate = new Date(targetDate).toISOString().slice(0, 10);
+      timeConstraintText = `The user wants to complete this goal by ${isoDate}, which is about ${weeks} weeks from now. The TOTAL duration of the plan MUST correspond to this timeframe. All sub-goals must also be scheduled within this same total timeframe.`;
     } catch (e) {
       logger.error('Failed to compute time constraint from targetDate', e);
     }
@@ -95,11 +105,7 @@ IMPORTANT:
     // Parse JSON response
     let parsed: any;
     try {
-      // Remove markdown code blocks if present
-      const cleanedResponse = response
-        .replace(/```json\n?/g, '')
-        .replace(/```\n?/g, '')
-        .trim();
+      const cleanedResponse = cleanJsonResponse(response);
       parsed = JSON.parse(cleanedResponse);
     } catch (parseError) {
       logger.error('Failed to parse Gemini response:', response);

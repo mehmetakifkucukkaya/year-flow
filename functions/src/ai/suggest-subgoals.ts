@@ -9,6 +9,7 @@ import {
   SuggestSubGoalsResponse,
 } from '../types/ai-types';
 import {GeminiClient} from './gemini-client';
+import { cleanJsonResponse } from './json-utils';
 
 export async function suggestSubGoals(
   request: SuggestSubGoalsRequest,
@@ -52,10 +53,7 @@ IMPORTANT:
 
     let parsed: any;
     try {
-      const cleaned = response
-        .replace(/```json\n?/g, '')
-        .replace(/```\n?/g, '')
-        .trim();
+      const cleaned = cleanJsonResponse(response);
       parsed = JSON.parse(cleaned);
     } catch (parseError) {
       logger.error('Failed to parse Gemini response for suggestSubGoals:', {

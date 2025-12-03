@@ -79,3 +79,37 @@ export interface CheckIn {
   note?: string;
 }
 
+// Validation helpers
+export function validateGoal(goal: Goal): void {
+  if (!goal.title || goal.title.trim().length === 0) {
+    throw new Error('Goal title is required');
+  }
+  if (goal.progress < 0 || goal.progress > 100) {
+    throw new Error('Goal progress must be between 0 and 100');
+  }
+  if (!goal.id || goal.id.trim().length === 0) {
+    throw new Error('Goal id is required');
+  }
+  if (!goal.userId || goal.userId.trim().length === 0) {
+    throw new Error('Goal userId is required');
+  }
+}
+
+export function validateCheckIn(checkIn: CheckIn): void {
+  if (checkIn.score < 1 || checkIn.score > 10) {
+    throw new Error('Check-in score must be between 1 and 10');
+  }
+  if (checkIn.progressDelta < -100 || checkIn.progressDelta > 100) {
+    throw new Error('Check-in progressDelta must be between -100 and 100');
+  }
+  if (!checkIn.id || checkIn.id.trim().length === 0) {
+    throw new Error('Check-in id is required');
+  }
+  if (!checkIn.goalId || checkIn.goalId.trim().length === 0) {
+    throw new Error('Check-in goalId is required');
+  }
+  if (!checkIn.userId || checkIn.userId.trim().length === 0) {
+    throw new Error('Check-in userId is required');
+  }
+}
+
