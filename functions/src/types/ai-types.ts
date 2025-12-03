@@ -42,6 +42,18 @@ export interface GenerateYearlyReportResponse {
   content: string;
 }
 
+export interface SuggestSubGoalsRequest {
+  goalTitle: string;
+  category: string;
+  description?: string;
+}
+
+export interface SuggestSubGoalsResponse {
+  subGoals: {
+    title: string;
+  }[];
+}
+
 // Firestore data models (simplified for AI functions)
 export interface Goal {
   id: string;

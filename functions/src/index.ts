@@ -6,15 +6,23 @@
 import {onCall, HttpsError} from 'firebase-functions/v2/https';
 import {setGlobalOptions} from 'firebase-functions/v2';
 import * as logger from 'firebase-functions/logger';
+import * as dotenv from 'dotenv';
 import {GeminiClient} from './ai/gemini-client';
 import {optimizeGoal} from './ai/optimize-goal';
 import {generateSuggestions} from './ai/generate-suggestions';
 import {generateYearlyReport} from './ai/generate-yearly-report';
+import {suggestSubGoals} from './ai/suggest-subgoals';
 import {
   OptimizeGoalResponse,
   GenerateSuggestionsResponse,
   GenerateYearlyReportResponse,
+  SuggestSubGoalsResponse,
 } from './types/ai-types';
+
+// Load environment variables in local / emulator environments.
+// On deployed Cloud Functions, environment variables should be configured
+// via the platform and will already be available in process.env.
+dotenv.config();
 
 // Global options for cost control
 setGlobalOptions({
@@ -181,6 +189,50 @@ export const generateYearlyReportFunction = onCall(
       throw new HttpsError(
         'internal',
         `Failed to generate yearly report: ${error.message}`
+      );
+    }
+  }
+);
+
+/**
+ * Suggest Sub-goals - Lightweight AI endpoint for sub-goal ideas
+ */
+export const suggestSubGoalsFunction = onCall(
+  {
+    region: 'europe-west1',
+    timeoutSeconds: 45,
+    memory: '512MiB',
+  },
+  async (request): Promise<SuggestSubGoalsResponse> => {
+    if (!request.auth) {
+      throw new HttpsError('unauthenticated', 'User must be authenticated');
+    }
+
+    const {goalTitle, category} = request.data;
+
+    if (!goalTitle || !category) {
+      throw new HttpsError(
+        'invalid-argument',
+        'goalTitle and category are required'
+      );
+    }
+
+    try {
+      const geminiClient = getGeminiClient();
+      const result = await suggestSubGoals(request.data, geminiClient);
+
+      logger.info('Sub-goal suggestions generated', {
+        userId: request.auth.uid,
+        goalTitle,
+        subGoalCount: result.subGoals.length,
+      });
+
+      return result;
+    } catch (error: any) {
+      logger.error('Error in suggestSubGoalsFunction:', error);
+      throw new HttpsError(
+        'internal',
+        `Failed to suggest sub-goals: ${error.message}`
       );
     }
   }

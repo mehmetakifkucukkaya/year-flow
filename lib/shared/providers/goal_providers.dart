@@ -60,6 +60,73 @@ final checkInsStreamProvider =
   return repo.watchCheckIns(goalId, userId);
 });
 
+class WeeklyCheckInSummary {
+  const WeeklyCheckInSummary({
+    required this.checkInCount,
+    required this.goalsWithProgress,
+    required this.emptyDayStreak,
+  });
+
+  final int checkInCount;
+  final int goalsWithProgress;
+  final int emptyDayStreak;
+
+  static const empty = WeeklyCheckInSummary(
+    checkInCount: 0,
+    goalsWithProgress: 0,
+    emptyDayStreak: 0,
+  );
+}
+
+/// Kullanıcının bu haftaki check-in özetini verir
+final weeklyCheckInSummaryProvider =
+    StreamProvider<WeeklyCheckInSummary>((ref) {
+  final repo = ref.watch(goalRepositoryProvider);
+  final userId = ref.watch(currentUserIdProvider);
+
+  if (userId == null) {
+    return Stream.value(WeeklyCheckInSummary.empty);
+  }
+
+  return repo.watchAllCheckIns(userId).map((checkIns) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final startOfWeek = today.subtract(Duration(days: now.weekday - 1));
+
+    final thisWeekCheckIns = checkIns.where((c) {
+      final d = DateTime(c.createdAt.year, c.createdAt.month, c.createdAt.day);
+      return !d.isBefore(startOfWeek) && !d.isAfter(today);
+    }).toList();
+
+    final checkInCount = thisWeekCheckIns.length;
+    final goalsWithProgress =
+        thisWeekCheckIns.map((c) => c.goalId).toSet().length;
+
+    // Haftanın sonundan geriye doğru, üst üste check-in yapılmayan gün sayısı
+    int emptyStreak = 0;
+    for (int i = 0; i < 7; i++) {
+      final day = today.subtract(Duration(days: i));
+      if (day.isBefore(startOfWeek)) break;
+      final hasCheckIn = thisWeekCheckIns.any((c) {
+        final cd =
+            DateTime(c.createdAt.year, c.createdAt.month, c.createdAt.day);
+        return cd == day;
+      });
+      if (hasCheckIn) {
+        break;
+      } else {
+        emptyStreak++;
+      }
+    }
+
+    return WeeklyCheckInSummary(
+      checkInCount: checkInCount,
+      goalsWithProgress: goalsWithProgress,
+      emptyDayStreak: emptyStreak,
+    );
+  });
+});
+
 /// Export service provider
 final exportServiceProvider = Provider<ExportService>((ref) {
   final repo = ref.watch(goalRepositoryProvider);

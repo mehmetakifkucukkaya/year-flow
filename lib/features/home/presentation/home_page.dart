@@ -19,6 +19,7 @@ class HomePage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final goalsAsync = ref.watch(goalsStreamProvider);
+    final weeklySummaryAsync = ref.watch(weeklyCheckInSummaryProvider);
 
     return Container(
       color: _premiumBackground,
@@ -29,6 +30,22 @@ class HomePage extends ConsumerWidget {
             bottom: false,
             sliver: SliverToBoxAdapter(
               child: _TopAppBar(),
+            ),
+          ),
+
+          // Haftalık Özet Kartı
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.only(
+                left: AppSpacing.md,
+                right: AppSpacing.md,
+                top: AppSpacing.lg,
+              ),
+              child: weeklySummaryAsync.when(
+                loading: () => const _WeeklySummarySkeletonCard(),
+                error: (_, __) => const _WeeklySummaryErrorCard(),
+                data: (summary) => _WeeklySummaryCard(summary: summary),
+              ),
             ),
           ),
 
@@ -155,6 +172,165 @@ class HomePage extends ConsumerWidget {
           // Bottom padding for navigation bar
           const SliverToBoxAdapter(
             child: SizedBox(height: AppSpacing.xl),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _WeeklySummaryCard extends StatelessWidget {
+  const _WeeklySummaryCard({required this.summary});
+
+  final WeeklyCheckInSummary summary;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.md),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: AppRadius.borderRadiusLg,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            offset: const Offset(0, 8),
+            blurRadius: 18,
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 42,
+            height: 42,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(999),
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  theme.colorScheme.primary,
+                  theme.colorScheme.primary.withOpacity(0.6),
+                ],
+              ),
+            ),
+            child: const Icon(
+              Icons.insights_rounded,
+              color: Colors.white,
+              size: 22,
+            ),
+          ),
+          const SizedBox(width: AppSpacing.md),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Haftalık özet',
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: -0.1,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Bu hafta toplam ${summary.checkInCount} check-in ile '
+                  '${summary.goalsWithProgress} farklı hedefte ilerleme kaydettin.',
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: AppColors.gray700,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _WeeklySummarySkeletonCard extends StatelessWidget {
+  const _WeeklySummarySkeletonCard();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.md),
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: AppRadius.borderRadiusLg,
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 42,
+            height: 42,
+            decoration: BoxDecoration(
+              color: AppColors.gray100,
+              borderRadius: BorderRadius.circular(999),
+            ),
+          ),
+          const SizedBox(width: AppSpacing.md),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  height: 12,
+                  width: 70,
+                  decoration: BoxDecoration(
+                    color: AppColors.gray100,
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Container(
+                  height: 10,
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    color: AppColors.gray100,
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _WeeklySummaryErrorCard extends StatelessWidget {
+  const _WeeklySummaryErrorCard();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.md),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: AppRadius.borderRadiusLg,
+        border: Border.all(color: AppColors.gray100),
+      ),
+      child: Row(
+        children: [
+          const Icon(
+            Icons.info_outline_rounded,
+            size: 20,
+            color: AppColors.gray500,
+          ),
+          const SizedBox(width: AppSpacing.sm),
+          Expanded(
+            child: Text(
+              'Bu haftanın özeti şu an yüklenemedi. Birazdan tekrar dene.',
+              style: AppTextStyles.bodySmall.copyWith(
+                color: AppColors.gray600,
+              ),
+            ),
           ),
         ],
       ),
@@ -601,6 +777,12 @@ class _DailyQuestionCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final now = DateTime.now();
+    // Haftada sadece 1 kez, Pazar günleri göster
+    if (now.weekday != DateTime.sunday) {
+      return const SizedBox.shrink();
+    }
+
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,

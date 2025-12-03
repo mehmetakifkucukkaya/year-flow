@@ -23,6 +23,9 @@ abstract class GoalRepository {
 
   Future<CheckIn> addCheckIn(CheckIn checkIn);
 
+  /// Kullanıcının tüm check-in kayıtlarını izler (hedeften bağımsız).
+  Stream<List<CheckIn>> watchAllCheckIns(String userId);
+
   // Yearly reports (per user)
   Stream<YearlyReport?> watchYearlyReport({
     required String userId,

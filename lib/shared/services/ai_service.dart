@@ -96,6 +96,87 @@ class AIService {
     }
   }
 
+  /// Suggest sub-goals for a given goal (lightweight AI call)
+  Future<List<String>> suggestSubGoals({
+    required String goalTitle,
+    required String category,
+    String? description,
+  }) async {
+    try {
+      final user = _auth.currentUser;
+      if (user == null) {
+        throw Exception('User must be authenticated');
+      }
+
+      final callable = _functions.httpsCallable('suggestSubGoalsFunction');
+
+      debugPrint('AI Service: Calling suggestSubGoalsFunction with:');
+      debugPrint('  goalTitle: $goalTitle');
+      debugPrint('  category: $category');
+      debugPrint('  description: $description');
+
+      final result = await callable.call({
+        'goalTitle': goalTitle,
+        'category': category,
+        if (description != null && description.isNotEmpty)
+          'description': description,
+      });
+
+      debugPrint('AI Service: suggestSubGoalsFunction result: ${result.data}');
+
+      if (result.data == null) {
+        throw Exception('No data received from Cloud Function');
+      }
+
+      final data = result.data as Map<String, dynamic>;
+      final list = (data['subGoals'] as List<dynamic>? ?? [])
+          .map((e) => (e as Map<String, dynamic>)['title'] as String)
+          .where((title) => title.trim().isNotEmpty)
+          .toList();
+
+      return list;
+    } catch (e, stackTrace) {
+      debugPrint('AI Service suggestSubGoals Error: $e');
+      debugPrint('Stack trace: $stackTrace');
+      if (_shouldFallbackToOptimizeGoal(e)) {
+        debugPrint(
+            'AI Service: Falling back to optimizeGoal for sub-goal suggestions');
+        try {
+          final optimized = await optimizeGoal(
+            goalTitle: goalTitle,
+            category: category,
+            motivation: description,
+          );
+
+          final fallbackList = optimized.subGoals
+              .map((subGoal) => subGoal.title.trim())
+              .where((title) => title.isNotEmpty)
+              .toList();
+
+          if (fallbackList.isNotEmpty) {
+            return fallbackList;
+          }
+        } catch (fallbackError, fallbackStackTrace) {
+          debugPrint(
+              'AI Service fallback via optimizeGoal failed: $fallbackError');
+          debugPrint('Fallback stack trace: $fallbackStackTrace');
+          throw Exception(
+            'Alt görev önerileri alınamadı: ${fallbackError.toString()}',
+          );
+        }
+      }
+
+      throw Exception('Alt görev önerileri alınamadı: ${e.toString()}');
+    }
+  }
+
+  bool _shouldFallbackToOptimizeGoal(Object error) {
+    final message = error.toString().toLowerCase();
+    return message.contains('ai service initialization failed') ||
+        message.contains('failed to suggest sub-goals') ||
+        message.contains('gemini api key');
+  }
+
   /// Generate AI suggestions based on user goals and progress
   Future<String> generateSuggestions({
     required String userId,

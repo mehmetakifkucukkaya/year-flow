@@ -138,14 +138,14 @@ class FirestoreGoalRepository implements GoalRepository {
   @override
   Stream<List<CheckIn>> watchCheckIns(String goalId, String userId) {
     return _firestore
-        .collection(_FirestoreCollections.checkIns)
-        .where('goalId', isEqualTo: goalId)
-        .where('userId', isEqualTo: userId)
-        .orderBy('createdAt', descending: true)
-        .snapshots()
-        .map((snapshot) => snapshot.docs
-            .map((doc) => _checkInFromFirestore(doc.id, doc.data()))
-            .toList());
+            .collection(_FirestoreCollections.checkIns)
+            .where('goalId', isEqualTo: goalId)
+            .where('userId', isEqualTo: userId)
+            .orderBy('createdAt', descending: true)
+            .snapshots()
+            .map((snapshot) => snapshot.docs
+                .map((doc) => _checkInFromFirestore(doc.id, doc.data()))
+                .toList());
   }
 
   @override
@@ -164,6 +164,23 @@ class FirestoreGoalRepository implements GoalRepository {
     await docRef.set(_checkInToFirestore(checkInWithId));
 
     return checkInWithId;
+  }
+
+  @override
+  Stream<List<CheckIn>> watchAllCheckIns(String userId) {
+    try {
+      return _firestore
+          .collection(_FirestoreCollections.checkIns)
+          .where('userId', isEqualTo: userId)
+          .snapshots()
+          .map((snapshot) => snapshot.docs
+              .map((doc) => _checkInFromFirestore(doc.id, doc.data()))
+              .toList());
+    } catch (e, stackTrace) {
+      print('Firestore watchAllCheckIns error: $e');
+      print(stackTrace);
+      return Stream.value(<CheckIn>[]);
+    }
   }
 
   // ==================== Yearly Reports ====================

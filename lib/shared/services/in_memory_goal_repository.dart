@@ -191,6 +191,11 @@ class InMemoryGoalRepository implements GoalRepository {
   }
 
   @override
+  Stream<List<CheckIn>> watchAllCheckIns(String userId) async* {
+    yield _checkIns.where((c) => c.userId == userId).toList();
+  }
+
+  @override
   Stream<YearlyReport?> watchYearlyReport({
     required String userId,
     required int year,

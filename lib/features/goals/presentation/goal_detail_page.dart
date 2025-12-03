@@ -17,6 +17,7 @@ import '../../../shared/models/check_in.dart';
 import '../../../shared/models/goal.dart';
 import '../../../shared/models/note.dart';
 import '../../../shared/providers/goal_providers.dart';
+import '../../../shared/providers/ai_providers.dart';
 
 class GoalDetailPage extends ConsumerStatefulWidget {
   const GoalDetailPage({
@@ -226,11 +227,17 @@ class _GoalDetailPageState extends ConsumerState<GoalDetailPage>
                             _SubtasksTab(
                               goalId: goalDetail.goalId,
                               subGoals: goal.subGoals,
+                              goalTitle: goal.title,
+                              goalDescription: goal.description,
+                              goalCategoryKey: goal.category.name,
                             )
                           else
                             const _SubtasksTab(
                               goalId: '',
                               subGoals: [],
+                              goalTitle: '',
+                              goalDescription: null,
+                              goalCategoryKey: '',
                             ),
                         ],
                       ),
@@ -1514,10 +1521,16 @@ class _SubtasksTab extends ConsumerStatefulWidget {
   const _SubtasksTab({
     required this.goalId,
     required this.subGoals,
+    required this.goalTitle,
+    required this.goalDescription,
+    required this.goalCategoryKey,
   });
 
   final String goalId;
   final List<SubGoal> subGoals;
+  final String goalTitle;
+  final String? goalDescription;
+  final String goalCategoryKey;
 
   @override
   ConsumerState<_SubtasksTab> createState() => _SubtasksTabState();
@@ -1525,11 +1538,274 @@ class _SubtasksTab extends ConsumerStatefulWidget {
 
 class _SubtasksTabState extends ConsumerState<_SubtasksTab> {
   late List<SubGoal> _subGoals;
+  bool _isSuggesting = false;
 
   @override
   void initState() {
     super.initState();
     _subGoals = List<SubGoal>.from(widget.subGoals);
+  }
+
+  Future<void> _suggestSubGoalsWithAI() async {
+    if (widget.goalId.isEmpty) return;
+    final aiService = ref.read(aiServiceProvider);
+
+    setState(() {
+      _isSuggesting = true;
+    });
+
+    try {
+      final titles = await aiService.suggestSubGoals(
+        goalTitle: widget.goalTitle,
+        category: widget.goalCategoryKey,
+        description: widget.goalDescription,
+      );
+
+      if (!mounted) return;
+
+      if (titles.isEmpty) {
+        AppSnackbar.showError(
+          context,
+          message: 'Şu anda alt görev önerisi üretilemedi. Lütfen tekrar dene.',
+        );
+        return;
+      }
+
+      final selected = await showModalBottomSheet<List<String>>(
+        context: context,
+        isScrollControlled: true,
+        backgroundColor: Colors.transparent,
+        builder: (context) {
+          final bottomInset = MediaQuery.of(context).viewInsets.bottom;
+          final ValueNotifier<Set<int>> selectedIndexes =
+              ValueNotifier<Set<int>>(
+            {for (int i = 0; i < titles.length; i++) i},
+          );
+
+          return Container(
+            color: Colors.black.withOpacity(0.35),
+            child: SafeArea(
+              top: false,
+              child: Padding(
+                padding: EdgeInsets.only(bottom: bottomInset),
+                child: Center(
+                  child: Container(
+                    margin: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.lg,
+                    ),
+                    padding: const EdgeInsets.all(AppSpacing.lg),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: AppRadius.borderRadiusXl,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.16),
+                          blurRadius: 30,
+                          offset: const Offset(0, 16),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Text(
+                              'AI ile alt görev önerileri',
+                              style: AppTextStyles.titleLarge.copyWith(
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            const Spacer(),
+                            IconButton(
+                              icon: const Icon(Icons.close_rounded),
+                              onPressed: () =>
+                                  Navigator.of(context).pop(<String>[]),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: AppSpacing.sm),
+                        Text(
+                          'Bu hedef için önerilen alt görevlerden istediklerini seçip listeye ekleyebilirsin.',
+                          style: AppTextStyles.bodySmall.copyWith(
+                            color: AppColors.gray600,
+                          ),
+                        ),
+                        const SizedBox(height: AppSpacing.md),
+                        ConstrainedBox(
+                          constraints: const BoxConstraints(maxHeight: 320),
+                          child: ValueListenableBuilder<Set<int>>(
+                            valueListenable: selectedIndexes,
+                            builder: (context, selectedSet, _) {
+                              return ListView.separated(
+                                shrinkWrap: true,
+                                itemCount: titles.length,
+                                separatorBuilder: (_, __) =>
+                                    const SizedBox(height: AppSpacing.sm),
+                                itemBuilder: (context, index) {
+                                  final isSelected =
+                                      selectedSet.contains(index);
+                                  final title = titles[index];
+                                  return InkWell(
+                                    borderRadius: BorderRadius.circular(16),
+                                    onTap: () {
+                                      final next = Set<int>.from(selectedSet);
+                                      if (isSelected) {
+                                        next.remove(index);
+                                      } else {
+                                        next.add(index);
+                                      }
+                                      selectedIndexes.value = next;
+                                    },
+                                    child: Container(
+                                      padding: const EdgeInsets.all(
+                                        AppSpacing.md,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        borderRadius:
+                                            BorderRadius.circular(16),
+                                        border: Border.all(
+                                          color: isSelected
+                                              ? AppColors.primary
+                                              : AppColors.gray200,
+                                        ),
+                                        color: isSelected
+                                            ? AppColors.primary
+                                                .withOpacity(0.06)
+                                            : Colors.white,
+                                      ),
+                                      child: Row(
+                                        children: [
+                                          Icon(
+                                            isSelected
+                                                ? Icons.check_circle_rounded
+                                                : Icons.radio_button_unchecked,
+                                            size: 20,
+                                            color: isSelected
+                                                ? AppColors.primary
+                                                : AppColors.gray400,
+                                          ),
+                                          const SizedBox(
+                                            width: AppSpacing.sm,
+                                          ),
+                                          Expanded(
+                                            child: Text(
+                                              title,
+                                              style: AppTextStyles.bodyMedium
+                                                  .copyWith(
+                                                color: AppColors.gray900,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                },
+                              );
+                            },
+                          ),
+                        ),
+                        const SizedBox(height: AppSpacing.lg),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: OutlinedButton(
+                                onPressed: () =>
+                                    Navigator.of(context).pop(<String>[]),
+                                style: OutlinedButton.styleFrom(
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 14,
+                                  ),
+                                  shape: const RoundedRectangleBorder(
+                                    borderRadius: AppRadius.borderRadiusLg,
+                                  ),
+                                ),
+                                child: Text(
+                                  'İptal',
+                                  style: AppTextStyles.bodyMedium.copyWith(
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: AppSpacing.md),
+                            Expanded(
+                              child: FilledButton(
+                                onPressed: () {
+                                  final currentSelection =
+                                      selectedIndexes.value;
+                                  final selectedTitles = <String>[];
+                                  for (final index in currentSelection) {
+                                    if (index >= 0 &&
+                                        index < titles.length) {
+                                      selectedTitles.add(titles[index]);
+                                    }
+                                  }
+                                  Navigator.of(context)
+                                      .pop(selectedTitles);
+                                },
+                                style: FilledButton.styleFrom(
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 14,
+                                  ),
+                                  shape: const RoundedRectangleBorder(
+                                    borderRadius: AppRadius.borderRadiusLg,
+                                  ),
+                                ),
+                                child: Text(
+                                  'Seçilenleri ekle',
+                                  style: AppTextStyles.bodyMedium.copyWith(
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
+      );
+
+      if (!mounted) return;
+
+      final selectedTitles = selected ?? <String>[];
+      if (selectedTitles.isEmpty) {
+        return;
+      }
+
+      setState(() {
+        _subGoals = [
+          ..._subGoals,
+          for (final title in selectedTitles)
+            SubGoal(
+              id: const Uuid().v4(),
+              title: title,
+            ),
+        ];
+      });
+
+      await _saveSubGoals();
+    } catch (e) {
+      if (!mounted) return;
+      AppSnackbar.showError(
+        context,
+        message: e.toString(),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSuggesting = false;
+        });
+      }
+    }
   }
 
   Future<void> _saveSubGoals() async {
@@ -1795,29 +2071,167 @@ class _SubtasksTabState extends ConsumerState<_SubtasksTab> {
           constraints: BoxConstraints(
             minHeight: MediaQuery.of(context).size.height - 400,
           ),
-          child: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(
-                  Icons.task_outlined,
-                  size: 64,
-                  color: AppColors.gray400,
-                ),
-                const SizedBox(height: AppSpacing.md),
-                Text(
-                  'Henüz alt görev yok',
-                  style: AppTextStyles.titleMedium.copyWith(
-                    color: AppColors.gray600,
+          child: Padding(
+            padding: const EdgeInsets.all(AppSpacing.lg),
+            child: Align(
+              alignment: Alignment.topCenter,
+              child: Container(
+                width: double.infinity,
+                constraints: const BoxConstraints(maxWidth: 420),
+                padding: const EdgeInsets.all(AppSpacing.xl),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(24),
+                  gradient: const LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      Color(0xFFF5F7FF),
+                      Color(0xFFEFF3FF),
+                    ],
                   ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.04),
+                      blurRadius: 24,
+                      offset: const Offset(0, 16),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: AppSpacing.lg),
-                FilledButton.icon(
-                  onPressed: () => _showEditDialog(),
-                  icon: const Icon(Icons.add_rounded),
-                  label: const Text('Alt Görev Ekle'),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    // Icon + halo
+                    Container(
+                      width: 64,
+                      height: 64,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        gradient: const LinearGradient(
+                          colors: [
+                            Color(0xFFE0ECFF),
+                            Color(0xFFD0E2FF),
+                          ],
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.primary.withOpacity(0.25),
+                            blurRadius: 20,
+                            offset: const Offset(0, 10),
+                          ),
+                        ],
+                      ),
+                      child: const Icon(
+                        Icons.task_alt_rounded,
+                        size: 32,
+                        color: AppColors.primary,
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.lg),
+                    Text(
+                      'Bu hedefi adımlara bölelim',
+                      style: AppTextStyles.titleLarge.copyWith(
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.gray900,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: AppSpacing.sm),
+                    Text(
+                      'Alt görevler, hedefini günlük ve haftalık uygulanabilir adımlara dönüştürmene yardım eder.',
+                      style: AppTextStyles.bodyMedium.copyWith(
+                        color: AppColors.gray600,
+                        height: 1.4,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: AppSpacing.lg),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.md,
+                        vertical: AppSpacing.sm,
+                      ),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(16),
+                        color: Colors.white.withOpacity(0.8),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(
+                            Icons.auto_awesome_rounded,
+                            size: 18,
+                            color: AppColors.primary,
+                          ),
+                          const SizedBox(width: AppSpacing.xs),
+                          Text(
+                            'İstersen AI senin için öneri üretsin',
+                            style: AppTextStyles.bodySmall.copyWith(
+                              color: AppColors.gray700,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.xl),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: FilledButton(
+                            onPressed: () => _showEditDialog(),
+                            style: FilledButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(
+                                vertical: 14,
+                              ),
+                              shape: const RoundedRectangleBorder(
+                                borderRadius: AppRadius.borderRadiusLg,
+                              ),
+                            ),
+                            child: Text(
+                              'Alt Görev Oluştur',
+                              style: AppTextStyles.bodyMedium.copyWith(
+                                fontWeight: FontWeight.w700,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: AppSpacing.sm),
+                    TextButton.icon(
+                      onPressed:
+                          _isSuggesting ? null : _suggestSubGoalsWithAI,
+                      style: TextButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: AppSpacing.md,
+                          vertical: AppSpacing.sm,
+                        ),
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
+                      icon: _isSuggesting
+                          ? const SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                              ),
+                            )
+                          : const Icon(
+                              Icons.auto_awesome_rounded,
+                              size: 18,
+                            ),
+                      label: Text(
+                        'AI ile alt görev öner',
+                        style: AppTextStyles.bodySmall.copyWith(
+                          color: AppColors.primary,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
           ),
         ),
@@ -1832,6 +2246,7 @@ class _SubtasksTabState extends ConsumerState<_SubtasksTab> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Icon(
                     Icons.info_outline_rounded,
@@ -1840,12 +2255,46 @@ class _SubtasksTabState extends ConsumerState<_SubtasksTab> {
                   ),
                   const SizedBox(width: AppSpacing.xs),
                   Expanded(
-                    child: Text(
-                      'Alt görevi düzenlemek için karta dokun, tamamlamak için soldaki çembere bas.',
-                      style: AppTextStyles.bodySmall.copyWith(
-                        color: AppColors.gray500,
-                        fontSize: 13,
-                      ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Alt görevi düzenlemek için karta dokun, tamamlamak için soldaki çembere bas.',
+                          style: AppTextStyles.bodySmall.copyWith(
+                            color: AppColors.gray500,
+                            fontSize: 13,
+                          ),
+                        ),
+                        const SizedBox(height: AppSpacing.xs),
+                        TextButton.icon(
+                          onPressed:
+                              _isSuggesting ? null : _suggestSubGoalsWithAI,
+                          style: TextButton.styleFrom(
+                            padding: EdgeInsets.zero,
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            minimumSize: Size.zero,
+                          ),
+                          icon: _isSuggesting
+                              ? const SizedBox(
+                                  width: 14,
+                                  height: 14,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : const Icon(
+                                  Icons.auto_awesome_rounded,
+                                  size: 16,
+                                ),
+                          label: Text(
+                            'AI ile alt görev öner',
+                            style: AppTextStyles.bodySmall.copyWith(
+                              color: AppColors.primary,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
