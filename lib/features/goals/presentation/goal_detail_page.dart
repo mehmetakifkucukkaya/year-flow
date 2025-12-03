@@ -133,7 +133,18 @@ class _GoalDetailPageState extends ConsumerState<GoalDetailPage>
                           goalId: widget.goalId,
                           subtasks: [],
                         )
-                      : _mockGoal,
+                      : _GoalDetail(
+                          title: '',
+                          description: null,
+                          category: '',
+                          progress: 0,
+                          nextCheckIn: 'Belirtilmemiş',
+                          categoryColor: AppColors.primary,
+                          categoryBackgroundColor: AppColors.primary.withOpacity(0.1),
+                          timelineItems: const [],
+                          goalId: widget.goalId,
+                          subtasks: const [],
+                        ),
                 ),
                 const Expanded(
                   child: Center(child: CircularProgressIndicator()),
@@ -162,7 +173,18 @@ class _GoalDetailPageState extends ConsumerState<GoalDetailPage>
                           goalId: widget.goalId,
                           subtasks: [],
                         )
-                      : _mockGoal,
+                      : _GoalDetail(
+                          title: '',
+                          description: null,
+                          category: '',
+                          progress: 0,
+                          nextCheckIn: 'Belirtilmemiş',
+                          categoryColor: AppColors.primary,
+                          categoryBackgroundColor: AppColors.primary.withOpacity(0.1),
+                          timelineItems: const [],
+                          goalId: widget.goalId,
+                          subtasks: const [],
+                        ),
                 ),
                 Expanded(
                   child: Center(
@@ -198,7 +220,18 @@ class _GoalDetailPageState extends ConsumerState<GoalDetailPage>
                               ))
                           .toList(),
                     )
-                  : _mockGoal;
+                  : _GoalDetail(
+                      title: '',
+                      description: null,
+                      category: '',
+                      progress: 0,
+                      nextCheckIn: 'Belirtilmemiş',
+                      categoryColor: AppColors.primary,
+                      categoryBackgroundColor: AppColors.primary.withOpacity(0.1),
+                      timelineItems: timelineItems,
+                      goalId: widget.goalId,
+                      subtasks: const [],
+                    );
 
               return Column(
                 children: [
@@ -882,7 +915,7 @@ class _Note {
   final String date;
 }
 
-/// Subtask Model (kept for legacy mock data)
+/// Subtask Model
 class _Subtask {
   const _Subtask({
     required this.title,
@@ -915,65 +948,6 @@ enum _TimelineItemType {
   milestone,
   checkIn,
 }
-
-/// Mock goal data
-final _mockGoal = _GoalDetail(
-  title: 'Yeni Bir Dil Öğren',
-  description:
-      'Önümüzdeki 6 ay boyunca düzenli çalışarak yeni bir dilde temel seviye iletişim kurabilmek.',
-  category: 'Kişisel Gelişim',
-  progress: 65,
-  nextCheckIn: '25 Aralık',
-  categoryColor: AppColors.primary,
-  categoryBackgroundColor: AppColors.primary.withOpacity(0.1),
-  timelineItems: const [
-    _TimelineItem(
-      title: 'Hedef Oluşturuldu',
-      date: '15 Kasım',
-      type: _TimelineItemType.created,
-    ),
-    _TimelineItem(
-      title: 'İlk 100 Kelime Öğrenildi',
-      date: '28 Kasım',
-      type: _TimelineItemType.milestone,
-    ),
-    _TimelineItem(
-      title: 'Check-in Yapıldı: +15% İlerleme',
-      date: '10 Aralık',
-      type: _TimelineItemType.checkIn,
-      note:
-          'Bu hafta dil pratiği için bir partner buldum. Konuşma becerilerim hızla gelişiyor!',
-    ),
-  ],
-  goalId: '',
-  subtasks: const [
-    _Subtask(
-      title: 'Günlük 30 kelime öğren',
-      isCompleted: true,
-      dueDate: '20 Kasım',
-    ),
-    _Subtask(
-      title: 'Temel gramer kurallarını öğren',
-      isCompleted: true,
-      dueDate: '10 Aralık',
-    ),
-    _Subtask(
-      title: 'İlk basit diyalog yap',
-      isCompleted: false,
-      dueDate: '30 Aralık',
-    ),
-    _Subtask(
-      title: '1000 kelime hazinesi oluştur',
-      isCompleted: false,
-      dueDate: '15 Ocak',
-    ),
-    _Subtask(
-      title: 'İlk kitabı oku',
-      isCompleted: false,
-      dueDate: '1 Şubat',
-    ),
-  ],
-);
 
 /// Timeline Tab - Premium design with more spacing
 class _TimelineTab extends StatelessWidget {

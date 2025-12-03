@@ -4,6 +4,7 @@
  */
 
 import {onCall, HttpsError} from 'firebase-functions/v2/https';
+import {defineSecret} from 'firebase-functions/params';
 import {setGlobalOptions} from 'firebase-functions/v2';
 import * as logger from 'firebase-functions/logger';
 import * as dotenv from 'dotenv';
@@ -11,11 +12,15 @@ import {GeminiClient} from './ai/gemini-client';
 import {optimizeGoal} from './ai/optimize-goal';
 import {generateSuggestions} from './ai/generate-suggestions';
 import {generateYearlyReport} from './ai/generate-yearly-report';
+import {generateWeeklyReport} from './ai/generate-weekly-report';
+import {generateMonthlyReport} from './ai/generate-monthly-report';
 import {suggestSubGoals} from './ai/suggest-subgoals';
 import {
   OptimizeGoalResponse,
   GenerateSuggestionsResponse,
   GenerateYearlyReportResponse,
+  GenerateWeeklyReportResponse,
+  GenerateMonthlyReportResponse,
   SuggestSubGoalsResponse,
 } from './types/ai-types';
 
@@ -30,24 +35,19 @@ setGlobalOptions({
   region: 'europe-west1',
 });
 
-/**
- * Get Gemini API key from environment
- * Note: Environment variable must be set in Google Cloud Console
- */
-function getGeminiApiKey(): string {
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) {
-    throw new Error('GEMINI_API_KEY environment variable is not set');
-  }
-  return apiKey;
-}
+// Define secret for Gemini API key
+// To set: firebase functions:secrets:set GEMINI_API_KEY
+const geminiApiKeySecret = defineSecret('GEMINI_API_KEY');
 
 /**
- * Initialize Gemini client
+ * Initialize Gemini client with secret
  */
-function getGeminiClient(): GeminiClient {
+function getGeminiClient(apiKey: string): GeminiClient {
   try {
-    return new GeminiClient(getGeminiApiKey());
+    if (!apiKey) {
+      throw new Error('GEMINI_API_KEY is not set');
+    }
+    return new GeminiClient(apiKey);
   } catch (error: any) {
     logger.error('Failed to initialize Gemini client:', error);
     throw new HttpsError('internal', 'AI service initialization failed');
@@ -62,6 +62,7 @@ export const optimizeGoalFunction = onCall(
     region: 'europe-west1',
     timeoutSeconds: 60,
     memory: '512MiB',
+    secrets: [geminiApiKeySecret],
   },
   async (request): Promise<OptimizeGoalResponse> => {
     // Authentication check
@@ -79,7 +80,7 @@ export const optimizeGoalFunction = onCall(
     }
 
     try {
-      const geminiClient = getGeminiClient();
+      const geminiClient = getGeminiClient(geminiApiKeySecret.value());
       const result = await optimizeGoal(request.data, geminiClient);
 
       logger.info('Goal optimized successfully', {
@@ -106,6 +107,7 @@ export const generateSuggestionsFunction = onCall(
     region: 'europe-west1',
     timeoutSeconds: 60,
     memory: '512MiB',
+    secrets: [geminiApiKeySecret],
   },
   async (request): Promise<GenerateSuggestionsResponse> => {
     // Authentication check
@@ -124,7 +126,7 @@ export const generateSuggestionsFunction = onCall(
     }
 
     try {
-      const geminiClient = getGeminiClient();
+      const geminiClient = getGeminiClient(geminiApiKeySecret.value());
       const result = await generateSuggestions(request.data, geminiClient);
 
       logger.info('Suggestions generated successfully', {
@@ -152,6 +154,7 @@ export const generateYearlyReportFunction = onCall(
     region: 'europe-west1',
     timeoutSeconds: 120,
     memory: '1GiB',
+    secrets: [geminiApiKeySecret],
   },
   async (request): Promise<GenerateYearlyReportResponse> => {
     // Authentication check
@@ -173,7 +176,7 @@ export const generateYearlyReportFunction = onCall(
     }
 
     try {
-      const geminiClient = getGeminiClient();
+      const geminiClient = getGeminiClient(geminiApiKeySecret.value());
       const result = await generateYearlyReport(request.data, geminiClient);
 
       logger.info('Yearly report generated successfully', {
@@ -202,6 +205,7 @@ export const suggestSubGoalsFunction = onCall(
     region: 'europe-west1',
     timeoutSeconds: 45,
     memory: '512MiB',
+    secrets: [geminiApiKeySecret],
   },
   async (request): Promise<SuggestSubGoalsResponse> => {
     if (!request.auth) {
@@ -218,7 +222,7 @@ export const suggestSubGoalsFunction = onCall(
     }
 
     try {
-      const geminiClient = getGeminiClient();
+      const geminiClient = getGeminiClient(geminiApiKeySecret.value());
       const result = await suggestSubGoals(request.data, geminiClient);
 
       logger.info('Sub-goal suggestions generated', {
@@ -233,6 +237,110 @@ export const suggestSubGoalsFunction = onCall(
       throw new HttpsError(
         'internal',
         `Failed to suggest sub-goals: ${error.message}`
+      );
+    }
+  }
+);
+
+/**
+ * Generate Weekly Report - AI-generated weekly analysis
+ */
+export const generateWeeklyReportFunction = onCall(
+  {
+    region: 'europe-west1',
+    timeoutSeconds: 90,
+    memory: '1GiB',
+    secrets: [geminiApiKeySecret],
+  },
+  async (request): Promise<GenerateWeeklyReportResponse> => {
+    // Authentication check
+    if (!request.auth) {
+      throw new HttpsError('unauthenticated', 'User must be authenticated');
+    }
+
+    const {userId, weekStart, weekEnd, goals, checkIns} = request.data;
+
+    if (request.auth.uid !== userId) {
+      throw new HttpsError('permission-denied', 'User can only access own data');
+    }
+
+    if (!weekStart || !weekEnd || !goals || !Array.isArray(goals)) {
+      throw new HttpsError(
+        'invalid-argument',
+        'weekStart, weekEnd and goals array are required'
+      );
+    }
+
+    try {
+      const geminiClient = getGeminiClient(geminiApiKeySecret.value());
+      const result = await generateWeeklyReport(request.data, geminiClient);
+
+      logger.info('Weekly report generated successfully', {
+        userId,
+        weekStart,
+        weekEnd,
+        goalsCount: goals.length,
+        checkInsCount: checkIns?.length || 0,
+      });
+
+      return result;
+    } catch (error: any) {
+      logger.error('Error in generateWeeklyReportFunction:', error);
+      throw new HttpsError(
+        'internal',
+        `Failed to generate weekly report: ${error.message}`
+      );
+    }
+  }
+);
+
+/**
+ * Generate Monthly Report - AI-generated monthly analysis
+ */
+export const generateMonthlyReportFunction = onCall(
+  {
+    region: 'europe-west1',
+    timeoutSeconds: 120,
+    memory: '1GiB',
+    secrets: [geminiApiKeySecret],
+  },
+  async (request): Promise<GenerateMonthlyReportResponse> => {
+    // Authentication check
+    if (!request.auth) {
+      throw new HttpsError('unauthenticated', 'User must be authenticated');
+    }
+
+    const {userId, year, month, goals, checkIns} = request.data;
+
+    if (request.auth.uid !== userId) {
+      throw new HttpsError('permission-denied', 'User can only access own data');
+    }
+
+    if (!year || !month || !goals || !Array.isArray(goals)) {
+      throw new HttpsError(
+        'invalid-argument',
+        'year, month and goals array are required'
+      );
+    }
+
+    try {
+      const geminiClient = getGeminiClient(geminiApiKeySecret.value());
+      const result = await generateMonthlyReport(request.data, geminiClient);
+
+      logger.info('Monthly report generated successfully', {
+        userId,
+        year,
+        month,
+        goalsCount: goals.length,
+        checkInsCount: checkIns?.length || 0,
+      });
+
+      return result;
+    } catch (error: any) {
+      logger.error('Error in generateMonthlyReportFunction:', error);
+      throw new HttpsError(
+        'internal',
+        `Failed to generate monthly report: ${error.message}`
       );
     }
   }

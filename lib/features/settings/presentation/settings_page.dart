@@ -101,11 +101,16 @@ class _SettingsAppBar extends StatelessWidget {
   }
 }
 
-class _ProfileSection extends StatelessWidget {
+class _ProfileSection extends ConsumerWidget {
   const _ProfileSection();
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final authState = ref.watch(authStateProvider);
+    final user = authState.currentUser;
+    final displayName = user?.displayName ?? 'Kullanıcı';
+    final email = user?.email ?? '';
+
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
@@ -173,7 +178,7 @@ class _ProfileSection extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Mehmet Akif',
+                      displayName,
                       style: AppTextStyles.titleMedium.copyWith(
                         fontWeight: FontWeight.w700,
                         color: AppColors.gray900,
@@ -182,7 +187,7 @@ class _ProfileSection extends StatelessWidget {
                     ),
                     const SizedBox(height: AppSpacing.xs),
                     Text(
-                      'mehmetakif@gmail.com',
+                      email,
                       style: AppTextStyles.bodySmall.copyWith(
                         color: AppColors.gray700,
                       ),

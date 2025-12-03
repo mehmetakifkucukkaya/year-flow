@@ -34,6 +34,7 @@ class AppRoutes {
 
   // Reports
   static const String yearlyReport = '/reports/yearly';
+  static const String reportDetail = '/reports/detail';
   static const String timeline = '/goal/:goalId/timeline';
 
   // Premium

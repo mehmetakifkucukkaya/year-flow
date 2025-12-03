@@ -43,6 +43,30 @@ export interface GenerateYearlyReportResponse {
   content: string;
 }
 
+export interface GenerateWeeklyReportRequest {
+  userId: string;
+  weekStart: string;
+  weekEnd: string;
+  goals: Goal[];
+  checkIns: CheckIn[];
+}
+
+export interface GenerateWeeklyReportResponse {
+  content: string;
+}
+
+export interface GenerateMonthlyReportRequest {
+  userId: string;
+  year: number;
+  month: number;
+  goals: Goal[];
+  checkIns: CheckIn[];
+}
+
+export interface GenerateMonthlyReportResponse {
+  content: string;
+}
+
 export interface SuggestSubGoalsRequest {
   goalTitle: string;
   category: string;

@@ -356,8 +356,8 @@ class _TopAppBar extends StatelessWidget {
   }
 }
 
-/// Goal Card Widget with premium styling
-class _GoalCard extends StatelessWidget {
+/// Goal Card Widget with premium styling and detailed information
+class _GoalCard extends ConsumerWidget {
   const _GoalCard({required this.goal});
 
   final Goal goal;
@@ -375,33 +375,77 @@ class _GoalCard extends StatelessWidget {
 
   int get _clampedProgress => goal.progress.clamp(0, 100);
 
+  String _formatTargetDate(DateTime? targetDate) {
+    if (targetDate == null) return 'Hedef tarihi belirtilmemiş';
+
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final targetDay =
+        DateTime(targetDate.year, targetDate.month, targetDate.day);
+    final diff = targetDay.difference(today).inDays;
+
+    if (diff < 0) {
+      if (diff == -1) return '1 gün gecikti';
+      return '${-diff} gün gecikti';
+    }
+    if (diff == 0) return 'Bugün';
+    if (diff == 1) return '1 gün kaldı';
+    if (diff < 7) return '$diff gün kaldı';
+
+    // Tarih formatı
+    final months = [
+      'Ocak',
+      'Şubat',
+      'Mart',
+      'Nisan',
+      'Mayıs',
+      'Haziran',
+      'Temmuz',
+      'Ağustos',
+      'Eylül',
+      'Ekim',
+      'Kasım',
+      'Aralık'
+    ];
+    return '${targetDate.day} ${months[targetDate.month - 1]} ${targetDate.year}';
+  }
+
+  int _getRemainingTasksCount() {
+    if (goal.subGoals.isEmpty) return 0;
+    final completed = goal.subGoals.where((sg) => sg.isCompleted).length;
+    return goal.subGoals.length - completed;
+  }
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final checkInsAsync = ref.watch(checkInsStreamProvider(goal.id));
+
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        borderRadius: AppRadius.borderRadiusMd,
+        borderRadius: AppRadius.borderRadiusLg,
         onTap: () {
           context.push(AppRoutes.goalDetailPath(goal.id));
         },
         child: Container(
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: AppRadius.borderRadiusMd,
+            borderRadius: AppRadius.borderRadiusLg,
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.06),
+                color: Colors.black.withOpacity(0.08),
                 offset: const Offset(0, 4),
-                blurRadius: 14,
+                blurRadius: 20,
                 spreadRadius: 0,
               ),
             ],
           ),
           child: Padding(
-            padding: const EdgeInsets.all(20), // Increased padding
+            padding: const EdgeInsets.all(AppSpacing.md),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // Header: Category and Progress
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -410,64 +454,181 @@ class _GoalCard extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // Category chip - more rounded (22px radius)
+                          // Category chip
                           Container(
                             padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 6,
+                              horizontal: 10,
+                              vertical: 5,
                             ),
                             decoration: BoxDecoration(
                               color: _categoryBackgroundColor,
-                              borderRadius:
-                                  BorderRadius.circular(22), // 22px radius
+                              borderRadius: BorderRadius.circular(22),
                             ),
-                            child: Text(
-                              goal.category.label,
-                              style: AppTextStyles.labelMedium.copyWith(
-                                color: _categoryColor,
-                                fontWeight: FontWeight.w600,
-                                fontSize: 14,
-                              ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  goal.category.emoji,
+                                  style: const TextStyle(fontSize: 13),
+                                ),
+                                const SizedBox(width: 6),
+                                Text(
+                                  goal.category.label,
+                                  style:
+                                      AppTextStyles.labelMedium.copyWith(
+                                    color: _categoryColor,
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 13,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                          const SizedBox(height: AppSpacing.sm),
+                          const SizedBox(height: AppSpacing.xs),
                           // Goal title
                           Text(
                             goal.title,
                             style: AppTextStyles.titleMedium.copyWith(
                               fontWeight: FontWeight.bold,
                             ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ],
                       ),
                     ),
                     // Progress percentage
-                    Text(
-                      '$_clampedProgress%',
-                      style: AppTextStyles.titleMedium.copyWith(
-                        fontWeight: FontWeight.bold,
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: _categoryColor.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        '$_clampedProgress%',
+                        style: AppTextStyles.titleMedium.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: _categoryColor,
+                        ),
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: AppSpacing.md),
-                // Progress bar - fully rounded
+
+                // Description (if available)
+                if (goal.description != null &&
+                    goal.description!.isNotEmpty) ...[
+                  const SizedBox(height: AppSpacing.xs),
+                  Text(
+                    goal.description!,
+                    style: AppTextStyles.bodySmall.copyWith(
+                      color: AppColors.gray700,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+
+                const SizedBox(height: AppSpacing.sm),
+
+                // Progress bar
                 ClipRRect(
-                  borderRadius: BorderRadius.circular(10), // Fully rounded
+                  borderRadius: BorderRadius.circular(10),
                   child: LinearProgressIndicator(
                     value: _clampedProgress / 100,
-                    minHeight: 10,
+                    minHeight: 8,
                     backgroundColor: AppColors.gray200,
-                    valueColor: const AlwaysStoppedAnimation<Color>(
-                      AppColors.primary,
-                    ),
+                    valueColor:
+                        AlwaysStoppedAnimation<Color>(_categoryColor),
                   ),
                 ),
+
+                const SizedBox(height: AppSpacing.sm),
+
+                // Details row: Remaining tasks, Check-ins, Target date
+                Row(
+                  children: [
+                    // Remaining tasks (only if there are remaining tasks)
+                    if (_getRemainingTasksCount() > 0) ...[
+                      Expanded(
+                        child: _DetailItem(
+                          icon: Icons.checklist_rounded,
+                          text: '${_getRemainingTasksCount()} görev kaldı',
+                          color: AppColors.gray700,
+                        ),
+                      ),
+                      const SizedBox(width: AppSpacing.sm),
+                    ],
+                    // Check-ins count
+                    checkInsAsync.when(
+                      loading: () => const SizedBox.shrink(),
+                      error: (_, __) => const SizedBox.shrink(),
+                      data: (checkIns) => Expanded(
+                        child: _DetailItem(
+                          icon: Icons.track_changes_rounded,
+                          text: '${checkIns.length} check-in',
+                          color: AppColors.gray700,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+
+                // Target date
+                if (goal.targetDate != null)
+                  _DetailItem(
+                    icon: Icons.calendar_today_rounded,
+                    text: _formatTargetDate(goal.targetDate),
+                    color: goal.targetDate!.isBefore(DateTime.now())
+                        ? AppColors.error
+                        : AppColors.gray700,
+                  ),
               ],
             ),
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Detail item widget for goal card
+class _DetailItem extends StatelessWidget {
+  const _DetailItem({
+    required this.icon,
+    required this.text,
+    required this.color,
+  });
+
+  final IconData icon;
+  final String text;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(
+          icon,
+          size: 16,
+          color: color,
+        ),
+        const SizedBox(width: 6),
+        Flexible(
+          child: Text(
+            text,
+            style: AppTextStyles.bodySmall.copyWith(
+              color: color,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      ],
     );
   }
 }

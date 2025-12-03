@@ -34,6 +34,11 @@ class _FirestoreCollections {
         .collection(yearlyReports);
   }
 
+  static CollectionReference _userReportsCollection(
+      FirebaseFirestore firestore, String userId) {
+    return firestore.collection(users).doc(userId).collection('reports');
+  }
+
   static CollectionReference _userNotesCollection(
       FirebaseFirestore firestore, String userId) {
     return firestore.collection(users).doc(userId).collection(notes);
@@ -589,5 +594,67 @@ class FirestoreGoalRepository implements GoalRepository {
       print('Error deleting note: $e');
       rethrow;
     }
+  }
+
+  @override
+  Stream<List<Report>> watchAllReports(String userId) {
+    return _FirestoreCollections._userReportsCollection(_firestore, userId)
+        .orderBy('generatedAt', descending: true)
+        .snapshots()
+        .map((snapshot) {
+      return snapshot.docs
+          .map((doc) {
+            final data = doc.data() as Map<String, dynamic>?;
+            if (data == null) return null;
+            return _reportFromFirestore(doc.id, data);
+          })
+          .whereType<Report>()
+          .toList();
+    });
+  }
+
+  @override
+  Future<Report> saveReport(Report report) async {
+    final docRef = _FirestoreCollections._userReportsCollection(
+            _firestore, report.userId)
+        .doc(report.id);
+
+    await docRef.set(_reportToFirestore(report));
+    return report;
+  }
+
+  @override
+  Future<void> deleteReport(String reportId, String userId) async {
+    await _FirestoreCollections._userReportsCollection(_firestore, userId)
+        .doc(reportId)
+        .delete();
+  }
+
+  // ==================== Report Firestore Conversion ====================
+
+  Map<String, dynamic> _reportToFirestore(Report report) {
+    return {
+      'userId': report.userId,
+      'reportType': report.reportType.name,
+      'periodStart': Timestamp.fromDate(report.periodStart),
+      'periodEnd': Timestamp.fromDate(report.periodEnd),
+      'generatedAt': Timestamp.fromDate(report.generatedAt),
+      'content': report.content,
+    };
+  }
+
+  Report _reportFromFirestore(String id, Map<String, dynamic> data) {
+    return Report(
+      id: id,
+      userId: data['userId'] as String,
+      reportType: ReportType.values.firstWhere(
+        (t) => t.name == data['reportType'],
+        orElse: () => ReportType.yearly,
+      ),
+      periodStart: (data['periodStart'] as Timestamp).toDate(),
+      periodEnd: (data['periodEnd'] as Timestamp).toDate(),
+      generatedAt: (data['generatedAt'] as Timestamp).toDate(),
+      content: data['content'] as String,
+    );
   }
 }

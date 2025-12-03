@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/constants/app_constants.dart';
+import '../../../shared/models/yearly_report.dart';
 import '../../../shared/providers/goal_providers.dart';
 
 /// Reports statistics model
@@ -77,5 +78,16 @@ final reportsStatsProvider = FutureProvider<ReportsStats>((ref) async {
     averageProgress: averageProgress,
     categoryProgress: categoryProgress,
   );
+});
+
+/// Reports history provider - Tüm geçmiş raporları getirir
+final reportsHistoryProvider = StreamProvider<List<Report>>((ref) {
+  final userId = ref.read(currentUserIdProvider);
+  if (userId == null) {
+    return Stream.value([]);
+  }
+
+  final repository = ref.read(goalRepositoryProvider);
+  return repository.watchAllReports(userId);
 });
 

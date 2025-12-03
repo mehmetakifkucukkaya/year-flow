@@ -226,6 +226,79 @@ class AIService {
     }
   }
 
+  /// Generate weekly report using AI
+  Future<String> generateWeeklyReport({
+    required String userId,
+    required DateTime weekStart,
+    required DateTime weekEnd,
+    required List<Goal> goals,
+    required List<CheckIn> checkIns,
+  }) async {
+    try {
+      final user = _auth.currentUser;
+      if (user == null) {
+        throw Exception('User must be authenticated');
+      }
+
+      if (user.uid != userId) {
+        throw Exception('User can only access own data');
+      }
+
+      final callable =
+          _functions.httpsCallable('generateWeeklyReportFunction');
+
+      final result = await callable.call({
+        'userId': userId,
+        'weekStart': weekStart.toIso8601String(),
+        'weekEnd': weekEnd.toIso8601String(),
+        'goals': goals.map((g) => _goalToMap(g)).toList(),
+        'checkIns': checkIns.map((ci) => _checkInToMap(ci)).toList(),
+      });
+
+      final data = result.data as Map<String, dynamic>;
+      return data['content'] as String;
+    } catch (e) {
+      throw Exception('Failed to generate weekly report: ${e.toString()}');
+    }
+  }
+
+  /// Generate monthly report using AI
+  Future<String> generateMonthlyReport({
+    required String userId,
+    required int year,
+    required int month,
+    required List<Goal> goals,
+    required List<CheckIn> checkIns,
+  }) async {
+    try {
+      final user = _auth.currentUser;
+      if (user == null) {
+        throw Exception('User must be authenticated');
+      }
+
+      if (user.uid != userId) {
+        throw Exception('User can only access own data');
+      }
+
+      final callable =
+          _functions.httpsCallable('generateMonthlyReportFunction');
+
+      final result = await callable.call({
+        'userId': userId,
+        'year': year,
+        'month': month,
+        'goals': goals.map((g) => _goalToMap(g)).toList(),
+        'checkIns': checkIns.map((ci) => _checkInToMap(ci)).toList(),
+      });
+
+      final data = result.data as Map<String, dynamic>;
+      return data['content'] as String;
+    } catch (e) {
+      throw Exception(
+          'Failed to generate monthly report: ${e.toString()}');
+    }
+  }
+
   /// Convert Goal to Map for Cloud Functions
   Map<String, dynamic> _goalToMap(Goal goal) {
     return {

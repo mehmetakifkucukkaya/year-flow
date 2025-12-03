@@ -1,116 +1,19 @@
 import 'dart:async';
 
-import '../../core/constants/app_constants.dart';
 import '../models/check_in.dart';
 import '../models/goal.dart';
 import '../models/note.dart';
 import '../models/yearly_report.dart';
 import 'goal_repository.dart';
 
-const String _demoUserId = 'demo-user';
-
 /// Simple in-memory implementation of [GoalRepository] for local development.
 class InMemoryGoalRepository implements GoalRepository {
-  InMemoryGoalRepository() {
-    _seedData();
-  }
+  InMemoryGoalRepository();
 
   final List<Goal> _goals = [];
   final List<CheckIn> _checkIns = [];
   final List<YearlyReport> _reports = [];
-
-  void _seedData() {
-    if (_goals.isNotEmpty) return;
-
-    final now = DateTime.now();
-
-    _goals.addAll([
-      Goal(
-        id: 'goal-1',
-        userId: _demoUserId,
-        title: 'Haftada 3 Gün Spor Yap',
-        category: GoalCategory.health,
-        createdAt: now.subtract(const Duration(days: 40)),
-        targetDate: now.add(const Duration(days: 200)),
-        description:
-            'Önümüzdeki 12 ay boyunca haftada 3 gün spor yaparak daha enerjik ve sağlıklı bir rutin oluşturmak.',
-        motivation:
-            'Daha enerjik hissetmek ve sağlıklı bir rutin oluşturmak.',
-        subGoals: const [
-          SubGoal(
-            id: 'sub-1',
-            title: 'Haftalık program oluştur',
-            isCompleted: true,
-          ),
-          SubGoal(
-            id: 'sub-2',
-            title: 'Bir spor salonuna kayıt ol',
-            isCompleted: false,
-          ),
-        ],
-        progress: 75,
-      ),
-      Goal(
-        id: 'goal-2',
-        userId: _demoUserId,
-        title: 'Aylık 1 Kitap Oku',
-        category: GoalCategory.personalGrowth,
-        createdAt: now.subtract(const Duration(days: 60)),
-        targetDate: now.add(const Duration(days: 300)),
-        description:
-            'Bir yıl boyunca her ay en az 1 kitap okuyarak bilgi birikimimi ve bakış açımı genişletmek.',
-        motivation: 'Kendimi geliştirmek ve yeni bakış açıları kazanmak.',
-        subGoals: const [
-          SubGoal(
-            id: 'sub-3',
-            title: 'Okuma listesi hazırla',
-            isCompleted: true,
-          ),
-        ],
-        progress: 50,
-      ),
-      Goal(
-        id: 'goal-3',
-        userId: _demoUserId,
-        title: 'Yeni Bir Programlama Dili Öğren',
-        category: GoalCategory.career,
-        createdAt: now.subtract(const Duration(days: 20)),
-        targetDate: now.add(const Duration(days: 180)),
-        description:
-            '6 ay içinde yeni bir programlama dilinde temel projeler geliştirebilecek seviyeye gelmek.',
-        motivation: 'Kariyerimde yeni fırsatlar yaratmak.',
-        subGoals: const [
-          SubGoal(
-            id: 'sub-4',
-            title: 'Temel kursu tamamla',
-            isCompleted: false,
-          ),
-        ],
-        progress: 20,
-      ),
-    ]);
-
-    _checkIns.addAll([
-      CheckIn(
-        id: 'checkin-1',
-        goalId: 'goal-1',
-        userId: _demoUserId,
-        createdAt: now.subtract(const Duration(days: 3)),
-        score: 8,
-        progressDelta: 15,
-        note: 'Bu hafta 2 kez spor yaptım, enerji düzeyim arttı.',
-      ),
-      CheckIn(
-        id: 'checkin-2',
-        goalId: 'goal-2',
-        userId: _demoUserId,
-        createdAt: now.subtract(const Duration(days: 7)),
-        score: 6,
-        progressDelta: 10,
-        note: 'Bir kitabı bitirdim, ikinciye başladım.',
-      ),
-    ]);
-  }
+  final List<Report> _allReports = [];
 
   List<Goal> _goalsForUser(String userId) {
     return _goals
@@ -254,7 +157,6 @@ class InMemoryGoalRepository implements GoalRepository {
 
   @override
   Stream<List<Note>> watchNotes(String goalId, String userId) {
-    // In-memory implementation - mock data
     return Stream.value([]);
   }
 
@@ -266,5 +168,31 @@ class InMemoryGoalRepository implements GoalRepository {
   @override
   Future<void> deleteNote(String noteId) async {
     // In-memory implementation - no-op
+  }
+
+  @override
+  Stream<List<Report>> watchAllReports(String userId) async* {
+    yield _allReports
+        .where((r) => r.userId == userId)
+        .toList()
+      ..sort((a, b) => b.generatedAt.compareTo(a.generatedAt));
+  }
+
+  @override
+  Future<Report> saveReport(Report report) async {
+    final index = _allReports.indexWhere((r) => r.id == report.id);
+    if (index != -1) {
+      _allReports[index] = report;
+    } else {
+      _allReports.add(report);
+    }
+    return report;
+  }
+
+  @override
+  Future<void> deleteReport(String reportId, String userId) async {
+    _allReports.removeWhere(
+      (r) => r.id == reportId && r.userId == userId,
+    );
   }
 }

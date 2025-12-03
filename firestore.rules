@@ -22,8 +22,13 @@ service cloud.firestore {
         allow read, write: if isAuthenticated() && request.auth.uid == userId;
       }
       
-      // Yearly reports subcollection - kullanıcıya özel raporlar
+      // Yearly reports subcollection - kullanıcıya özel raporlar (legacy)
       match /yearlyReports/{reportId} {
+        allow read, write: if isAuthenticated() && request.auth.uid == userId;
+      }
+      
+      // Reports subcollection - kullanıcıya özel raporlar (tüm türler: haftalık, aylık, yıllık)
+      match /reports/{reportId} {
         allow read, write: if isAuthenticated() && request.auth.uid == userId;
       }
       

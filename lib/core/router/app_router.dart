@@ -14,7 +14,9 @@ import '../../features/goals/presentation/goals_archive_page.dart';
 import '../../features/goals/presentation/goals_page.dart';
 import '../../features/home/presentation/home_page.dart';
 import '../../features/onboarding/presentation/onboarding_page.dart';
+import '../../features/reports/presentation/report_detail_page.dart';
 import '../../features/reports/presentation/reports_page.dart';
+import '../../shared/models/yearly_report.dart';
 import '../../features/settings/presentation/privacy_security_page.dart';
 import '../../features/settings/presentation/profile_page.dart';
 import '../../features/settings/presentation/settings_page.dart';
@@ -291,6 +293,33 @@ final routerProvider = Provider<GoRouter>((ref) {
         name: 'yearlyReport',
         builder: (context, state) =>
             const _PlaceholderScreen(title: 'Yıllık Rapor'),
+      ),
+
+      // Report Detail
+      GoRoute(
+        path: AppRoutes.reportDetail,
+        name: 'reportDetail',
+        pageBuilder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>?;
+          if (extra == null) {
+            return _slideTransition(
+              context: context,
+              state: state,
+              child: const _PlaceholderScreen(title: 'Rapor Bulunamadı'),
+            );
+          }
+
+          return _slideTransition(
+            context: context,
+            state: state,
+            child: ReportDetailPage(
+              reportType: extra['reportType'] as ReportType,
+              content: extra['content'] as String,
+              periodStart: extra['periodStart'] as DateTime?,
+              periodEnd: extra['periodEnd'] as DateTime?,
+            ),
+          );
+        },
       ),
 
       // Premium

@@ -6,7 +6,12 @@ import '../../../core/theme/app_radius.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/index.dart';
+import '../../../shared/models/check_in.dart';
+import '../../../shared/models/goal.dart';
+import '../../../shared/models/yearly_report.dart';
+import '../../../shared/providers/ai_providers.dart';
 import '../../../shared/providers/goal_providers.dart';
+import 'report_detail_page.dart';
 import '../providers/reports_providers.dart';
 
 /// Raporlar ana sayfası
@@ -22,7 +27,7 @@ class ReportsPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return Container(
       color: _premiumBackground,
-      child: CustomScrollView(
+      child: const CustomScrollView(
         slivers: [
           // Status bar alanı için safe area
           SliverSafeArea(
@@ -33,12 +38,13 @@ class ReportsPage extends ConsumerWidget {
           ),
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.symmetric(
+              padding: EdgeInsets.symmetric(
                 horizontal: AppSpacing.md,
                 vertical: AppSpacing.md,
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   _HeaderHero(),
                   SizedBox(height: AppSpacing.xl),
@@ -51,6 +57,8 @@ class ReportsPage extends ConsumerWidget {
                   _ChallengesSection(),
                   SizedBox(height: AppSpacing.xl),
                   _AiSuggestionsSection(),
+                  SizedBox(height: AppSpacing.xl),
+                  _ReportsHistorySection(),
                   SizedBox(height: AppSpacing.xl),
                 ],
               ),
@@ -139,12 +147,13 @@ class _ReportsTopAppBar extends ConsumerWidget {
 }
 
 /// Başlığın altında premium hero alanı
-class _HeaderHero extends StatelessWidget {
+class _HeaderHero extends ConsumerWidget {
   const _HeaderHero();
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final colorScheme = Theme.of(context).colorScheme;
+    final statsAsync = ref.watch(reportsStatsProvider);
 
     return Container(
       width: double.infinity,
@@ -168,91 +177,101 @@ class _HeaderHero extends StatelessWidget {
           ),
         ],
       ),
-      child: Row(
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+          Text(
+            '2025 Yıllık Raporun',
+            style: AppTextStyles.headlineMedium.copyWith(
+              fontWeight: FontWeight.w800,
+              letterSpacing: -0.5,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.xs),
+          Text(
+            'Your journey this year at a glance.',
+            style: AppTextStyles.bodyMedium.copyWith(
+              color: AppColors.gray700,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.md),
+          SizedBox(
+            width: double.infinity,
+            child: Row(
               children: [
-                Text(
-                  '2025 Yıllık Raporun',
-                  style: AppTextStyles.headlineMedium.copyWith(
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: -0.5,
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.sm,
+                    vertical: AppSpacing.xs,
                   ),
-                ),
-                const SizedBox(height: AppSpacing.xs),
-                Text(
-                  'Your journey this year at a glance.',
-                  style: AppTextStyles.bodyMedium.copyWith(
-                    color: AppColors.gray700,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.9),
+                    borderRadius: AppRadius.borderRadiusFull,
                   ),
-                ),
-                const SizedBox(height: AppSpacing.md),
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: AppSpacing.sm,
-                        vertical: AppSpacing.xs,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.star_rounded,
+                        size: 16,
+                        color: colorScheme.primary,
                       ),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.9),
+                      const SizedBox(width: AppSpacing.xs),
+                      Text(
+                        'Yıllık Rapor',
+                        style: AppTextStyles.labelMedium.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.gray900,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const Spacer(),
+                Flexible(
+                  child: FilledButton.icon(
+                    onPressed: () {
+                      _showCreateReportDialog(context, ref);
+                    },
+                    icon: const Icon(Icons.add_rounded, size: 18),
+                    label: const Text('Rapor Oluştur'),
+                    style: FilledButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.md,
+                        vertical: AppSpacing.sm,
+                      ),
+                      shape: const RoundedRectangleBorder(
                         borderRadius: AppRadius.borderRadiusFull,
                       ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            Icons.star_rounded,
-                            size: 16,
-                            color: colorScheme.primary,
-                          ),
-                          const SizedBox(width: AppSpacing.xs),
-                          Text(
-                            'Yıllık Rapor',
-                            style: AppTextStyles.labelMedium.copyWith(
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.gray900,
-                            ),
-                          ),
-                        ],
-                      ),
                     ),
-                    const SizedBox(width: AppSpacing.sm),
-                    Consumer(
-                      builder: (context, ref, _) {
-                        final statsAsync = ref.watch(reportsStatsProvider);
-                        return statsAsync.when(
-                          loading: () => const SizedBox.shrink(),
-                          error: (_, __) => const SizedBox.shrink(),
-                          data: (stats) {
-                            final completionRate = stats.totalGoals > 0
-                                ? ((stats.completedGoals /
-                                            stats.totalGoals) *
-                                        100)
-                                    .round()
-                                : 0;
-                            final message = completionRate >= 75
-                                ? 'Harika bir yıl geçirdin 🎉'
-                                : completionRate >= 50
-                                    ? 'İyi bir ilerleme kaydettin! 💪'
-                                    : 'Yolculuğuna devam et! 🌱';
-                            return Text(
-                              message,
-                              style: AppTextStyles.bodySmall.copyWith(
-                                color: AppColors.gray700,
-                              ),
-                            );
-                          },
-                        );
-                      },
-                    ),
-                  ],
+                  ),
                 ),
               ],
             ),
+          ),
+          statsAsync.maybeWhen(
+            orElse: () => const SizedBox.shrink(),
+            data: (stats) {
+              final completionRate = stats.totalGoals > 0
+                  ? ((stats.completedGoals / stats.totalGoals) * 100)
+                      .round()
+                  : 0;
+              final message = completionRate >= 75
+                  ? 'Harika bir yıl geçirdin 🎉'
+                  : completionRate >= 50
+                      ? 'İyi bir ilerleme kaydettin! 💪'
+                      : 'Yolculuğuna devam et! 🌱';
+              return Padding(
+                padding: const EdgeInsets.only(top: AppSpacing.xs),
+                child: Text(
+                  message,
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: AppColors.gray700,
+                  ),
+                ),
+              );
+            },
           ),
         ],
       ),
@@ -1118,6 +1137,591 @@ class _ReportsExportBottomSheetState
             ),
           ],
         ],
+      ),
+    );
+  }
+}
+
+/// Create Report Dialog - Allows user to create weekly, monthly, or yearly reports
+void _showCreateReportDialog(BuildContext context, WidgetRef ref) {
+  showModalBottomSheet(
+    context: context,
+    backgroundColor: Colors.transparent,
+    isScrollControlled: true,
+    builder: (context) => const _CreateReportBottomSheet(),
+  );
+}
+
+class _CreateReportBottomSheet extends ConsumerStatefulWidget {
+  const _CreateReportBottomSheet();
+
+  @override
+  ConsumerState<_CreateReportBottomSheet> createState() =>
+      _CreateReportBottomSheetState();
+}
+
+class _CreateReportBottomSheetState
+    extends ConsumerState<_CreateReportBottomSheet> {
+  ReportType? _selectedType;
+  bool _isGenerating = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedType = ReportType.weekly;
+  }
+
+  Future<void> _generateReport() async {
+    if (_selectedType == null) return;
+
+    setState(() => _isGenerating = true);
+
+    try {
+      final userId = ref.read(currentUserIdProvider);
+      if (userId == null) {
+        AppSnackbar.showError(context,
+            message: 'Giriş yapmanız gerekiyor');
+        return;
+      }
+
+      final goalsAsync = ref.read(goalsStreamProvider);
+      final goals = goalsAsync.when(
+        data: (goals) => goals,
+        loading: () => <Goal>[],
+        error: (_, __) => <Goal>[],
+      );
+
+      if (goals.isEmpty) {
+        AppSnackbar.showError(
+          context,
+          message: 'Rapor oluşturmak için en az bir hedef gerekli',
+        );
+        return;
+      }
+
+      // Get check-ins for the period
+      final allCheckInsFutures = goals.map((goal) async {
+        final checkInsAsync = ref.read(checkInsStreamProvider(goal.id));
+        return checkInsAsync.when(
+          data: (checkIns) => checkIns,
+          loading: () => <CheckIn>[],
+          error: (_, __) => <CheckIn>[],
+        );
+      }).toList();
+
+      final allCheckInsResults = await Future.wait(allCheckInsFutures);
+      final allCheckIns =
+          allCheckInsResults.expand((checkIns) => checkIns).toList();
+
+      final aiService = ref.read(aiServiceProvider);
+      String content;
+
+      final now = DateTime.now();
+      DateTime periodStart;
+      DateTime periodEnd;
+
+      switch (_selectedType!) {
+        case ReportType.weekly:
+          // This week (Monday to Sunday)
+          final monday = now.subtract(Duration(days: now.weekday - 1));
+          periodStart = DateTime(monday.year, monday.month, monday.day);
+          periodEnd = periodStart
+              .add(const Duration(days: 6, hours: 23, minutes: 59));
+
+          final weekCheckIns = allCheckIns.where((ci) {
+            return ci.createdAt.isAfter(
+                    periodStart.subtract(const Duration(days: 1))) &&
+                ci.createdAt
+                    .isBefore(periodEnd.add(const Duration(days: 1)));
+          }).toList();
+
+          content = await aiService.generateWeeklyReport(
+            userId: userId,
+            weekStart: periodStart,
+            weekEnd: periodEnd,
+            goals: goals,
+            checkIns: weekCheckIns,
+          );
+          break;
+
+        case ReportType.monthly:
+          periodStart = DateTime(now.year, now.month, 1);
+          periodEnd = DateTime(now.year, now.month + 1, 0, 23, 59, 59);
+
+          final monthCheckIns = allCheckIns.where((ci) {
+            return ci.createdAt.year == now.year &&
+                ci.createdAt.month == now.month;
+          }).toList();
+
+          content = await aiService.generateMonthlyReport(
+            userId: userId,
+            year: now.year,
+            month: now.month,
+            goals: goals,
+            checkIns: monthCheckIns,
+          );
+          break;
+
+        case ReportType.yearly:
+          periodStart = DateTime(now.year, 1, 1);
+          periodEnd = DateTime(now.year, 12, 31, 23, 59, 59);
+
+          final yearCheckIns = allCheckIns.where((ci) {
+            return ci.createdAt.year == now.year;
+          }).toList();
+
+          content = await aiService.generateYearlyReport(
+            userId: userId,
+            year: now.year,
+            goals: goals,
+            checkIns: yearCheckIns,
+          );
+          break;
+      }
+
+      // Save report to repository
+      if (mounted && content.isNotEmpty) {
+        final repository = ref.read(goalRepositoryProvider);
+        final report = Report(
+          id: '${_selectedType!.name}-${DateTime.now().millisecondsSinceEpoch}',
+          userId: userId,
+          reportType: _selectedType!,
+          periodStart: periodStart,
+          periodEnd: periodEnd,
+          generatedAt: DateTime.now(),
+          content: content,
+        );
+
+        await repository.saveReport(report);
+
+        Navigator.of(context).pop(); // Close bottom sheet
+        ReportDetailPage.navigate(
+          context,
+          reportType: _selectedType!,
+          content: content,
+          periodStart: periodStart,
+          periodEnd: periodEnd,
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        AppSnackbar.showError(
+          context,
+          message: 'Rapor oluşturulurken hata: ${e.toString()}',
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isGenerating = false);
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      padding: EdgeInsets.only(
+        left: AppSpacing.lg,
+        right: AppSpacing.lg,
+        top: AppSpacing.lg,
+        bottom: MediaQuery.of(context).viewInsets.bottom + AppSpacing.lg,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Text(
+                'Rapor Oluştur',
+                style: AppTextStyles.titleLarge.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const Spacer(),
+              IconButton(
+                onPressed: () => Navigator.of(context).pop(),
+                icon: const Icon(Icons.close_rounded),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.lg),
+          Text(
+            'Rapor türünü seçin:',
+            style: AppTextStyles.bodyMedium.copyWith(
+              color: AppColors.gray700,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.md),
+          ...ReportType.values.map((type) {
+            return Padding(
+              padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+              child: InkWell(
+                borderRadius: AppRadius.borderRadiusLg,
+                onTap: () {
+                  setState(() => _selectedType = type);
+                },
+                child: Container(
+                  padding: const EdgeInsets.all(AppSpacing.md),
+                  decoration: BoxDecoration(
+                    color: _selectedType == type
+                        ? AppColors.primary.withOpacity(0.1)
+                        : AppColors.gray50,
+                    borderRadius: AppRadius.borderRadiusLg,
+                    border: Border.all(
+                      color: _selectedType == type
+                          ? AppColors.primary
+                          : AppColors.gray200,
+                      width: _selectedType == type ? 2 : 1,
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        type == ReportType.weekly
+                            ? Icons.calendar_view_week_rounded
+                            : type == ReportType.monthly
+                                ? Icons.calendar_month_rounded
+                                : Icons.calendar_today_rounded,
+                        color: _selectedType == type
+                            ? AppColors.primary
+                            : AppColors.gray700,
+                      ),
+                      const SizedBox(width: AppSpacing.sm),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              type.label,
+                              style: AppTextStyles.bodyLarge.copyWith(
+                                fontWeight: FontWeight.w600,
+                                color: _selectedType == type
+                                    ? AppColors.primary
+                                    : AppColors.gray900,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              type == ReportType.weekly
+                                  ? 'Bu haftanın özeti'
+                                  : type == ReportType.monthly
+                                      ? 'Bu ayın özeti'
+                                      : 'Bu yılın özeti',
+                              style: AppTextStyles.bodySmall.copyWith(
+                                color: AppColors.gray600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      if (_selectedType == type)
+                        const Icon(
+                          Icons.check_circle_rounded,
+                          color: AppColors.primary,
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          }),
+          const SizedBox(height: AppSpacing.xl),
+          SizedBox(
+            width: double.infinity,
+            child: FilledButton(
+              onPressed: _isGenerating ? null : _generateReport,
+              style: FilledButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: const RoundedRectangleBorder(
+                  borderRadius: AppRadius.borderRadiusLg,
+                ),
+              ),
+              child: _isGenerating
+                  ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor:
+                            AlwaysStoppedAnimation<Color>(Colors.white),
+                      ),
+                    )
+                  : Text(
+                      'Rapor Oluştur',
+                      style: AppTextStyles.bodyLarge.copyWith(
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white,
+                      ),
+                    ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Geçmiş Raporlar Bölümü
+class _ReportsHistorySection extends ConsumerWidget {
+  const _ReportsHistorySection();
+
+  String _formatDate(DateTime date) {
+    final day = date.day;
+    final month = date.month;
+    final year = date.year;
+    final monthNames = [
+      'Ocak',
+      'Şubat',
+      'Mart',
+      'Nisan',
+      'Mayıs',
+      'Haziran',
+      'Temmuz',
+      'Ağustos',
+      'Eylül',
+      'Ekim',
+      'Kasım',
+      'Aralık',
+    ];
+    return '$day ${monthNames[month - 1]} $year';
+  }
+
+  String _formatPeriod(Report report) {
+    if (report.reportType == ReportType.weekly) {
+      return '${report.periodStart.day}.${report.periodStart.month}.${report.periodStart.year} - ${report.periodEnd.day}.${report.periodEnd.month}.${report.periodEnd.year}';
+    } else if (report.reportType == ReportType.monthly) {
+      final monthNames = [
+        'Ocak',
+        'Şubat',
+        'Mart',
+        'Nisan',
+        'Mayıs',
+        'Haziran',
+        'Temmuz',
+        'Ağustos',
+        'Eylül',
+        'Ekim',
+        'Kasım',
+        'Aralık',
+      ];
+      return '${monthNames[report.periodStart.month - 1]} ${report.periodStart.year}';
+    } else {
+      return '${report.periodStart.year}';
+    }
+  }
+
+  String _getReportTitle(Report report) {
+    return '${report.reportType.label} Rapor - ${_formatPeriod(report)}';
+  }
+
+  IconData _getReportIcon(ReportType type) {
+    switch (type) {
+      case ReportType.weekly:
+        return Icons.calendar_view_week_rounded;
+      case ReportType.monthly:
+        return Icons.calendar_month_rounded;
+      case ReportType.yearly:
+        return Icons.calendar_today_rounded;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final reportsAsync = ref.watch(reportsHistoryProvider);
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return reportsAsync.when(
+      loading: () => Container(
+        padding: const EdgeInsets.all(AppSpacing.lg),
+        decoration: BoxDecoration(
+          color: AppColors.white,
+          borderRadius: AppRadius.borderRadiusXl,
+          border: Border.all(color: AppColors.gray200),
+        ),
+        child: const Center(
+          child: CircularProgressIndicator(),
+        ),
+      ),
+      error: (error, _) => Container(
+        padding: const EdgeInsets.all(AppSpacing.lg),
+        decoration: BoxDecoration(
+          color: AppColors.white,
+          borderRadius: AppRadius.borderRadiusXl,
+          border: Border.all(color: AppColors.gray200),
+        ),
+        child: Text(
+          'Raporlar yüklenirken hata oluştu: $error',
+          style: AppTextStyles.bodyMedium.copyWith(
+            color: AppColors.gray600,
+          ),
+        ),
+      ),
+      data: (reports) {
+        if (reports.isEmpty) {
+          return Container(
+            padding: const EdgeInsets.all(AppSpacing.lg),
+            decoration: BoxDecoration(
+              color: AppColors.white,
+              borderRadius: AppRadius.borderRadiusXl,
+              border: Border.all(color: AppColors.gray200),
+            ),
+            child: Column(
+              children: [
+                Icon(
+                  Icons.description_outlined,
+                  size: 48,
+                  color: AppColors.gray400,
+                ),
+                const SizedBox(height: AppSpacing.md),
+                Text(
+                  'Henüz rapor oluşturulmamış',
+                  style: AppTextStyles.bodyLarge.copyWith(
+                    color: AppColors.gray600,
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.xs),
+                Text(
+                  'Yukarıdaki "Rapor Oluştur" butonuna tıklayarak ilk raporunuzu oluşturabilirsiniz.',
+                  textAlign: TextAlign.center,
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: AppColors.gray500,
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
+
+        return Container(
+          decoration: BoxDecoration(
+            color: AppColors.white,
+            borderRadius: AppRadius.borderRadiusXl,
+            border: Border.all(color: AppColors.gray200),
+          ),
+          padding: const EdgeInsets.all(AppSpacing.lg),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Icon(
+                    Icons.history_rounded,
+                    color: colorScheme.primary,
+                    size: 24,
+                  ),
+                  const SizedBox(width: AppSpacing.sm),
+                  Text(
+                    'Geçmiş Raporlar',
+                    style: AppTextStyles.titleMedium.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: AppSpacing.md),
+              ...reports.map((report) {
+                return _ReportHistoryItem(
+                  report: report,
+                  title: _getReportTitle(report),
+                  date: _formatDate(report.generatedAt),
+                  icon: _getReportIcon(report.reportType),
+                  onTap: () {
+                    ReportDetailPage.navigate(
+                      context,
+                      reportType: report.reportType,
+                      content: report.content,
+                      periodStart: report.periodStart,
+                      periodEnd: report.periodEnd,
+                    );
+                  },
+                );
+              }),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _ReportHistoryItem extends StatelessWidget {
+  const _ReportHistoryItem({
+    required this.report,
+    required this.title,
+    required this.date,
+    required this.icon,
+    required this.onTap,
+  });
+
+  final Report report;
+  final String title;
+  final String date;
+  final IconData icon;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return InkWell(
+      onTap: onTap,
+      borderRadius: AppRadius.borderRadiusLg,
+      child: Container(
+        padding: const EdgeInsets.all(AppSpacing.md),
+        margin: const EdgeInsets.only(bottom: AppSpacing.sm),
+        decoration: BoxDecoration(
+          color: AppColors.gray50,
+          borderRadius: AppRadius.borderRadiusLg,
+          border: Border.all(color: AppColors.gray200),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                color: colorScheme.primaryContainer.withOpacity(0.3),
+                borderRadius: AppRadius.borderRadiusLg,
+              ),
+              child: Icon(
+                icon,
+                color: colorScheme.primary,
+                size: 24,
+              ),
+            ),
+            const SizedBox(width: AppSpacing.md),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: AppTextStyles.bodyLarge.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.gray900,
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.xs),
+                  Text(
+                    date,
+                    style: AppTextStyles.bodySmall.copyWith(
+                      color: AppColors.gray600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(
+              Icons.chevron_right_rounded,
+              color: AppColors.gray400,
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -30,7 +30,7 @@ abstract class GoalRepository {
   /// Kullanıcının tüm check-in kayıtlarını izler (hedeften bağımsız).
   Stream<List<CheckIn>> watchAllCheckIns(String userId);
 
-  // Yearly reports (per user)
+  // Yearly reports (per user) - Legacy
   Stream<YearlyReport?> watchYearlyReport({
     required String userId,
     required int year,
@@ -42,6 +42,16 @@ abstract class GoalRepository {
   });
 
   Future<YearlyReport> saveYearlyReport(YearlyReport report);
+
+  // Reports (all types)
+  /// Kullanıcının tüm raporlarını izler (haftalık, aylık, yıllık)
+  Stream<List<Report>> watchAllReports(String userId);
+
+  /// Rapor kaydet (tüm türler için)
+  Future<Report> saveReport(Report report);
+
+  /// Rapor sil
+  Future<void> deleteReport(String reportId, String userId);
 
   /// Notes
   Stream<List<Note>> watchNotes(String goalId, String userId);

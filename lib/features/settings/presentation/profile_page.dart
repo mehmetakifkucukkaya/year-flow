@@ -5,6 +5,8 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_radius.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_text_styles.dart';
+import '../../../shared/providers/goal_providers.dart';
+import '../../auth/providers/auth_providers.dart';
 
 class ProfilePage extends ConsumerWidget {
   const ProfilePage({super.key});
@@ -40,20 +42,35 @@ class ProfilePage extends ConsumerWidget {
   }
 }
 
-class _ProfileBody extends StatefulWidget {
+class _ProfileBody extends ConsumerStatefulWidget {
   const _ProfileBody();
 
   @override
-  State<_ProfileBody> createState() => _ProfileBodyState();
+  ConsumerState<_ProfileBody> createState() => _ProfileBodyState();
 }
 
-class _ProfileBodyState extends State<_ProfileBody> {
-  String _name = 'Mehmet Akif';
-  String _email = 'mehmetakif@gmail.com';
+class _ProfileBodyState extends ConsumerState<_ProfileBody> {
+  String? _name;
+  String? _email;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+  }
+
+  void _loadUserData() {
+    final authState = ref.read(authStateProvider);
+    final user = authState.currentUser;
+    setState(() {
+      _name = user?.displayName ?? 'Kullanıcı';
+      _email = user?.email ?? '';
+    });
+  }
 
   Future<void> _showEditProfileSheet(BuildContext context) async {
-    final nameController = TextEditingController(text: _name);
-    final emailController = TextEditingController(text: _email);
+    final nameController = TextEditingController(text: _name ?? '');
+    final emailController = TextEditingController(text: _email ?? '');
 
     await showModalBottomSheet<void>(
       context: context,
@@ -124,6 +141,11 @@ class _ProfileBodyState extends State<_ProfileBody> {
 
   @override
   Widget build(BuildContext context) {
+    final authState = ref.watch(authStateProvider);
+    final user = authState.currentUser;
+    final displayName = user?.displayName ?? _name ?? 'Kullanıcı';
+    final email = user?.email ?? _email ?? '';
+
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(
         horizontal: AppSpacing.md,
@@ -133,20 +155,27 @@ class _ProfileBodyState extends State<_ProfileBody> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _ProfileHeaderCard(
-            name: _name,
-            email: _email,
+            name: displayName,
+            email: email,
+            createdAt: user != null ? _getUserCreatedAt(user.uid) : null,
           ),
           const SizedBox(height: AppSpacing.xl),
           const _ProfileStatsSection(),
           const SizedBox(height: AppSpacing.xl),
           _ProfileInfoSection(
-            name: _name,
-            email: _email,
+            name: displayName,
+            email: email,
             onEdit: () => _showEditProfileSheet(context),
           ),
         ],
       ),
     );
+  }
+
+  String? _getUserCreatedAt(String uid) {
+    // Firebase'den kullanıcı oluşturulma tarihini almak için
+    // Şimdilik null döndürüyoruz, gerekirse Firestore'dan alınabilir
+    return null;
   }
 }
 
@@ -202,10 +231,12 @@ class _ProfileHeaderCard extends StatelessWidget {
   const _ProfileHeaderCard({
     required this.name,
     required this.email,
+    this.createdAt,
   });
 
   final String name;
   final String email;
+  final String? createdAt;
 
   @override
   Widget build(BuildContext context) {
@@ -288,13 +319,15 @@ class _ProfileHeaderCard extends StatelessWidget {
                         ),
                         overflow: TextOverflow.ellipsis,
                       ),
-                      const SizedBox(height: AppSpacing.sm),
-                      Text(
-                        'Katılım: Ocak 2025',
-                        style: AppTextStyles.bodySmall.copyWith(
-                          color: AppColors.gray700,
+                      if (createdAt != null) ...[
+                        const SizedBox(height: AppSpacing.sm),
+                        Text(
+                          createdAt!,
+                          style: AppTextStyles.bodySmall.copyWith(
+                            color: AppColors.gray700,
+                          ),
                         ),
-                      ),
+                      ],
                     ],
                   ),
                 ),
@@ -327,29 +360,76 @@ class _ProfileHeaderCard extends StatelessWidget {
   }
 }
 
-class _ProfileStatsSection extends StatelessWidget {
+class _ProfileStatsSection extends ConsumerWidget {
   const _ProfileStatsSection();
 
   @override
-  Widget build(BuildContext context) {
-    return const Row(
-      children: [
-        Expanded(
-          child: _ProfileStatCard(
-            label: 'Toplam Hedef',
-            value: '12',
-            icon: Icons.flag_rounded,
+  Widget build(BuildContext context, WidgetRef ref) {
+    final allGoalsAsync = ref.watch(allGoalsStreamProvider);
+
+    return allGoalsAsync.when(
+      loading: () => const Row(
+        children: [
+          Expanded(
+            child: _ProfileStatCard(
+              label: 'Toplam Hedef',
+              value: '0',
+              icon: Icons.flag_rounded,
+            ),
           ),
-        ),
-        SizedBox(width: AppSpacing.md),
-        Expanded(
-          child: _ProfileStatCard(
-            label: 'Yıllık Rapor',
-            value: '1',
-            icon: Icons.auto_graph_rounded,
+          SizedBox(width: AppSpacing.md),
+          Expanded(
+            child: _ProfileStatCard(
+              label: 'Yıllık Rapor',
+              value: '0',
+              icon: Icons.auto_graph_rounded,
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
+      error: (_, __) => const Row(
+        children: [
+          Expanded(
+            child: _ProfileStatCard(
+              label: 'Toplam Hedef',
+              value: '0',
+              icon: Icons.flag_rounded,
+            ),
+          ),
+          SizedBox(width: AppSpacing.md),
+          Expanded(
+            child: _ProfileStatCard(
+              label: 'Yıllık Rapor',
+              value: '0',
+              icon: Icons.auto_graph_rounded,
+            ),
+          ),
+        ],
+      ),
+      data: (goals) {
+        final totalGoals = goals.length;
+        // Yıllık rapor sayısı için şimdilik 0 gösteriyoruz
+        // Gerçek veriyi almak için ayrı bir provider gerekebilir
+        return Row(
+          children: [
+            Expanded(
+              child: _ProfileStatCard(
+                label: 'Toplam Hedef',
+                value: totalGoals.toString(),
+                icon: Icons.flag_rounded,
+              ),
+            ),
+            const SizedBox(width: AppSpacing.md),
+            const Expanded(
+              child: _ProfileStatCard(
+                label: 'Yıllık Rapor',
+                value: '0',
+                icon: Icons.auto_graph_rounded,
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }
