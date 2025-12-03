@@ -16,6 +16,8 @@ class Goal {
     this.subGoals = const [],
     this.progress = 0,
     this.isArchived = false,
+    this.isCompleted = false,
+    this.completedAt,
   });
 
   final String id;
@@ -29,6 +31,8 @@ class Goal {
   final List<SubGoal> subGoals;
   final int progress; // 0–100
   final bool isArchived;
+  final bool isCompleted;
+  final DateTime? completedAt;
 
   Goal copyWith({
     String? id,
@@ -42,6 +46,8 @@ class Goal {
     List<SubGoal>? subGoals,
     int? progress,
     bool? isArchived,
+    bool? isCompleted,
+    DateTime? completedAt,
   }) {
     return Goal(
       id: id ?? this.id,
@@ -55,6 +61,8 @@ class Goal {
       subGoals: subGoals ?? this.subGoals,
       progress: progress ?? this.progress,
       isArchived: isArchived ?? this.isArchived,
+      isCompleted: isCompleted ?? this.isCompleted,
+      completedAt: completedAt ?? this.completedAt,
     );
   }
 }
@@ -73,5 +81,3 @@ class SubGoal {
   final bool isCompleted;
   final DateTime? dueDate;
 }
-
-

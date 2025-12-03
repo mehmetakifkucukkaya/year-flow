@@ -8,7 +8,6 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_radius.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_text_styles.dart';
-import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/index.dart';
 import '../../../shared/models/goal.dart';
 import '../../../shared/providers/goal_providers.dart';
@@ -45,7 +44,7 @@ class _GoalCreatePageState extends ConsumerState<GoalCreatePage> {
     final tomorrow = DateTime(now.year, now.month, now.day + 1);
     final picked = await showDatePicker(
       context: context,
-      initialDate: _completionDate ?? now.add(const Duration(days: 365)),
+      initialDate: _completionDate ?? tomorrow,
       firstDate: tomorrow, // Geçmiş tarih ve bugün seçilemez
       lastDate: now.add(const Duration(days: 365 * 2)),
       locale: const Locale('tr', 'TR'),
@@ -85,7 +84,7 @@ class _GoalCreatePageState extends ConsumerState<GoalCreatePage> {
 
     try {
       final repository = ref.read(goalRepositoryProvider);
-      
+
       final goal = Goal(
         id: const Uuid().v4(),
         userId: userId,
@@ -99,6 +98,7 @@ class _GoalCreatePageState extends ConsumerState<GoalCreatePage> {
         subGoals: _subGoals,
         progress: 0,
         isArchived: false,
+        isCompleted: false,
       );
 
       await repository.createGoal(goal);
@@ -106,8 +106,9 @@ class _GoalCreatePageState extends ConsumerState<GoalCreatePage> {
       if (mounted) {
         // Stream'i yeniden başlatmak için invalidate et
         ref.invalidate(goalsStreamProvider);
-        
-        AppSnackbar.showSuccess(context, message: 'Hedef başarıyla oluşturuldu! 🎉');
+
+        AppSnackbar.showSuccess(context,
+            message: 'Hedef başarıyla oluşturuldu! 🎉');
         context.pop();
       }
     } catch (e) {
@@ -137,7 +138,8 @@ class _GoalCreatePageState extends ConsumerState<GoalCreatePage> {
     }
 
     if (_completionDate == null) {
-      AppSnackbar.showError(context, message: 'Lütfen tamamlanma tarihi seçin');
+      AppSnackbar.showError(context,
+          message: 'Lütfen tamamlanma tarihi seçin');
       return;
     }
 
@@ -216,7 +218,7 @@ class _GoalCreatePageState extends ConsumerState<GoalCreatePage> {
               selectedCategory: _selectedCategory,
               onCategoryChanged: (category) {
                 setState(() {
-                  _selectedCategory = category as GoalCategory?;
+                  _selectedCategory = category;
                 });
               },
               completionDate: _completionDate,
@@ -225,85 +227,91 @@ class _GoalCreatePageState extends ConsumerState<GoalCreatePage> {
           ),
           // Footer with action buttons
           Container(
-              padding: AppSpacing.paddingMd,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                border: Border(
-                  top: BorderSide(
-                    color: AppColors.gray200,
-                    width: 1,
-                  ),
+            padding: AppSpacing.paddingMd,
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              border: Border(
+                top: BorderSide(
+                  color: AppColors.gray200,
+                  width: 1,
                 ),
               ),
-              child: Column(
-                children: [
-                  // AI ile Optimize Et
-                  Container(
-                    decoration: BoxDecoration(
-                      borderRadius: AppRadius.borderRadiusMd,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.05),
-                          offset: const Offset(0, 4),
-                          blurRadius: 12,
-                          spreadRadius: 0,
+            ),
+            child: Column(
+              children: [
+                // AI ile Optimize Et
+                Container(
+                  decoration: BoxDecoration(
+                    borderRadius: AppRadius.borderRadiusMd,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.05),
+                        offset: const Offset(0, 4),
+                        blurRadius: 12,
+                        spreadRadius: 0,
+                      ),
+                    ],
+                  ),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton(
+                      onPressed: _handleAIOptimize,
+                      style: OutlinedButton.styleFrom(
+                        backgroundColor:
+                            AppColors.primary.withOpacity(0.1),
+                        foregroundColor: AppColors.primary,
+                        minimumSize: const Size(
+                            double.infinity, 60), // Increased height
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: AppSpacing.lg,
+                          vertical: AppSpacing.md,
                         ),
-                      ],
-                    ),
-                    child: SizedBox(
-                      width: double.infinity,
-                      child: OutlinedButton(
-                        onPressed: _handleAIOptimize,
-                        style: OutlinedButton.styleFrom(
-                          backgroundColor: AppColors.primary.withOpacity(0.1),
-                          foregroundColor: AppColors.primary,
-                          minimumSize: const Size(double.infinity, 60), // Increased height
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: AppSpacing.lg,
-                            vertical: AppSpacing.md,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16), // Softer radius
-                          ),
-                          side: BorderSide.none,
+                        shape: RoundedRectangleBorder(
+                          borderRadius:
+                              BorderRadius.circular(16), // Softer radius
                         ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.auto_awesome,
-                              size: 22,
+                        side: BorderSide.none,
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(
+                            Icons.auto_awesome,
+                            size: 22,
+                            color: AppColors.primary,
+                          ),
+                          const SizedBox(
+                              width: AppSpacing.sm), // Better icon spacing
+                          Text(
+                            'AI ile Optimize Et',
+                            style: AppTextStyles.bodyMedium.copyWith(
+                              fontWeight: FontWeight.w600,
                               color: AppColors.primary,
                             ),
-                            const SizedBox(width: AppSpacing.sm), // Better icon spacing
-                            Text(
-                              'AI ile Optimize Et',
-                              style: AppTextStyles.bodyMedium.copyWith(
-                                fontWeight: FontWeight.w600,
-                                color: AppColors.primary,
-                              ),
-                            ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
-                  const SizedBox(height: AppSpacing.md), // Consistent spacing
-                  // Kaydet
-                  AppButton(
-                    variant: AppButtonVariant.filled,
-                    onPressed: _handleSave,
-                    minHeight: 60, // Increased height to match AI button
-                    child: Text(
-                      'Kaydet',
-                      style: AppTextStyles.bodyMedium.copyWith(
-                        fontWeight: FontWeight.w700, // Stronger than AI button
-                      ),
+                ),
+                const SizedBox(
+                    height: AppSpacing.md), // Consistent spacing
+                // Kaydet
+                AppButton(
+                  variant: AppButtonVariant.filled,
+                  onPressed: _handleSave,
+                  minHeight: 60, // Increased height to match AI button
+                  child: Text(
+                    'Kaydet',
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      fontWeight:
+                          FontWeight.w700, // Stronger than AI button
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
+          ),
         ],
       ),
     );

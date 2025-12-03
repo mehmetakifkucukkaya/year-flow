@@ -34,7 +34,8 @@ class InMemoryGoalRepository implements GoalRepository {
         targetDate: now.add(const Duration(days: 200)),
         description:
             'Önümüzdeki 12 ay boyunca haftada 3 gün spor yaparak daha enerjik ve sağlıklı bir rutin oluşturmak.',
-        motivation: 'Daha enerjik hissetmek ve sağlıklı bir rutin oluşturmak.',
+        motivation:
+            'Daha enerjik hissetmek ve sağlıklı bir rutin oluşturmak.',
         subGoals: const [
           SubGoal(
             id: 'sub-1',
@@ -112,12 +113,19 @@ class InMemoryGoalRepository implements GoalRepository {
   }
 
   List<Goal> _goalsForUser(String userId) {
-    return _goals.where((g) => g.userId == userId && !g.isArchived).toList();
+    return _goals
+        .where((g) => g.userId == userId && !g.isArchived)
+        .toList();
   }
 
   @override
   Stream<List<Goal>> watchGoals(String userId) async* {
     yield _goalsForUser(userId);
+  }
+
+  @override
+  Stream<List<Goal>> watchAllGoals(String userId) async* {
+    yield _goals.where((g) => g.userId == userId).toList();
   }
 
   @override
@@ -156,18 +164,22 @@ class InMemoryGoalRepository implements GoalRepository {
     final index = _goals.indexWhere((g) => g.id == goalId);
     if (index != -1) {
       final goal = _goals[index];
-      _goals[index] = Goal(
-        id: goal.id,
-        userId: goal.userId,
-        title: goal.title,
-        category: goal.category,
-        createdAt: goal.createdAt,
-        targetDate: goal.targetDate,
-        description: goal.description,
-        motivation: goal.motivation,
-        subGoals: goal.subGoals,
-        progress: goal.progress,
+      _goals[index] = goal.copyWith(
         isArchived: true,
+      );
+    }
+  }
+
+  @override
+  Future<void> completeGoal(String goalId) async {
+    final index = _goals.indexWhere((g) => g.id == goalId);
+    if (index != -1) {
+      final goal = _goals[index];
+      _goals[index] = goal.copyWith(
+        progress: 100,
+        isArchived: true,
+        isCompleted: true,
+        completedAt: DateTime.now(),
       );
     }
   }
@@ -178,7 +190,8 @@ class InMemoryGoalRepository implements GoalRepository {
   }
 
   @override
-  Stream<List<CheckIn>> watchCheckIns(String goalId, String userId) async* {
+  Stream<List<CheckIn>> watchCheckIns(
+      String goalId, String userId) async* {
     yield _checkIns
         .where((c) => c.goalId == goalId && c.userId == userId)
         .toList();
@@ -255,5 +268,3 @@ class InMemoryGoalRepository implements GoalRepository {
     // In-memory implementation - no-op
   }
 }
-
-

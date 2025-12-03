@@ -15,66 +15,57 @@ import '../providers/reports_providers.dart';
 class ReportsPage extends ConsumerWidget {
   const ReportsPage({super.key});
 
+  // Premium background color
+  static const Color _premiumBackground = Color(0xFFF9FAFB);
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return Material(
-      type: MaterialType.transparency,
-      child: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFFF5F7FF),
-              Color(0xFFFDFBFF),
-            ],
+    return Container(
+      color: _premiumBackground,
+      child: CustomScrollView(
+        slivers: [
+          // Status bar alanı için safe area
+          SliverSafeArea(
+            bottom: false,
+            sliver: SliverToBoxAdapter(
+              child: _ReportsTopAppBar(),
+            ),
           ),
-        ),
-        child: const CustomScrollView(
-          slivers: [
-            // Status bar alanı için safe area
-            SliverSafeArea(
-              bottom: false,
-              sliver: SliverToBoxAdapter(
-                child: _ReportsTopAppBar(),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.md,
+                vertical: AppSpacing.md,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _HeaderHero(),
+                  SizedBox(height: AppSpacing.xl),
+                  _OverviewSection(),
+                  SizedBox(height: AppSpacing.xl),
+                  _CategoryProgressSection(),
+                  SizedBox(height: AppSpacing.xl),
+                  _AchievementsSection(),
+                  SizedBox(height: AppSpacing.xl),
+                  _ChallengesSection(),
+                  SizedBox(height: AppSpacing.xl),
+                  _AiSuggestionsSection(),
+                  SizedBox(height: AppSpacing.xl),
+                ],
               ),
             ),
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: EdgeInsets.symmetric(
-                  horizontal: AppSpacing.md,
-                  vertical: AppSpacing.md,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _HeaderHero(),
-                    SizedBox(height: AppSpacing.xl),
-                    _OverviewSection(),
-                    SizedBox(height: AppSpacing.xl),
-                    _CategoryProgressSection(),
-                    SizedBox(height: AppSpacing.xl),
-                    _AchievementsSection(),
-                    SizedBox(height: AppSpacing.xl),
-                    _ChallengesSection(),
-                    SizedBox(height: AppSpacing.xl),
-                    _AiSuggestionsSection(),
-                    SizedBox(height: AppSpacing.xl),
-                  ],
-                ),
-              ),
-            ),
-            SliverToBoxAdapter(
-              child: SizedBox(height: AppSpacing.xl),
-            ),
-          ],
-        ),
+          ),
+          SliverToBoxAdapter(
+            child: SizedBox(height: AppSpacing.xl),
+          ),
+        ],
       ),
     );
   }
 }
 
-/// Üst app bar – başlık ve geri butonu (şimdilik sadece pop)
+/// Üst app bar – export butonu
 class _ReportsTopAppBar extends ConsumerWidget {
   const _ReportsTopAppBar();
 
@@ -89,52 +80,57 @@ class _ReportsTopAppBar extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Container(
-      padding: const EdgeInsets.only(
-        left: AppSpacing.md,
-        right: AppSpacing.sm,
-        top: AppSpacing.sm,
-        bottom: AppSpacing.sm,
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.lg,
+        vertical: AppSpacing.lg,
       ),
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Raporlar',
+                style: AppTextStyles.headlineLarge.copyWith(
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: -0.8,
+                  color: AppColors.gray900,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                'Yıllık performans özetin',
+                style: AppTextStyles.bodySmall.copyWith(
+                  color: AppColors.gray600,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
           Container(
-            width: 40,
-            height: 40,
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.9),
+              color: Colors.white,
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
+                  color: Colors.black.withOpacity(0.06),
                   blurRadius: 12,
-                  offset: const Offset(0, 4),
+                  offset: const Offset(0, 2),
                 ),
               ],
             ),
             child: IconButton(
               onPressed: () {
-                Navigator.of(context).maybePop();
+                _showExportOptionsDialog(context, ref);
               },
-              icon: const Icon(Icons.arrow_back_ios_new_rounded),
-              color: AppColors.gray900,
-              iconSize: 18,
-              padding: EdgeInsets.zero,
+              icon: const Icon(Icons.download_rounded),
+              iconSize: 22,
+              color: AppColors.gray700,
+              padding: const EdgeInsets.all(12),
+              tooltip: 'Raporu indir',
             ),
-          ),
-          const Spacer(),
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              IconButton(
-                onPressed: () {
-                  _showExportOptionsDialog(context, ref);
-                },
-                icon: const Icon(Icons.download_rounded),
-                iconSize: 22,
-                color: AppColors.gray800,
-                tooltip: 'Raporu indir',
-              ),
-            ],
           ),
         ],
       ),

@@ -3,14 +3,14 @@
  * Comprehensive analysis of user's year-long journey
  */
 
-import {GeminiClient} from './gemini-client';
+import * as logger from 'firebase-functions/logger';
 import {
+  CheckIn,
   GenerateYearlyReportRequest,
   GenerateYearlyReportResponse,
   Goal,
-  CheckIn,
 } from '../types/ai-types';
-import * as logger from 'firebase-functions/logger';
+import { GeminiClient } from './gemini-client';
 
 interface YearlyAnalytics {
   completedGoals: Goal[];
@@ -26,7 +26,7 @@ export async function generateYearlyReport(
   request: GenerateYearlyReportRequest,
   geminiClient: GeminiClient
 ): Promise<GenerateYearlyReportResponse> {
-  const {year, goals, checkIns} = request;
+  const { year, goals, checkIns } = request;
 
   const analytics = calculateYearlyAnalytics(goals, checkIns);
   const prompt = buildYearlyReportPrompt(year, analytics, goals, checkIns);
@@ -47,8 +47,9 @@ function calculateYearlyAnalytics(
   goals: Goal[],
   checkIns: CheckIn[]
 ): YearlyAnalytics {
-  const completedGoals = goals.filter((g) => g.progress >= 100);
-  const activeGoals = goals.filter((g) => !g.isArchived && g.progress < 100);
+  // Tamamlanan hedefler: isCompleted=true veya progress=100
+  const completedGoals = goals.filter((g) => g.isCompleted || g.progress >= 100);
+  const activeGoals = goals.filter((g) => !g.isArchived && !g.isCompleted && g.progress < 100);
   const averageProgress =
     goals.length > 0
       ? goals.reduce((sum, g) => sum + g.progress, 0) / goals.length
@@ -107,40 +108,40 @@ function buildYearlyReportPrompt(
 SUMMARY DATA (already in Turkish):
 - Year: ${year}
 - Total goals: ${totalGoals}
-- Completed goals: ${completedGoals.length}
+- Completed goals: ${completedGoals.length} (${completedGoals.filter((g: Goal) => g.isCompleted === true).length} explicitly marked as completed)
 - Active goals: ${activeGoals.length}
 - Average progress: %${averageProgress.toFixed(1)}
 
 Goals by category:
 ${Object.entries(goalsByCategory)
-  .map(([cat, count]) => `- ${cat}: ${count} hedef`)
-  .join('\n')}
+      .map(([cat, count]) => `- ${cat}: ${count} hedef`)
+      .join('\n')}
 
 Check-in summary:
 - Total check-ins: ${totalCheckIns}
 - Monthly distribution: ${Object.entries(checkInsByMonth)
-  .map(([month, count]) => `${month}. ay: ${count} check-in`)
-  .join(', ')}
+      .map(([month, count]) => `${month}. ay: ${count} check-in`)
+      .join(', ')}
 
 Goal details:
 ${goals
-  .map(
-    (g) =>
-      `- "${g.title}" (${g.category}): %${g.progress} ilerleme${
-        g.description
-          ? `, Açıklama: ${g.description}`
-          : g.motivation
-          ? `, Motivasyon: ${g.motivation}`
-          : ''
-      }`
-  )
-  .join('\n')}
+      .map(
+        (g) =>
+          `- "${g.title}" (${g.category}): %${g.progress} ilerleme${g.isCompleted ? ' [TAMAMLANDI]' : ''
+          }${g.description
+            ? `, Açıklama: ${g.description}`
+            : g.motivation
+              ? `, Motivasyon: ${g.motivation}`
+              : ''
+          }`
+      )
+      .join('\n')}
 
 Last 10 check-in notes:
 ${checkIns
-  .slice(-10)
-  .map((ci) => `- ${ci.note || 'Not yok'} (Puan: ${ci.score}/10)`)
-  .join('\n')}
+      .slice(-10)
+      .map((ci) => `- ${ci.note || 'Not yok'} (Puan: ${ci.score}/10)`)
+      .join('\n')}
 
 Writing rules:
 - OUTPUT LANGUAGE MUST BE TURKISH.
@@ -156,7 +157,7 @@ REPORT SECTIONS (write in this order, all in Turkish):
 Summarise the overall tone of the year, key themes and important changes. Acknowledge strengths and effort.
 
 ## 2. Hedeflerdeki İlerleme
-Analyse progress by category; discuss completed goals, challenging areas and unfinished goals in an honest but constructive way.
+Analyse progress by category; celebrate completed goals (especially those explicitly marked as completed - isCompleted=true), discuss challenging areas and unfinished goals in an honest but constructive way. Highlight the achievement of completing goals as a positive milestone and success.
 
 ## 3. Duygusal ve Mental Yolculuk
 Using check-in data, describe motivation swings, difficult periods and recovery moments. Highlight the user's resilience.

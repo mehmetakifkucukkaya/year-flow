@@ -26,7 +26,7 @@ final currentUserIdProvider = Provider<String?>((ref) {
   return authState.currentUser?.uid;
 });
 
-/// Goals stream provider - authenticated user için
+/// Goals stream provider - authenticated user için (sadece aktif hedefler)
 final goalsStreamProvider = StreamProvider<List<Goal>>((ref) {
   final repo = ref.watch(goalRepositoryProvider);
   final userId = ref.watch(currentUserIdProvider);
@@ -39,16 +39,45 @@ final goalsStreamProvider = StreamProvider<List<Goal>>((ref) {
   return repo.watchGoals(userId);
 });
 
+/// All goals stream provider - tüm hedefler (aktif + tamamlanan)
+final allGoalsStreamProvider = StreamProvider<List<Goal>>((ref) {
+  final repo = ref.watch(goalRepositoryProvider);
+  final userId = ref.watch(currentUserIdProvider);
+
+  if (userId == null) {
+    return Stream.value([]);
+  }
+
+  return repo.watchAllGoals(userId);
+});
+
+/// Archived goals stream provider - tamamlanan hedefler için
+final archivedGoalsStreamProvider = StreamProvider<List<Goal>>((ref) {
+  final repo = ref.watch(goalRepositoryProvider);
+  final userId = ref.watch(currentUserIdProvider);
+
+  if (userId == null) {
+    return Stream.value([]);
+  }
+
+  // Tüm hedefleri al (arşivlenmiş olanlar dahil) ve sadece tamamlananları filtrele
+  return repo.watchAllGoals(userId).map((goals) {
+    return goals
+        .where((goal) => goal.isArchived && goal.isCompleted)
+        .toList();
+  });
+});
+
 /// Goal detail provider
 final goalDetailProvider =
     FutureProvider.family<Goal?, String>((ref, goalId) async {
   final repo = ref.watch(goalRepositoryProvider);
   final userId = ref.watch(currentUserIdProvider);
-  
+
   if (userId == null) {
     return null;
   }
-  
+
   // Sadece mevcut kullanıcının goals'ında ara
   final goals = await repo.fetchGoals(userId);
   try {
@@ -63,12 +92,12 @@ final checkInsStreamProvider =
     StreamProvider.family<List<CheckIn>, String>((ref, goalId) {
   final repo = ref.watch(goalRepositoryProvider);
   final userId = ref.watch(currentUserIdProvider);
-  
+
   if (userId == null) {
     // Kullanıcı giriş yapmamışsa boş liste döndür
     return Stream.value([]);
   }
-  
+
   return repo.watchCheckIns(goalId, userId);
 });
 
@@ -106,7 +135,8 @@ final weeklyCheckInSummaryProvider =
     final startOfWeek = today.subtract(Duration(days: now.weekday - 1));
 
     final thisWeekCheckIns = checkIns.where((c) {
-      final d = DateTime(c.createdAt.year, c.createdAt.month, c.createdAt.day);
+      final d =
+          DateTime(c.createdAt.year, c.createdAt.month, c.createdAt.day);
       return !d.isBefore(startOfWeek) && !d.isAfter(today);
     }).toList();
 
@@ -152,12 +182,10 @@ final notesStreamProvider =
     StreamProvider.family<List<Note>, String>((ref, goalId) {
   final repo = ref.watch(goalRepositoryProvider);
   final userId = ref.watch(currentUserIdProvider);
-  
+
   if (userId == null) {
     return Stream.value([]);
   }
-  
+
   return repo.watchNotes(goalId, userId);
 });
-
-

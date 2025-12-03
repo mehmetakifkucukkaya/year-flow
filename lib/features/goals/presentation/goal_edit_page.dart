@@ -81,7 +81,7 @@ class _GoalEditPageState extends ConsumerState<GoalEditPage> {
     final tomorrow = DateTime(now.year, now.month, now.day + 1);
     final picked = await showDatePicker(
       context: context,
-      initialDate: _completionDate ?? now.add(const Duration(days: 365)),
+      initialDate: _completionDate ?? tomorrow,
       firstDate: tomorrow, // Geçmiş tarih ve bugün seçilemez
       lastDate: now.add(const Duration(days: 365 * 2)),
       locale: const Locale('tr', 'TR'),
@@ -104,7 +104,8 @@ class _GoalEditPageState extends ConsumerState<GoalEditPage> {
 
     try {
       final repository = ref.read(goalRepositoryProvider);
-      final currentGoal = await ref.read(goalDetailProvider(widget.goalId).future);
+      final currentGoal =
+          await ref.read(goalDetailProvider(widget.goalId).future);
 
       if (currentGoal == null) {
         if (mounted) {
@@ -160,7 +161,8 @@ class _GoalEditPageState extends ConsumerState<GoalEditPage> {
     }
 
     if (_completionDate == null) {
-      AppSnackbar.showError(context, message: 'Lütfen tamamlanma tarihi seçin');
+      AppSnackbar.showError(context,
+          message: 'Lütfen tamamlanma tarihi seçin');
       return;
     }
 
@@ -239,7 +241,7 @@ class _GoalEditPageState extends ConsumerState<GoalEditPage> {
               selectedCategory: _selectedCategory,
               onCategoryChanged: (category) {
                 setState(() {
-                  _selectedCategory = category as GoalCategory?;
+                  _selectedCategory = category;
                 });
               },
               completionDate: _completionDate,
@@ -247,84 +249,84 @@ class _GoalEditPageState extends ConsumerState<GoalEditPage> {
             ),
           ),
           Container(
-              padding: AppSpacing.paddingMd,
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                border: Border(
-                  top: BorderSide(
-                    color: AppColors.gray200,
-                    width: 1,
-                  ),
+            padding: AppSpacing.paddingMd,
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              border: Border(
+                top: BorderSide(
+                  color: AppColors.gray200,
+                  width: 1,
                 ),
               ),
-              child: Column(
-                children: [
-                  Container(
-                    decoration: BoxDecoration(
-                      borderRadius: AppRadius.borderRadiusMd,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.05),
-                          offset: const Offset(0, 4),
-                          blurRadius: 12,
-                          spreadRadius: 0,
+            ),
+            child: Column(
+              children: [
+                Container(
+                  decoration: BoxDecoration(
+                    borderRadius: AppRadius.borderRadiusMd,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.05),
+                        offset: const Offset(0, 4),
+                        blurRadius: 12,
+                        spreadRadius: 0,
+                      ),
+                    ],
+                  ),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton(
+                      onPressed: _handleAIOptimize,
+                      style: OutlinedButton.styleFrom(
+                        backgroundColor:
+                            AppColors.primary.withOpacity(0.1),
+                        foregroundColor: AppColors.primary,
+                        minimumSize: const Size(double.infinity, 60),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: AppSpacing.lg,
+                          vertical: AppSpacing.md,
                         ),
-                      ],
-                    ),
-                    child: SizedBox(
-                      width: double.infinity,
-                      child: OutlinedButton(
-                        onPressed: _handleAIOptimize,
-                        style: OutlinedButton.styleFrom(
-                          backgroundColor:
-                              AppColors.primary.withOpacity(0.1),
-                          foregroundColor: AppColors.primary,
-                          minimumSize: const Size(double.infinity, 60),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: AppSpacing.lg,
-                            vertical: AppSpacing.md,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          side: BorderSide.none,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
                         ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Icon(
-                              Icons.auto_awesome,
-                              size: 22,
+                        side: BorderSide.none,
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(
+                            Icons.auto_awesome,
+                            size: 22,
+                            color: AppColors.primary,
+                          ),
+                          const SizedBox(width: AppSpacing.sm),
+                          Text(
+                            'AI ile Optimize Et',
+                            style: AppTextStyles.bodyMedium.copyWith(
+                              fontWeight: FontWeight.w600,
                               color: AppColors.primary,
                             ),
-                            const SizedBox(width: AppSpacing.sm),
-                            Text(
-                              'AI ile Optimize Et',
-                              style: AppTextStyles.bodyMedium.copyWith(
-                                fontWeight: FontWeight.w600,
-                                color: AppColors.primary,
-                              ),
-                            ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
-                  const SizedBox(height: AppSpacing.md),
-                  AppButton(
-                    variant: AppButtonVariant.filled,
-                    onPressed: _handleSave,
-                    minHeight: 60,
-                    child: Text(
-                      'Güncelle',
-                      style: AppTextStyles.bodyMedium.copyWith(
-                        fontWeight: FontWeight.w700,
-                      ),
+                ),
+                const SizedBox(height: AppSpacing.md),
+                AppButton(
+                  variant: AppButtonVariant.filled,
+                  onPressed: _handleSave,
+                  minHeight: 60,
+                  child: Text(
+                    'Güncelle',
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
+          ),
         ],
       ),
     );

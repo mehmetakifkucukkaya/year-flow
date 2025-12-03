@@ -16,8 +16,8 @@ import '../../../core/widgets/index.dart';
 import '../../../shared/models/check_in.dart';
 import '../../../shared/models/goal.dart';
 import '../../../shared/models/note.dart';
-import '../../../shared/providers/goal_providers.dart';
 import '../../../shared/providers/ai_providers.dart';
+import '../../../shared/providers/goal_providers.dart';
 
 class GoalDetailPage extends ConsumerStatefulWidget {
   const GoalDetailPage({
@@ -319,6 +319,84 @@ class _PremiumAppBar extends ConsumerWidget {
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
+              // Hedefi Tamamla butonu (sadece tamamlanmamışsa göster)
+              Consumer(
+                builder: (context, ref, _) {
+                  final goalAsync = ref.watch(goalDetailProvider(goalId));
+                  final goal = goalAsync.maybeWhen(
+                    data: (goal) => goal,
+                    orElse: () => null,
+                  );
+                  final isCompleted = goal?.isCompleted ?? false;
+
+                  if (isCompleted) {
+                    return const SizedBox.shrink();
+                  }
+
+                  return IconButton(
+                    icon: const Icon(Icons.check_circle_outline, size: 22),
+                    color: AppColors.primary,
+                    onPressed: () async {
+                      if (goal == null) {
+                        if (context.mounted) {
+                          AppSnackbar.showError(
+                            context,
+                            message: 'Hedef bulunamadı',
+                          );
+                        }
+                        return;
+                      }
+
+                      final shouldComplete = await showDialog<bool>(
+                        context: context,
+                        barrierColor: Colors.black.withOpacity(0.5),
+                        builder: (context) => _CompleteConfirmationDialog(
+                          goalTitle: goal.title,
+                        ),
+                      );
+
+                      if (shouldComplete == true && context.mounted) {
+                        try {
+                          final repository =
+                              ref.read(goalRepositoryProvider);
+                          // Goal'u tamamla ve arşive taşı (userId'yi goal'dan al)
+                          final completedGoal = goal.copyWith(
+                            isCompleted: true,
+                            isArchived: true,
+                            progress: 100,
+                            completedAt: DateTime.now(),
+                          );
+                          await repository.updateGoal(completedGoal);
+
+                          if (context.mounted) {
+                            ref.invalidate(goalsStreamProvider);
+                            ref.invalidate(goalDetailProvider(goalId));
+                            AppSnackbar.showSuccess(
+                              context,
+                              message: 'Hedef tamamlandı! 🎉',
+                            );
+                            context.pop();
+                          }
+                        } catch (e) {
+                          if (context.mounted) {
+                            AppSnackbar.showError(
+                              context,
+                              message:
+                                  'Hedef tamamlanırken hata oluştu: $e',
+                            );
+                          }
+                        }
+                      }
+                    },
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(
+                      minWidth: 48,
+                      minHeight: 48,
+                    ),
+                    tooltip: 'Hedefi Tamamla',
+                  );
+                },
+              ),
               IconButton(
                 icon: const Icon(Icons.edit_outlined, size: 22),
                 onPressed: () {
@@ -350,12 +428,13 @@ class _PremiumAppBar extends ConsumerWidget {
                     if (shouldDelete == true && context.mounted) {
                       try {
                         // Goal'u al ve userId'yi kullanarak direkt sil
-                        final goalAsync = ref.read(goalDetailProvider(goalId));
+                        final goalAsync =
+                            ref.read(goalDetailProvider(goalId));
                         final goal = goalAsync.maybeWhen(
                           data: (goal) => goal,
                           orElse: () => null,
                         );
-                        
+
                         if (goal == null) {
                           if (context.mounted) {
                             AppSnackbar.showError(
@@ -365,7 +444,7 @@ class _PremiumAppBar extends ConsumerWidget {
                           }
                           return;
                         }
-                        
+
                         // userId ile direkt sil (yeni Firestore yapısı: users/{userId}/goals/{goalId})
                         final firestore = ref.read(firestoreProvider);
                         await firestore
@@ -374,7 +453,7 @@ class _PremiumAppBar extends ConsumerWidget {
                             .collection('goals')
                             .doc(goalId)
                             .delete();
-                            
+
                         if (context.mounted) {
                           ref.invalidate(goalsStreamProvider);
                           ref.invalidate(goalDetailProvider(goalId));
@@ -450,9 +529,11 @@ class _PremiumHeaderSection extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.sm),
 
-          if (goal.description != null && goal.description!.isNotEmpty) ...[
+          if (goal.description != null &&
+              goal.description!.isNotEmpty) ...[
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: AppSpacing.md),
               child: Text(
                 goal.description!,
                 style: AppTextStyles.bodySmall.copyWith(
@@ -1246,8 +1327,7 @@ class _NotesTab extends ConsumerWidget {
                     _NoteCard(
                       note: notes[i],
                       onTap: () => _editNote(context, ref, notes[i]),
-                      onDelete: () =>
-                          _deleteNote(context, ref, notes[i]),
+                      onDelete: () => _deleteNote(context, ref, notes[i]),
                     ),
                     if (i < notes.length - 1)
                       const SizedBox(height: AppSpacing.md),
@@ -1600,7 +1680,8 @@ class _SubtasksTabState extends ConsumerState<_SubtasksTab> {
       if (titles.isEmpty) {
         AppSnackbar.showError(
           context,
-          message: 'Şu anda alt görev önerisi üretilemedi. Lütfen tekrar dene.',
+          message:
+              'Şu anda alt görev önerisi üretilemedi. Lütfen tekrar dene.',
         );
         return;
       }
@@ -1668,7 +1749,8 @@ class _SubtasksTabState extends ConsumerState<_SubtasksTab> {
                         ),
                         const SizedBox(height: AppSpacing.md),
                         ConstrainedBox(
-                          constraints: const BoxConstraints(maxHeight: 320),
+                          constraints:
+                              const BoxConstraints(maxHeight: 320),
                           child: ValueListenableBuilder<Set<int>>(
                             valueListenable: selectedIndexes,
                             builder: (context, selectedSet, _) {
@@ -1682,9 +1764,11 @@ class _SubtasksTabState extends ConsumerState<_SubtasksTab> {
                                       selectedSet.contains(index);
                                   final title = titles[index];
                                   return InkWell(
-                                    borderRadius: BorderRadius.circular(16),
+                                    borderRadius:
+                                        BorderRadius.circular(16),
                                     onTap: () {
-                                      final next = Set<int>.from(selectedSet);
+                                      final next =
+                                          Set<int>.from(selectedSet);
                                       if (isSelected) {
                                         next.remove(index);
                                       } else {
@@ -1713,8 +1797,10 @@ class _SubtasksTabState extends ConsumerState<_SubtasksTab> {
                                         children: [
                                           Icon(
                                             isSelected
-                                                ? Icons.check_circle_rounded
-                                                : Icons.radio_button_unchecked,
+                                                ? Icons
+                                                    .check_circle_rounded
+                                                : Icons
+                                                    .radio_button_unchecked,
                                             size: 20,
                                             color: isSelected
                                                 ? AppColors.primary
@@ -1726,7 +1812,8 @@ class _SubtasksTabState extends ConsumerState<_SubtasksTab> {
                                           Expanded(
                                             child: Text(
                                               title,
-                                              style: AppTextStyles.bodyMedium
+                                              style: AppTextStyles
+                                                  .bodyMedium
                                                   .copyWith(
                                                 color: AppColors.gray900,
                                               ),
@@ -1844,9 +1931,10 @@ class _SubtasksTabState extends ConsumerState<_SubtasksTab> {
 
   Future<void> _saveSubGoals() async {
     if (widget.goalId.isEmpty) return;
-    final current = await ref.read(goalDetailProvider(widget.goalId).future);
+    final current =
+        await ref.read(goalDetailProvider(widget.goalId).future);
     if (current == null) return;
-    
+
     final repository = ref.read(goalRepositoryProvider);
 
     // Alt görevler tek ilerleme kaynağı: oran neyse progress de o olmalı.
@@ -1900,8 +1988,7 @@ class _SubtasksTabState extends ConsumerState<_SubtasksTab> {
       barrierColor: Colors.black.withOpacity(0.5),
       builder: (context) => AlertDialog(
         title: const Text('Alt görevi sil'),
-        content:
-            const Text('Bu alt görevi silmek istediğine emin misin?'),
+        content: const Text('Bu alt görevi silmek istediğine emin misin?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
@@ -2302,11 +2389,13 @@ class _SubtasksTabState extends ConsumerState<_SubtasksTab> {
                         ),
                         const SizedBox(height: AppSpacing.xs),
                         TextButton.icon(
-                          onPressed:
-                              _isSuggesting ? null : _suggestSubGoalsWithAI,
+                          onPressed: _isSuggesting
+                              ? null
+                              : _suggestSubGoalsWithAI,
                           style: TextButton.styleFrom(
                             padding: EdgeInsets.zero,
-                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            tapTargetSize:
+                                MaterialTapTargetSize.shrinkWrap,
                             minimumSize: Size.zero,
                           ),
                           icon: _isSuggesting
@@ -2590,14 +2679,16 @@ class _AddNoteBottomSheetState extends ConsumerState<_AddNoteBottomSheet> {
         top: AppSpacing.lg,
         bottom: MediaQuery.of(context).viewInsets.bottom + AppSpacing.lg,
       ),
-          child: Column(
+      child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
               Text(
-                widget.existingNote == null ? 'Yeni Not Ekle' : 'Notu Düzenle',
+                widget.existingNote == null
+                    ? 'Yeni Not Ekle'
+                    : 'Notu Düzenle',
                 style: AppTextStyles.titleLarge.copyWith(
                   fontWeight: FontWeight.w700,
                 ),
@@ -2793,6 +2884,100 @@ class _PremiumBottomButton extends StatelessWidget {
               ],
             ),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Complete Confirmation Dialog
+class _CompleteConfirmationDialog extends StatelessWidget {
+  const _CompleteConfirmationDialog({required this.goalTitle});
+
+  final String goalTitle;
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      backgroundColor: Colors.transparent,
+      contentPadding: EdgeInsets.zero,
+      insetPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+      shape: const RoundedRectangleBorder(
+        borderRadius: AppRadius.borderRadiusXl,
+      ),
+      content: Container(
+        padding: const EdgeInsets.all(AppSpacing.xl),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: AppRadius.borderRadiusXl,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 64,
+              height: 64,
+              decoration: BoxDecoration(
+                color: AppColors.primary.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.check_circle_outline,
+                size: 32,
+                color: AppColors.primary,
+              ),
+            ),
+            const SizedBox(height: AppSpacing.lg),
+            Text(
+              'Hedefi Tamamla',
+              style: AppTextStyles.titleLarge.copyWith(
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            Text(
+              '"$goalTitle" hedefini tamamlamak istediğinize emin misiniz?',
+              style: AppTextStyles.bodyMedium.copyWith(
+                color: AppColors.gray700,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: AppSpacing.lg),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () => Navigator.of(context).pop(false),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(
+                        vertical: AppSpacing.md,
+                      ),
+                      shape: const RoundedRectangleBorder(
+                        borderRadius: AppRadius.borderRadiusMd,
+                      ),
+                    ),
+                    child: const Text('İptal'),
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.md),
+                Expanded(
+                  child: FilledButton(
+                    onPressed: () => Navigator.of(context).pop(true),
+                    style: FilledButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      padding: const EdgeInsets.symmetric(
+                        vertical: AppSpacing.md,
+                      ),
+                      shape: const RoundedRectangleBorder(
+                        borderRadius: AppRadius.borderRadiusMd,
+                      ),
+                    ),
+                    child: const Text('Tamamla'),
+                  ),
+                ),
+              ],
+            ),
+          ],
         ),
       ),
     );

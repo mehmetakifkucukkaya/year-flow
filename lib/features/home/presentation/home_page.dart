@@ -318,31 +318,38 @@ class _TopAppBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.only(
-        left: AppSpacing.md,
-        right: AppSpacing.md,
-        top: AppSpacing.sm,
-        bottom: AppSpacing.sm,
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.lg,
+        vertical: AppSpacing.lg,
       ),
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          // Logo icon - smaller and minimal
-          Icon(
-            Icons.waves,
-            size: 24,
-            color: Theme.of(context).colorScheme.onSurface,
-          ),
-          const SizedBox(width: AppSpacing.sm),
-          // Greeting - bolder and better aligned
-          Expanded(
-            child: Text(
-              'Merhaba, Akif',
-              style: AppTextStyles.titleLarge.copyWith(
-                fontWeight: FontWeight.w700,
-                letterSpacing: -0.5,
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Merhaba, Akif',
+                style: AppTextStyles.headlineLarge.copyWith(
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: -0.8,
+                  color: AppColors.gray900,
+                ),
               ),
-            ),
+              const SizedBox(height: 2),
+              Text(
+                'Bugün nasıl geçiyor?',
+                style: AppTextStyles.bodySmall.copyWith(
+                  color: AppColors.gray600,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
           ),
+          const SizedBox(
+              width:
+                  48), // Notification button yerine boşluk (home'da bildirim yok)
         ],
       ),
     );

@@ -46,7 +46,6 @@ class AIService {
     DateTime? targetDate,
   }) async {
     try {
-
       final user = await _getAuthenticatedUser();
       final result = await _callOptimizeFunction(user, {
         'goalTitle': goalTitle,
@@ -241,6 +240,9 @@ class AIService {
       if (goal.motivation != null) 'motivation': goal.motivation,
       'progress': goal.progress,
       'isArchived': goal.isArchived,
+      'isCompleted': goal.isCompleted,
+      if (goal.completedAt != null)
+        'completedAt': goal.completedAt!.toIso8601String(),
     };
   }
 
@@ -293,7 +295,8 @@ class AIService {
   OptimizeGoalResponse _parseOptimizeResponse(Map<String, dynamic> data) {
     _Logger.debug('AI Service: Parsing response data...');
     _Logger.debug('  optimizedTitle: ${data['optimizedTitle']}');
-    _Logger.debug('  subGoals count: ${(data['subGoals'] as List).length}');
+    _Logger.debug(
+        '  subGoals count: ${(data['subGoals'] as List).length}');
     _Logger.debug('  explanation: ${data['explanation']}');
 
     final response = OptimizeGoalResponse(

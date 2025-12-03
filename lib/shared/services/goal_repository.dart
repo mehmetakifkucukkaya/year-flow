@@ -6,6 +6,8 @@ import '../models/yearly_report.dart';
 abstract class GoalRepository {
   Stream<List<Goal>> watchGoals(String userId);
 
+  Stream<List<Goal>> watchAllGoals(String userId);
+
   Future<List<Goal>> fetchGoals(String userId);
 
   Future<Goal?> fetchGoalById(String goalId);
@@ -15,6 +17,8 @@ abstract class GoalRepository {
   Future<Goal> updateGoal(Goal goal);
 
   Future<void> archiveGoal(String goalId);
+
+  Future<void> completeGoal(String goalId);
 
   Future<void> deleteGoal(String goalId);
 
@@ -46,5 +50,3 @@ abstract class GoalRepository {
 
   Future<void> deleteNote(String noteId);
 }
-
-

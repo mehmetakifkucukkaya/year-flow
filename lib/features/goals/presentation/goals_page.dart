@@ -40,12 +40,34 @@ class GoalsPage extends ConsumerStatefulWidget {
   ConsumerState<GoalsPage> createState() => _GoalsPageState();
 }
 
-class _GoalsPageState extends ConsumerState<GoalsPage> {
+class _GoalsPageState extends ConsumerState<GoalsPage>
+    with SingleTickerProviderStateMixin {
   // Premium background color
   static const Color _premiumBackground = Color(0xFFF9FAFB);
 
   _SortOption _sortOption = _SortOption.newest;
   _FilterOption _filterOption = _FilterOption.all;
+  late TabController _tabController;
+  int _selectedTabIndex = 0; // 0: Aktif, 1: Tamamlanan
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 2, vsync: this);
+    _tabController.addListener(() {
+      if (_tabController.indexIsChanging) {
+        setState(() {
+          _selectedTabIndex = _tabController.index;
+        });
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
 
   List<Goal> _filterAndSortGoals(List<Goal> goals) {
     // Filtrele
@@ -107,11 +129,12 @@ class _GoalsPageState extends ConsumerState<GoalsPage> {
 
   @override
   Widget build(BuildContext context) {
-    final goalsAsync = ref.watch(goalsStreamProvider);
+    // Tüm hedefleri al (aktif ve tamamlanan)
+    final allGoalsAsync = ref.watch(allGoalsStreamProvider);
 
     return Container(
       color: _premiumBackground,
-      child: goalsAsync.when(
+      child: allGoalsAsync.when(
         loading: () => const Center(
           child: CircularProgressIndicator(),
         ),
@@ -152,8 +175,20 @@ class _GoalsPageState extends ConsumerState<GoalsPage> {
             ),
           );
         },
-        data: (goals) {
-          final filteredAndSortedGoals = _filterAndSortGoals(goals);
+        data: (allGoals) {
+          // Aktif ve tamamlanan hedefleri ayır
+          final activeGoals = allGoals
+              .where((g) => !g.isArchived && !g.isCompleted)
+              .toList();
+          final completedGoals = allGoals
+              .where((g) => g.isArchived && g.isCompleted)
+              .toList();
+
+          // Seçili tab'a göre hedefleri filtrele ve sırala
+          final currentGoals = _selectedTabIndex == 0
+              ? _filterAndSortGoals(activeGoals)
+              : _filterAndSortGoals(completedGoals);
+
           return Stack(
             children: [
               CustomScrollView(
@@ -166,53 +201,179 @@ class _GoalsPageState extends ConsumerState<GoalsPage> {
                     ),
                   ),
 
-                  // Filter/Sort Buttons
+                  // Tab Bar - Modern Design
                   SliverToBoxAdapter(
                     child: Padding(
                       padding: const EdgeInsets.only(
-                        left: AppSpacing.md,
-                        right: AppSpacing.md,
-                        top: AppSpacing.md,
+                        left: AppSpacing.lg,
+                        right: AppSpacing.lg,
+                        top: AppSpacing.sm,
                         bottom: AppSpacing.sm,
                       ),
-                      child: _FilterSortButtons(
-                        sortOption: _sortOption,
-                        filterOption: _filterOption,
-                        onSortChanged: (option) {
-                          setState(() {
-                            _sortOption = option;
-                          });
-                        },
-                        onFilterChanged: (option) {
-                          setState(() {
-                            _filterOption = option;
-                          });
-                        },
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          color: AppColors.gray100,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: TabBar(
+                          controller: _tabController,
+                          indicator: BoxDecoration(
+                            borderRadius: BorderRadius.circular(16),
+                            color: Colors.white,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.08),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          indicatorSize: TabBarIndicatorSize.tab,
+                          dividerColor: Colors.transparent,
+                          labelColor: AppColors.primary,
+                          unselectedLabelColor: AppColors.gray600,
+                          labelStyle: AppTextStyles.labelMedium.copyWith(
+                            fontWeight: FontWeight.w700,
+                            fontSize: 13,
+                          ),
+                          unselectedLabelStyle:
+                              AppTextStyles.labelMedium.copyWith(
+                            fontWeight: FontWeight.w500,
+                            fontSize: 13,
+                          ),
+                          tabs: [
+                            Tab(
+                              height: 44,
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.center,
+                                children: [
+                                  const Icon(Icons.flag_rounded, size: 18),
+                                  const SizedBox(width: 8),
+                                  const Text('Aktif'),
+                                  if (activeGoals.isNotEmpty) ...[
+                                    const SizedBox(width: 6),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 6,
+                                        vertical: 2,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.primary
+                                            .withOpacity(0.15),
+                                        borderRadius:
+                                            BorderRadius.circular(10),
+                                      ),
+                                      child: Text(
+                                        '${activeGoals.length}',
+                                        style: AppTextStyles.labelSmall
+                                            .copyWith(
+                                          fontWeight: FontWeight.w700,
+                                          fontSize: 11,
+                                          color: AppColors.primary,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ],
+                              ),
+                            ),
+                            Tab(
+                              height: 44,
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.center,
+                                children: [
+                                  const Icon(Icons.check_circle_rounded,
+                                      size: 18),
+                                  const SizedBox(width: 8),
+                                  const Text('Tamamlanan'),
+                                  if (completedGoals.isNotEmpty) ...[
+                                    const SizedBox(width: 6),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 6,
+                                        vertical: 2,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.primary
+                                            .withOpacity(0.15),
+                                        borderRadius:
+                                            BorderRadius.circular(10),
+                                      ),
+                                      child: Text(
+                                        '${completedGoals.length}',
+                                        style: AppTextStyles.labelSmall
+                                            .copyWith(
+                                          fontWeight: FontWeight.w700,
+                                          fontSize: 11,
+                                          color: AppColors.primary,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
 
+                  // Filter/Sort Buttons (sadece aktif hedeflerde göster)
+                  if (_selectedTabIndex == 0)
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.only(
+                          left: AppSpacing.md,
+                          right: AppSpacing.md,
+                          top: AppSpacing.md,
+                          bottom: AppSpacing.sm,
+                        ),
+                        child: _FilterSortButtons(
+                          sortOption: _sortOption,
+                          filterOption: _filterOption,
+                          onSortChanged: (option) {
+                            setState(() {
+                              _sortOption = option;
+                            });
+                          },
+                          onFilterChanged: (option) {
+                            setState(() {
+                              _filterOption = option;
+                            });
+                          },
+                        ),
+                      ),
+                    ),
+
                   // Goals List
-                  if (filteredAndSortedGoals.isEmpty)
+                  if (currentGoals.isEmpty)
                     SliverFillRemaining(
                       hasScrollBody: false,
-                      child: _EmptyState(),
+                      child: _selectedTabIndex == 0
+                          ? _EmptyState()
+                          : _EmptyCompletedState(),
                     )
                   else
                     SliverList(
                       delegate: SliverChildBuilderDelegate(
                         (context, index) {
-                          final goal = filteredAndSortedGoals[index];
+                          final goal = currentGoals[index];
                           return Padding(
                             padding: const EdgeInsets.only(
                               left: AppSpacing.md,
                               right: AppSpacing.md,
                               bottom: AppSpacing.md,
                             ),
-                            child: _GoalCard(goal: goal),
+                            child: _selectedTabIndex == 0
+                                ? _GoalCard(goal: goal)
+                                : _CompletedGoalCard(goal: goal),
                           );
                         },
-                        childCount: filteredAndSortedGoals.length,
+                        childCount: currentGoals.length,
                       ),
                     ),
 
@@ -222,19 +383,25 @@ class _GoalsPageState extends ConsumerState<GoalsPage> {
                   ),
                 ],
               ),
-              // Floating Action Button - Premium styling (sadece hedef varsa göster)
-              if (filteredAndSortedGoals.isNotEmpty)
+              // Floating Action Button - Modern Premium styling
+              if (_selectedTabIndex == 0 && activeGoals.isNotEmpty)
                 Positioned(
                   bottom: 24,
-                  right: 16,
+                  right: 20,
                   child: Container(
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(28),
+                      gradient: const LinearGradient(
+                        colors: [
+                          AppColors.primary,
+                          AppColors.primaryDark,
+                        ],
+                      ),
                       boxShadow: [
                         BoxShadow(
-                          color: AppColors.primary.withOpacity(0.3),
-                          offset: const Offset(0, 4),
-                          blurRadius: 12,
+                          color: AppColors.primary.withOpacity(0.4),
+                          offset: const Offset(0, 8),
+                          blurRadius: 20,
                           spreadRadius: 0,
                         ),
                       ],
@@ -243,13 +410,12 @@ class _GoalsPageState extends ConsumerState<GoalsPage> {
                       onPressed: () {
                         context.push(AppRoutes.goalCreate);
                       },
-                      backgroundColor: AppColors.primary
-                          .withOpacity(0.9), // Softer pastel blue
+                      backgroundColor: Colors.transparent,
                       elevation: 0,
                       child: const Icon(
-                        Icons.add,
+                        Icons.add_rounded,
                         color: Colors.white,
-                        size: 24, // Slightly smaller icon
+                        size: 28,
                       ),
                     ),
                   ),
@@ -262,44 +428,69 @@ class _GoalsPageState extends ConsumerState<GoalsPage> {
   }
 }
 
-/// Top App Bar - Premium styling
+/// Top App Bar - Modern Premium styling
 class _TopAppBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.md,
-        vertical: AppSpacing.md,
+        horizontal: AppSpacing.lg,
+        vertical: AppSpacing.lg,
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Text(
-            'Hedeflerim',
-            style: AppTextStyles.headlineLarge.copyWith(
-              fontWeight: FontWeight.w700,
-              letterSpacing: -0.5,
-            ),
-          ),
-          IconButton(
-            icon:
-                const Icon(Icons.notifications_none), // More minimal icon
-            onPressed: () {
-              // Şimdilik basit bir snackbar göster
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: const Text('Bildirimler yakında eklenecek'),
-                  behavior: SnackBarBehavior.floating,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Hedeflerim',
+                style: AppTextStyles.headlineLarge.copyWith(
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: -0.8,
+                  color: AppColors.gray900,
                 ),
-              );
-            },
-            iconSize: 22, // Reduced size
-            padding: EdgeInsets.zero,
-            constraints: const BoxConstraints(),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                'Başarı yolculuğun',
+                style: AppTextStyles.bodySmall.copyWith(
+                  color: AppColors.gray600,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.06),
+                  blurRadius: 12,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: IconButton(
+              icon: const Icon(Icons.notifications_outlined),
+              onPressed: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: const Text('Bildirimler yakında eklenecek'),
+                    behavior: SnackBarBehavior.floating,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                );
+              },
+              iconSize: 22,
+              color: AppColors.gray700,
+              padding: const EdgeInsets.all(12),
+            ),
           ),
         ],
       ),
@@ -307,7 +498,7 @@ class _TopAppBar extends StatelessWidget {
   }
 }
 
-/// Filter and Sort Buttons - Minimalist design
+/// Filter and Sort Buttons - Modern design
 class _FilterSortButtons extends StatelessWidget {
   const _FilterSortButtons({
     required this.sortOption,
@@ -325,20 +516,24 @@ class _FilterSortButtons extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        _ActionButton(
-          icon: Icons.swap_vert,
-          label: 'Sırala',
-          onPressed: () {
-            _showSortDialog(context);
-          },
+        Expanded(
+          child: _ModernActionButton(
+            icon: Icons.swap_vert_rounded,
+            label: 'Sırala',
+            onPressed: () {
+              _showSortDialog(context);
+            },
+          ),
         ),
         const SizedBox(width: AppSpacing.sm),
-        _ActionButton(
-          icon: Icons.filter_list,
-          label: 'Filtrele',
-          onPressed: () {
-            _showFilterDialog(context);
-          },
+        Expanded(
+          child: _ModernActionButton(
+            icon: Icons.tune_rounded,
+            label: 'Filtrele',
+            onPressed: () {
+              _showFilterDialog(context);
+            },
+          ),
         ),
       ],
     );
@@ -477,9 +672,282 @@ class _FilterSortButtons extends StatelessWidget {
   }
 }
 
-/// Action Button (Sort/Filter) - Smaller, softer, minimalist
-class _ActionButton extends StatelessWidget {
-  const _ActionButton({
+/// Empty state for completed goals - Modern Design
+class _EmptyCompletedState extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.xl,
+        vertical: AppSpacing.xxl,
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            width: 120,
+            height: 120,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  AppColors.primary.withOpacity(0.18),
+                  AppColors.primary.withOpacity(0.08),
+                ],
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.primary.withOpacity(0.12),
+                  blurRadius: 20,
+                  offset: const Offset(0, 6),
+                ),
+              ],
+            ),
+            child: const Icon(
+              Icons.check_circle_rounded,
+              size: 56,
+              color: AppColors.primary,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.xl + AppSpacing.md),
+          Text(
+            'Henüz tamamlanan hedef yok',
+            style: AppTextStyles.headlineMedium.copyWith(
+              fontWeight: FontWeight.w800,
+              color: AppColors.gray900,
+              letterSpacing: -0.5,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: AppSpacing.md),
+          Text(
+            'Hedeflerini tamamladıkça burada gözükecekler',
+            style: AppTextStyles.bodyLarge.copyWith(
+              color: AppColors.gray600,
+              height: 1.5,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Completed Goal Card - Simplified version for goals page
+class _CompletedGoalCard extends ConsumerWidget {
+  const _CompletedGoalCard({required this.goal});
+
+  final Goal goal;
+
+  Color _getCategoryColor(GoalCategory category) {
+    switch (category) {
+      case GoalCategory.health:
+        return const Color(0xFF4CAF50);
+      case GoalCategory.mentalHealth:
+        return const Color(0xFF81C784);
+      case GoalCategory.finance:
+        return const Color(0xFF009688);
+      case GoalCategory.career:
+        return const Color(0xFF2196F3);
+      case GoalCategory.relationships:
+        return const Color(0xFFE91E63);
+      case GoalCategory.learning:
+        return const Color(0xFF9C27B0);
+      case GoalCategory.creativity:
+        return const Color(0xFFFF6B6B);
+      case GoalCategory.hobby:
+        return const Color(0xFFFF9800);
+      case GoalCategory.personalGrowth:
+        return AppColors.primary;
+      default:
+        return AppColors.primary;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final categoryColor = _getCategoryColor(goal.category);
+    final completedDate =
+        goal.completedAt ?? goal.targetDate ?? goal.createdAt;
+    final dateFormat = DateFormat('d MMMM yyyy', 'tr_TR');
+
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.06),
+            offset: const Offset(0, 4),
+            blurRadius: 14,
+            spreadRadius: 0,
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () {
+            context.push(AppRoutes.goalDetailPath(goal.id));
+          },
+          borderRadius: BorderRadius.circular(18),
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Header: Category badge
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: categoryColor.withOpacity(0.12),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        goal.category.emoji,
+                        style: const TextStyle(fontSize: 16),
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        goal.category.label,
+                        style: AppTextStyles.labelSmall.copyWith(
+                          color: categoryColor,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.md),
+                // Title
+                Text(
+                  goal.title,
+                  style: AppTextStyles.titleMedium.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.gray900,
+                    height: 1.3,
+                  ),
+                ),
+                // Description
+                if (goal.description != null) ...[
+                  const SizedBox(height: AppSpacing.xs),
+                  Text(
+                    goal.description!,
+                    style: AppTextStyles.bodySmall.copyWith(
+                      color: AppColors.gray600,
+                      height: 1.4,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+                const SizedBox(height: AppSpacing.md),
+                // Progress bar (100%)
+                Container(
+                  height: 6,
+                  decoration: BoxDecoration(
+                    color: AppColors.gray200,
+                    borderRadius: BorderRadius.circular(3),
+                  ),
+                  child: FractionallySizedBox(
+                    alignment: Alignment.centerLeft,
+                    widthFactor: 1.0,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            categoryColor,
+                            categoryColor.withOpacity(0.7),
+                          ],
+                        ),
+                        borderRadius: BorderRadius.circular(3),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.md),
+                // Footer: Completed badge and date
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            AppColors.primary.withOpacity(0.15),
+                            AppColors.primary.withOpacity(0.08),
+                          ],
+                        ),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(
+                            Icons.check_circle_rounded,
+                            size: 16,
+                            color: AppColors.primary,
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            'Tamamlandı',
+                            style: AppTextStyles.labelSmall.copyWith(
+                              color: AppColors.primary,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const Spacer(),
+                    // Tamamlanma tarihi
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.calendar_today,
+                          size: 14,
+                          color: AppColors.gray500,
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          dateFormat.format(completedDate),
+                          style: AppTextStyles.bodySmall.copyWith(
+                            color: AppColors.gray600,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Modern Action Button (Sort/Filter) - Premium design
+class _ModernActionButton extends StatelessWidget {
+  const _ModernActionButton({
     required this.icon,
     required this.label,
     required this.onPressed,
@@ -494,12 +962,16 @@ class _ActionButton extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(20), // Softer pill shape
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: AppColors.gray200,
+          width: 1,
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            offset: const Offset(0, 1),
-            blurRadius: 2,
+            color: Colors.black.withOpacity(0.03),
+            offset: const Offset(0, 2),
+            blurRadius: 8,
             spreadRadius: 0,
           ),
         ],
@@ -508,27 +980,27 @@ class _ActionButton extends StatelessWidget {
         color: Colors.transparent,
         child: InkWell(
           onTap: onPressed,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(16),
           child: Padding(
             padding: const EdgeInsets.symmetric(
-              horizontal: 12,
-              vertical: 8,
+              horizontal: AppSpacing.md,
+              vertical: AppSpacing.sm + 2,
             ),
             child: Row(
-              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(
                   icon,
-                  size: 16, // Smaller icon
+                  size: 18,
                   color: AppColors.gray700,
                 ),
-                const SizedBox(width: 6),
+                const SizedBox(width: 8),
                 Text(
                   label,
-                  style: AppTextStyles.labelSmall.copyWith(
-                    fontWeight: FontWeight.w500,
+                  style: AppTextStyles.labelMedium.copyWith(
+                    fontWeight: FontWeight.w600,
                     color: AppColors.gray700,
-                    fontSize: 13,
+                    fontSize: 14,
                   ),
                 ),
               ],
@@ -713,56 +1185,104 @@ Color _categoryColor(GoalCategory category) {
   }
 }
 
-/// Empty State
+/// Empty State - Modern Premium Design
 class _EmptyState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(AppSpacing.xl),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.xl,
+        vertical: AppSpacing.xxl,
+      ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
-            width: 80,
-            height: 80,
+            width: 140,
+            height: 140,
             decoration: BoxDecoration(
-              color: AppColors.primary.withOpacity(0.1),
               shape: BoxShape.circle,
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  AppColors.primary.withOpacity(0.2),
+                  AppColors.primary.withOpacity(0.08),
+                ],
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.primary.withOpacity(0.15),
+                  blurRadius: 24,
+                  offset: const Offset(0, 8),
+                ),
+              ],
             ),
             child: const Icon(
-              Icons.flag_outlined,
-              size: 40,
+              Icons.flag_rounded,
+              size: 64,
               color: AppColors.primary,
             ),
           ),
-          const SizedBox(height: AppSpacing.xl),
+          const SizedBox(height: AppSpacing.xl + AppSpacing.md),
           Text(
             'Henüz hedef eklemedin',
-            style: AppTextStyles.titleLarge.copyWith(
-              fontWeight: FontWeight.w700,
+            style: AppTextStyles.headlineMedium.copyWith(
+              fontWeight: FontWeight.w800,
               color: AppColors.gray900,
+              letterSpacing: -0.5,
             ),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: AppSpacing.md),
           Text(
             'Yeni bir hedef ekleyerek başarı yolculuğuna başla',
-            style: AppTextStyles.bodyMedium.copyWith(
+            style: AppTextStyles.bodyLarge.copyWith(
               color: AppColors.gray600,
+              height: 1.5,
             ),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: AppSpacing.xl),
-          FilledButton.icon(
-            onPressed: () {
-              context.push(AppRoutes.goalCreate);
-            },
-            icon: const Icon(Icons.add_rounded),
-            label: const Text('Yeni Hedef Ekle'),
-            style: FilledButton.styleFrom(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.xl,
-                vertical: AppSpacing.md,
+          const SizedBox(height: AppSpacing.xl + AppSpacing.md),
+          Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(20),
+              gradient: const LinearGradient(
+                colors: [
+                  AppColors.primary,
+                  AppColors.primaryDark,
+                ],
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.primary.withOpacity(0.4),
+                  blurRadius: 16,
+                  offset: const Offset(0, 8),
+                ),
+              ],
+            ),
+            child: FilledButton.icon(
+              onPressed: () {
+                context.push(AppRoutes.goalCreate);
+              },
+              icon: const Icon(Icons.add_rounded, size: 22),
+              label: const Text(
+                'Yeni Hedef Ekle',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              style: FilledButton.styleFrom(
+                backgroundColor: Colors.transparent,
+                shadowColor: Colors.transparent,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.xl + AppSpacing.md,
+                  vertical: AppSpacing.md + 4,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
               ),
             ),
           ),

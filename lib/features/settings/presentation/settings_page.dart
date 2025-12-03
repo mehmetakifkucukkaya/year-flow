@@ -14,56 +14,48 @@ import '../../auth/providers/auth_providers.dart';
 class SettingsPage extends ConsumerWidget {
   const SettingsPage({super.key});
 
+  // Premium background color
+  static const Color _premiumBackground = Color(0xFFF9FAFB);
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            Color(0xFFF5F7FF),
-            Color(0xFFFDFBFF),
-          ],
-        ),
-      ),
-      child: SafeArea(
-        bottom: false,
-        child: Scaffold(
-          backgroundColor: Colors.transparent,
-          body: CustomScrollView(
-            slivers: [
-              SliverToBoxAdapter(
-                child: _SettingsAppBar(),
-              ),
-              const SliverToBoxAdapter(
-                child: Padding(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: AppSpacing.md,
-                    vertical: AppSpacing.md,
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _ProfileSection(),
-                      SizedBox(height: AppSpacing.xl),
-                      _AppSettingsSection(),
-                      SizedBox(height: AppSpacing.xl),
-                      _DataAndPrivacySection(),
-                      SizedBox(height: AppSpacing.xl),
-                      _SecuritySection(),
-                      SizedBox(height: AppSpacing.xl),
-                      _LogoutSection(),
-                      SizedBox(height: AppSpacing.xxl),
-                      _DangerZoneSection(),
-                      SizedBox(height: AppSpacing.xxl),
-                    ],
-                  ),
-                ),
-              ),
-            ],
+      color: _premiumBackground,
+      child: CustomScrollView(
+        slivers: [
+          // SafeArea for status bar
+          SliverSafeArea(
+            bottom: false,
+            sliver: SliverToBoxAdapter(
+              child: _SettingsAppBar(),
+            ),
           ),
-        ),
+          const SliverToBoxAdapter(
+            child: Padding(
+              padding: EdgeInsets.symmetric(
+                horizontal: AppSpacing.md,
+                vertical: AppSpacing.md,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _ProfileSection(),
+                  SizedBox(height: AppSpacing.xl),
+                  _AppSettingsSection(),
+                  SizedBox(height: AppSpacing.xl),
+                  _DataAndPrivacySection(),
+                  SizedBox(height: AppSpacing.xl),
+                  _SecuritySection(),
+                  SizedBox(height: AppSpacing.xl),
+                  _LogoutSection(),
+                  SizedBox(height: AppSpacing.xxl),
+                  _DangerZoneSection(),
+                  SizedBox(height: AppSpacing.xxl),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -74,43 +66,35 @@ class _SettingsAppBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.md,
-        vertical: AppSpacing.sm,
+        horizontal: AppSpacing.lg,
+        vertical: AppSpacing.lg,
       ),
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
-                  blurRadius: 12,
-                  offset: const Offset(0, 4),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Ayarlar',
+                style: AppTextStyles.headlineLarge.copyWith(
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: -0.8,
+                  color: AppColors.gray900,
                 ),
-              ],
-            ),
-            child: IconButton(
-              onPressed: () => Navigator.of(context).maybePop(),
-              icon: const Icon(Icons.arrow_back_ios_new_rounded),
-              color: AppColors.gray900,
-              iconSize: 18,
-              padding: EdgeInsets.zero,
-            ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                'Hesap ve uygulama ayarları',
+                style: AppTextStyles.bodySmall.copyWith(
+                  color: AppColors.gray600,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
           ),
-          const Spacer(),
-          Text(
-            'Ayarlar',
-            style: AppTextStyles.titleLarge.copyWith(
-              fontWeight: FontWeight.w700,
-              letterSpacing: -0.2,
-            ),
-          ),
-          const Spacer(),
-          const SizedBox(width: 40),
+          const SizedBox(width: 48), // Notification button yerine boşluk
         ],
       ),
     );
@@ -466,7 +450,7 @@ class _DataAndPrivacySection extends ConsumerWidget {
             vertical: AppSpacing.sm,
           ),
           child: Text(
-            'Veri ve Gizlilik',
+            'Veriler',
             style: AppTextStyles.labelSmall.copyWith(
               fontWeight: FontWeight.w700,
               color: AppColors.gray500,

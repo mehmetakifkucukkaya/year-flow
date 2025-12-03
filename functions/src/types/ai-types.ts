@@ -67,6 +67,7 @@ export interface Goal {
   motivation?: string;
   progress: number;
   isArchived: boolean;
+  isCompleted?: boolean;
 }
 
 export interface CheckIn {

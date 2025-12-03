@@ -27,6 +27,7 @@ class AppRoutes {
   static const String goalDetail = '/goal/:id';
   static const String goalCreate = '/goal/create';
   static const String goalEdit = '/goal/:id/edit';
+  static const String goalsArchive = '/goals/archive';
 
   // Check-in
   static const String checkIn = '/goal/:goalId/check-in';
@@ -50,4 +51,3 @@ class AppRoutes {
   /// Timeline path oluştur
   static String timelinePath(String goalId) => '/goal/$goalId/timeline';
 }
-

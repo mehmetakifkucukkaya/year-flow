@@ -10,6 +10,7 @@ import '../../features/checkin/presentation/check_in_page.dart';
 import '../../features/goals/presentation/goal_create_page.dart';
 import '../../features/goals/presentation/goal_detail_page.dart';
 import '../../features/goals/presentation/goal_edit_page.dart';
+import '../../features/goals/presentation/goals_archive_page.dart';
 import '../../features/goals/presentation/goals_page.dart';
 import '../../features/home/presentation/home_page.dart';
 import '../../features/onboarding/presentation/onboarding_page.dart';
@@ -19,6 +20,87 @@ import '../../features/settings/presentation/profile_page.dart';
 import '../../features/settings/presentation/settings_page.dart';
 import 'app_routes.dart';
 
+/// Smooth fade transition for bottom navigation pages
+Page<T> _fadeTransition<T extends Object?>({
+  required BuildContext context,
+  required GoRouterState state,
+  required Widget child,
+}) {
+  return CustomTransitionPage<T>(
+    key: state.pageKey,
+    child: child,
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      return FadeTransition(
+        opacity: CurveTween(curve: Curves.easeInOut).animate(animation),
+        child: child,
+      );
+    },
+    transitionDuration: const Duration(milliseconds: 200),
+  );
+}
+
+/// Smooth slide transition for modal pages
+Page<T> _slideTransition<T extends Object?>({
+  required BuildContext context,
+  required GoRouterState state,
+  required Widget child,
+}) {
+  return CustomTransitionPage<T>(
+    key: state.pageKey,
+    child: child,
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      const begin = Offset(0.0, 0.1);
+      const end = Offset.zero;
+      const curve = Curves.easeOutCubic;
+
+      var tween = Tween(begin: begin, end: end).chain(
+        CurveTween(curve: curve),
+      );
+
+      return SlideTransition(
+        position: animation.drive(tween),
+        child: FadeTransition(
+          opacity: animation,
+          child: child,
+        ),
+      );
+    },
+    transitionDuration: const Duration(milliseconds: 250),
+  );
+}
+
+/// Custom transition page for GoRouter
+class CustomTransitionPage<T> extends Page<T> {
+  const CustomTransitionPage({
+    required super.key,
+    required this.child,
+    required this.transitionsBuilder,
+    this.transitionDuration = const Duration(milliseconds: 300),
+    super.name,
+    super.arguments,
+    super.restorationId,
+  });
+
+  final Widget child;
+  final Widget Function(
+    BuildContext context,
+    Animation<double> animation,
+    Animation<double> secondaryAnimation,
+    Widget child,
+  ) transitionsBuilder;
+  final Duration transitionDuration;
+
+  @override
+  Route<T> createRoute(BuildContext context) {
+    return PageRouteBuilder<T>(
+      settings: this,
+      pageBuilder: (context, animation, secondaryAnimation) => child,
+      transitionDuration: transitionDuration,
+      transitionsBuilder: transitionsBuilder,
+    );
+  }
+}
+
 /// Router provider
 final routerProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authStateProvider);
@@ -26,7 +108,7 @@ final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
     initialLocation:
         authState.isAuthenticated ? AppRoutes.home : AppRoutes.login,
-    debugLogDiagnostics: true,
+    debugLogDiagnostics: false,
     redirect: (context, state) {
       final isAuthenticated = authState.isAuthenticated;
       final isAuthRoute = state.uri.path == AppRoutes.login ||
@@ -61,17 +143,29 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutes.login,
         name: 'login',
-        builder: (context, state) => const LoginPage(),
+        pageBuilder: (context, state) => _fadeTransition(
+          context: context,
+          state: state,
+          child: const LoginPage(),
+        ),
       ),
       GoRoute(
         path: AppRoutes.register,
         name: 'register',
-        builder: (context, state) => const RegisterPage(),
+        pageBuilder: (context, state) => _slideTransition(
+          context: context,
+          state: state,
+          child: const RegisterPage(),
+        ),
       ),
       GoRoute(
         path: AppRoutes.forgotPassword,
         name: 'forgotPassword',
-        builder: (context, state) => const ForgotPasswordPage(),
+        pageBuilder: (context, state) => _slideTransition(
+          context: context,
+          state: state,
+          child: const ForgotPasswordPage(),
+        ),
       ),
 
       // Onboarding
@@ -93,22 +187,47 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: AppRoutes.home,
             name: 'home',
-            builder: (context, state) => const HomePage(),
+            pageBuilder: (context, state) => _fadeTransition(
+              context: context,
+              state: state,
+              child: const HomePage(),
+            ),
           ),
           GoRoute(
             path: AppRoutes.goals,
             name: 'goals',
-            builder: (context, state) => const GoalsPage(),
+            pageBuilder: (context, state) => _fadeTransition(
+              context: context,
+              state: state,
+              child: const GoalsPage(),
+            ),
+          ),
+          GoRoute(
+            path: AppRoutes.goalsArchive,
+            name: 'goalsArchive',
+            pageBuilder: (context, state) => _fadeTransition(
+              context: context,
+              state: state,
+              child: const GoalsArchivePage(),
+            ),
           ),
           GoRoute(
             path: AppRoutes.reports,
             name: 'reports',
-            builder: (context, state) => const ReportsPage(),
+            pageBuilder: (context, state) => _fadeTransition(
+              context: context,
+              state: state,
+              child: const ReportsPage(),
+            ),
           ),
           GoRoute(
             path: AppRoutes.settings,
             name: 'settings',
-            builder: (context, state) => const SettingsPage(),
+            pageBuilder: (context, state) => _fadeTransition(
+              context: context,
+              state: state,
+              child: const SettingsPage(),
+            ),
           ),
         ],
       ),
@@ -117,16 +236,24 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutes.goalCreate,
         name: 'goalCreate',
-        builder: (context, state) => const GoalCreatePage(),
+        pageBuilder: (context, state) => _slideTransition(
+          context: context,
+          state: state,
+          child: const GoalCreatePage(),
+        ),
       ),
 
       // Goal Detail
       GoRoute(
         path: AppRoutes.goalDetail,
         name: 'goalDetail',
-        builder: (context, state) {
+        pageBuilder: (context, state) {
           final goalId = state.pathParameters['id'] ?? '';
-          return GoalDetailPage(goalId: goalId);
+          return _slideTransition(
+            context: context,
+            state: state,
+            child: GoalDetailPage(goalId: goalId),
+          );
         },
       ),
 
@@ -134,9 +261,13 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutes.goalEdit,
         name: 'goalEdit',
-        builder: (context, state) {
+        pageBuilder: (context, state) {
           final goalId = state.pathParameters['id'] ?? '';
-          return GoalEditPage(goalId: goalId);
+          return _slideTransition(
+            context: context,
+            state: state,
+            child: GoalEditPage(goalId: goalId),
+          );
         },
       ),
 
@@ -144,9 +275,13 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutes.checkIn,
         name: 'checkIn',
-        builder: (context, state) {
+        pageBuilder: (context, state) {
           final goalId = state.pathParameters['goalId'] ?? '';
-          return CheckInPage(goalId: goalId);
+          return _slideTransition(
+            context: context,
+            state: state,
+            child: CheckInPage(goalId: goalId),
+          );
         },
       ),
 
@@ -170,14 +305,22 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutes.profile,
         name: 'profile',
-        builder: (context, state) => const ProfilePage(),
+        pageBuilder: (context, state) => _slideTransition(
+          context: context,
+          state: state,
+          child: const ProfilePage(),
+        ),
       ),
 
       // Privacy & Security
       GoRoute(
         path: AppRoutes.privacySecurity,
         name: 'privacySecurity',
-        builder: (context, state) => const PrivacySecurityPage(),
+        pageBuilder: (context, state) => _slideTransition(
+          context: context,
+          state: state,
+          child: const PrivacySecurityPage(),
+        ),
       ),
     ],
     errorBuilder: (context, state) => Scaffold(
