@@ -78,8 +78,8 @@ final goalDetailProvider =
     return null;
   }
 
-  // Sadece mevcut kullanıcının goals'ında ara
-  final goals = await repo.fetchGoals(userId);
+  // Mevcut kullanıcının tüm hedefleri (aktif + arşivlenmiş) içinde ara
+  final goals = await repo.watchAllGoals(userId).first;
   try {
     return goals.firstWhere((goal) => goal.id == goalId);
   } catch (_) {

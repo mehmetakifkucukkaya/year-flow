@@ -150,7 +150,7 @@ function buildWeeklyReportPrompt(
     'Cumartesi',
   ];
 
-  return `Sen deneyimli bir Türkçe konuşan kişisel gelişim analisti ve koçusun. Görevin, ${startDate} ile ${endDate} tarihleri arasındaki haftalık verileri okuyup kullanıcının kişisel gelişim yolculuğu hakkında anlamlı, ilham verici ve dengeli bir haftalık rapor yazmak.
+  return `Sen deneyimli bir Türkçe konuşan kişisel gelişim analisti ve koçusun. Görevin, ${startDate} ile ${endDate} tarihleri arasındaki haftalık verileri okuyup kullanıcının kişisel gelişim yolculuğu hakkında **kısa, öz ve okunması kolay** bir haftalık rapor yazmak.
 
 ÖZET VERİLER (zaten Türkçe):
 - Hafta: ${startDate} - ${endDate}
@@ -208,32 +208,23 @@ Yazım kuralları:
 - ÇIKTI DİLİ MUTLAKA TÜRKÇE OLMALI.
 - Ton: Sıcak, samimi ve destekleyici, ancak aşırı duygusal değil.
 - Format: Markdown başlıkları kullan (#, ##, ###).
-- Uzunluk: Yaklaşık 400–600 kelime.
+- Uzunluk: Maksimum 200–250 kelime. Gereksiz tekrar ve uzun cümlelerden kaçın, net ve doğrudan yaz.
 
-RAPOR BÖLÜMLERİ (bu sırayla yaz, hepsi Türkçe):
+RAPOR BÖLÜMLERİ (bu sırayla yaz, hepsi Türkçe ve her bölümde en fazla 2–3 cümle olacak şekilde):
 
 # ${startDate} - ${endDate} Haftalık Raporun
 
 ## 1. Haftanın Genel Özeti
-Haftanın genel tonunu özetle, temel temaları ve önemli değişiklikleri belirt. Güçlü yönleri ve çabayı takdir et.
+En fazla 2–3 cümlede haftanın genel tonunu özetle; temel temaları ve önemli değişiklikleri belirt. Güçlü yönleri ve çabayı takdir et.
 
 ## 2. Hedeflerdeki İlerleme
-Kategoriye göre ilerlemeyi analiz et; tamamlanan hedefleri kutla (özellikle açıkça tamamlandı olarak işaretlenenler - isCompleted=true), zorlu alanları ve tamamlanmamış hedefleri dürüst ama yapıcı bir şekilde tartış. Hedef tamamlama başarısını pozitif bir kilometre taşı ve başarı olarak vurgula.
+En fazla 2–3 cümlede kategoriye göre ilerlemeyi analiz et; tamamlanan hedefleri kutla (özellikle açıkça tamamlandı olarak işaretlenenler - isCompleted=true) ve zorlu alanları dürüst ama yapıcı bir şekilde belirt.
 
-## 3. Check-in Analizi
-Check-in verilerini kullanarak motivasyon değişimlerini, zorlu dönemleri ve toparlanma anlarını açıkla. Kullanıcının dayanıklılığını vurgula.
+## 3. Karşılaşılan Zorluklar & Çözümler
+En fazla 2–3 cümlede hafta içindeki ana zorlukları ve bunlara karşı geliştirilen çözüm veya stratejileri özetle.
 
-## 4. Haftanın En İyi Anları
-Hafta boyunca öne çıkan anları, ilkleri ve küçük ama anlamlı zaferleri anlat.
-
-## 5. Öğrenilen Dersler
-Bu haftadan çıkarılabilecek 3–4 net ders ve içgörüyü, Türkçe madde işareti listesi olarak yaz.
-
-## 6. Gelecek Hafta İçin Öneriler
-Önümüzdeki hafta için 2–3 somut odak alanı ve eyleme dönüştürülebilir öneriler ver, Türkçe.
-
-## 7. Kendine Kısa Not
-Kullanıcının kendi çabasını takdir etmesine yardımcı olan, şefkatli ama gerçekçi bir tonda kısa bir not yaz, Türkçe.
+## 4. AI Önerileri
+En fazla 2–3 cümlede önümüzdeki hafta için 2–3 somut odak alanı ve eyleme dönüştürülebilir öneriler ver, Türkçe.
 
 Metin boyunca okuyucuya doğrudan Türkçe ikinci tekil şahıs ("sen") ile hitap et.`;
 }

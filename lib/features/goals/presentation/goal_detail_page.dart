@@ -115,7 +115,9 @@ class _GoalDetailPageState extends ConsumerState<GoalDetailPage>
               children: [
                 SafeArea(
                   bottom: false,
-                  child: _PremiumAppBar(goalId: widget.goalId),
+                  child: _PremiumAppBar(
+                    goalId: widget.goalId,
+                  ),
                 ),
                 _PremiumHeaderSection(
                   goal: goal != null
@@ -129,6 +131,7 @@ class _GoalDetailPageState extends ConsumerState<GoalDetailPage>
                           categoryBackgroundColor:
                               _getCategoryColor(goal.category)
                                   .withOpacity(0.1),
+                          isCompleted: goal.isCompleted,
                           timelineItems: [],
                           goalId: widget.goalId,
                           subtasks: [],
@@ -140,10 +143,12 @@ class _GoalDetailPageState extends ConsumerState<GoalDetailPage>
                           progress: 0,
                           nextCheckIn: 'Belirtilmemiş',
                           categoryColor: AppColors.primary,
-                          categoryBackgroundColor: AppColors.primary.withOpacity(0.1),
+                          categoryBackgroundColor:
+                              AppColors.primary.withOpacity(0.1),
                           timelineItems: const [],
                           goalId: widget.goalId,
                           subtasks: const [],
+                          isCompleted: false,
                         ),
                 ),
                 const Expanded(
@@ -155,7 +160,9 @@ class _GoalDetailPageState extends ConsumerState<GoalDetailPage>
               children: [
                 SafeArea(
                   bottom: false,
-                  child: _PremiumAppBar(goalId: widget.goalId),
+                  child: _PremiumAppBar(
+                    goalId: widget.goalId,
+                  ),
                 ),
                 _PremiumHeaderSection(
                   goal: goal != null
@@ -169,6 +176,7 @@ class _GoalDetailPageState extends ConsumerState<GoalDetailPage>
                           categoryBackgroundColor:
                               _getCategoryColor(goal.category)
                                   .withOpacity(0.1),
+                          isCompleted: goal.isCompleted,
                           timelineItems: [],
                           goalId: widget.goalId,
                           subtasks: [],
@@ -180,10 +188,12 @@ class _GoalDetailPageState extends ConsumerState<GoalDetailPage>
                           progress: 0,
                           nextCheckIn: 'Belirtilmemiş',
                           categoryColor: AppColors.primary,
-                          categoryBackgroundColor: AppColors.primary.withOpacity(0.1),
+                          categoryBackgroundColor:
+                              AppColors.primary.withOpacity(0.1),
                           timelineItems: const [],
                           goalId: widget.goalId,
                           subtasks: const [],
+                          isCompleted: false,
                         ),
                 ),
                 Expanded(
@@ -219,6 +229,7 @@ class _GoalDetailPageState extends ConsumerState<GoalDetailPage>
                                     : null,
                               ))
                           .toList(),
+                      isCompleted: goal.isCompleted,
                     )
                   : _GoalDetail(
                       title: '',
@@ -227,10 +238,12 @@ class _GoalDetailPageState extends ConsumerState<GoalDetailPage>
                       progress: 0,
                       nextCheckIn: 'Belirtilmemiş',
                       categoryColor: AppColors.primary,
-                      categoryBackgroundColor: AppColors.primary.withOpacity(0.1),
+                      categoryBackgroundColor:
+                          AppColors.primary.withOpacity(0.1),
                       timelineItems: timelineItems,
                       goalId: widget.goalId,
                       subtasks: const [],
+                      isCompleted: false,
                     );
 
               return Column(
@@ -238,7 +251,9 @@ class _GoalDetailPageState extends ConsumerState<GoalDetailPage>
                   // Minimal App Bar
                   SafeArea(
                     bottom: false,
-                    child: _PremiumAppBar(goalId: widget.goalId),
+                    child: _PremiumAppBar(
+                      goalId: widget.goalId,
+                    ),
                   ),
 
                   // Header Section with Progress - Compact
@@ -263,6 +278,7 @@ class _GoalDetailPageState extends ConsumerState<GoalDetailPage>
                               goalTitle: goal.title,
                               goalDescription: goal.description,
                               goalCategoryKey: goal.category.name,
+                              isGoalCompleted: goal.isCompleted,
                             )
                           else
                             const _SubtasksTab(
@@ -271,6 +287,7 @@ class _GoalDetailPageState extends ConsumerState<GoalDetailPage>
                               goalTitle: '',
                               goalDescription: null,
                               goalCategoryKey: '',
+                              isGoalCompleted: false,
                             ),
                         ],
                       ),
@@ -282,11 +299,13 @@ class _GoalDetailPageState extends ConsumerState<GoalDetailPage>
           );
         },
       ),
-      // Bottom Action Button - Fixed with gradient
-      bottomNavigationBar: _PremiumBottomButton(
-        goalId: widget.goalId,
-        onCheckInCompleted: _handleCheckInCompleted,
-      ),
+      // Bottom Action Button - Tamamlanan hedeflerde gizle
+      bottomNavigationBar: (goalAsync.valueOrNull?.isCompleted ?? false)
+          ? null
+          : _PremiumBottomButton(
+              goalId: widget.goalId,
+              onCheckInCompleted: _handleCheckInCompleted,
+            ),
     );
   }
 
@@ -324,7 +343,9 @@ class _GoalDetailPageState extends ConsumerState<GoalDetailPage>
 }
 
 class _PremiumAppBar extends ConsumerWidget {
-  const _PremiumAppBar({required this.goalId});
+  const _PremiumAppBar({
+    required this.goalId,
+  });
 
   final String goalId;
 
@@ -360,9 +381,9 @@ class _PremiumAppBar extends ConsumerWidget {
                     data: (goal) => goal,
                     orElse: () => null,
                   );
-                  final isCompleted = goal?.isCompleted ?? false;
+                  final completed = goal?.isCompleted ?? false;
 
-                  if (isCompleted) {
+                  if (completed) {
                     return const SizedBox.shrink();
                   }
 
@@ -605,15 +626,19 @@ class _PremiumHeaderSection extends StatelessWidget {
           // Premium Progress Ring - Smaller size
           _PremiumCircularProgress(
             progress: goal.progress,
-            progressColor: goal.categoryColor,
+            progressColor: goal.isCompleted
+                ? AppColors.success
+                : goal.categoryColor,
           ),
           const SizedBox(height: AppSpacing.sm),
 
           // Status Text - More visible
           Text(
-            'İlerleme Kaydedildi',
+            goal.isCompleted ? 'Hedef Tamamlandı 🎉' : 'İlerleme Kaydedildi',
             style: AppTextStyles.bodyMedium.copyWith(
-              color: _GoalDetailPageState._statusTextColor,
+              color: goal.isCompleted
+                  ? AppColors.success
+                  : _GoalDetailPageState._statusTextColor,
               fontWeight: FontWeight.w500,
               fontSize: 14,
             ),
@@ -890,6 +915,7 @@ class _GoalDetail {
     required this.timelineItems,
     required this.goalId,
     required this.subtasks,
+    required this.isCompleted,
   });
 
   final String title;
@@ -902,6 +928,7 @@ class _GoalDetail {
   final List<_TimelineItem> timelineItems;
   final String goalId;
   final List<_Subtask> subtasks;
+  final bool isCompleted;
 }
 
 /// Note Model
@@ -1612,6 +1639,7 @@ class _SubtasksTab extends ConsumerStatefulWidget {
     required this.goalTitle,
     required this.goalDescription,
     required this.goalCategoryKey,
+    this.isGoalCompleted = false,
   });
 
   final String goalId;
@@ -1619,6 +1647,7 @@ class _SubtasksTab extends ConsumerStatefulWidget {
   final String goalTitle;
   final String? goalDescription;
   final String goalCategoryKey;
+  final bool isGoalCompleted;
 
   @override
   ConsumerState<_SubtasksTab> createState() => _SubtasksTabState();
@@ -1635,6 +1664,7 @@ class _SubtasksTabState extends ConsumerState<_SubtasksTab> {
   }
 
   Future<void> _suggestSubGoalsWithAI() async {
+    if (widget.isGoalCompleted) return;
     if (widget.goalId.isEmpty) return;
     final aiService = ref.read(aiServiceProvider);
 
@@ -1904,6 +1934,7 @@ class _SubtasksTabState extends ConsumerState<_SubtasksTab> {
   }
 
   Future<void> _saveSubGoals() async {
+    if (widget.isGoalCompleted) return;
     if (widget.goalId.isEmpty) return;
     final current =
         await ref.read(goalDetailProvider(widget.goalId).future);
@@ -1932,13 +1963,10 @@ class _SubtasksTabState extends ConsumerState<_SubtasksTab> {
     ref.invalidate(goalDetailProvider(widget.goalId));
 
     if (!mounted) return;
-    AppSnackbar.showSuccess(
-      context,
-      message: 'Alt görevler güncellendi.',
-    );
   }
 
   Future<void> _toggleCompleted(SubGoal subGoal) async {
+    if (widget.isGoalCompleted) return;
     setState(() {
       _subGoals = _subGoals
           .map(
@@ -1957,6 +1985,7 @@ class _SubtasksTabState extends ConsumerState<_SubtasksTab> {
   }
 
   Future<void> _deleteSubGoal(SubGoal subGoal) async {
+    if (widget.isGoalCompleted) return;
     final shouldDelete = await showDialog<bool>(
       context: context,
       barrierColor: Colors.black.withOpacity(0.5),
@@ -1988,6 +2017,7 @@ class _SubtasksTabState extends ConsumerState<_SubtasksTab> {
   }
 
   Future<void> _showEditDialog({SubGoal? existing}) async {
+    if (widget.isGoalCompleted) return;
     final controller = TextEditingController(text: existing?.title ?? '');
     final result = await showModalBottomSheet<String>(
       context: context,
@@ -2401,9 +2431,15 @@ class _SubtasksTabState extends ConsumerState<_SubtasksTab> {
               for (int i = 0; i < _subGoals.length; i++) ...[
                 _SubtaskCard(
                   subGoal: _subGoals[i],
-                  onToggle: () => _toggleCompleted(_subGoals[i]),
-                  onEdit: () => _showEditDialog(existing: _subGoals[i]),
-                  onDelete: () => _deleteSubGoal(_subGoals[i]),
+                  onToggle: widget.isGoalCompleted
+                      ? null
+                      : () => _toggleCompleted(_subGoals[i]),
+                  onEdit: widget.isGoalCompleted
+                      ? null
+                      : () => _showEditDialog(existing: _subGoals[i]),
+                  onDelete: widget.isGoalCompleted
+                      ? null
+                      : () => _deleteSubGoal(_subGoals[i]),
                 ),
                 if (i < _subGoals.length - 1)
                   const SizedBox(height: AppSpacing.md),
@@ -2412,19 +2448,20 @@ class _SubtasksTabState extends ConsumerState<_SubtasksTab> {
             ],
           ),
         ),
-        Positioned(
-          bottom: 24,
-          right: 16,
-          child: FloatingActionButton(
-            onPressed: () => _showEditDialog(),
-            backgroundColor: AppColors.primary,
-            elevation: 0,
-            child: const Icon(
-              Icons.add_rounded,
-              color: Colors.white,
+        if (!widget.isGoalCompleted)
+          Positioned(
+            bottom: 24,
+            right: 16,
+            child: FloatingActionButton(
+              onPressed: () => _showEditDialog(),
+              backgroundColor: AppColors.primary,
+              elevation: 0,
+              child: const Icon(
+                Icons.add_rounded,
+                color: Colors.white,
+              ),
             ),
           ),
-        ),
       ],
     );
   }
@@ -2434,15 +2471,15 @@ class _SubtasksTabState extends ConsumerState<_SubtasksTab> {
 class _SubtaskCard extends StatelessWidget {
   const _SubtaskCard({
     required this.subGoal,
-    required this.onToggle,
-    required this.onEdit,
-    required this.onDelete,
+    this.onToggle,
+    this.onEdit,
+    this.onDelete,
   });
 
   final SubGoal subGoal;
-  final VoidCallback onToggle;
-  final VoidCallback onEdit;
-  final VoidCallback onDelete;
+  final VoidCallback? onToggle;
+  final VoidCallback? onEdit;
+  final VoidCallback? onDelete;
 
   @override
   Widget build(BuildContext context) {
@@ -2473,9 +2510,7 @@ class _SubtaskCard extends StatelessWidget {
           children: [
             // Checkbox
             InkWell(
-              onTap: () {
-                onToggle();
-              },
+              onTap: onToggle,
               child: Container(
                 width: 24,
                 height: 24,

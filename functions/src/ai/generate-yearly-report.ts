@@ -103,27 +103,27 @@ function buildYearlyReportPrompt(
     checkInsByMonth,
   } = analytics;
 
-  return `You are an experienced Turkish-speaking personal development analyst and coach. Your task is to read the data for the year ${year} and write a meaningful, inspiring and balanced yearly report about the user's personal growth journey.
+  return `Sen deneyimli bir Türkçe konuşan kişisel gelişim analisti ve koçusun. Görevin, ${year} yılı verilerini okuyup kullanıcının kişisel gelişim yolculuğu hakkında **kısa, öz ve okunması kolay** bir yıllık rapor yazmak.
 
-SUMMARY DATA (already in Turkish):
-- Year: ${year}
-- Total goals: ${totalGoals}
-- Completed goals: ${completedGoals.length} (${completedGoals.filter((g: Goal) => g.isCompleted === true).length} explicitly marked as completed)
-- Active goals: ${activeGoals.length}
-- Average progress: %${averageProgress.toFixed(1)}
+ÖZET VERİLER (zaten Türkçe):
+- Yıl: ${year}
+- Toplam hedef: ${totalGoals}
+- Tamamlanan hedefler: ${completedGoals.length} (${completedGoals.filter((g: Goal) => g.isCompleted === true).length} açıkça tamamlandı olarak işaretlenmiş)
+- Aktif hedefler: ${activeGoals.length}
+- Ortalama ilerleme: %${averageProgress.toFixed(1)}
 
-Goals by category:
+Kategoriye göre hedefler:
 ${Object.entries(goalsByCategory)
       .map(([cat, count]) => `- ${cat}: ${count} hedef`)
       .join('\n')}
 
-Check-in summary:
-- Total check-ins: ${totalCheckIns}
-- Monthly distribution: ${Object.entries(checkInsByMonth)
+Check-in özeti:
+- Toplam check-in: ${totalCheckIns}
+- Aylık dağılım: ${Object.entries(checkInsByMonth)
       .map(([month, count]) => `${month}. ay: ${count} check-in`)
       .join(', ')}
 
-Goal details:
+Hedef detayları:
 ${goals
       .map(
         (g) =>
@@ -137,43 +137,43 @@ ${goals
       )
       .join('\n')}
 
-Last 10 check-in notes:
+Son 10 check-in notu:
 ${checkIns
       .slice(-10)
       .map((ci) => `- ${ci.note || 'Not yok'} (Puan: ${ci.score}/10)`)
       .join('\n')}
 
-Writing rules:
-- OUTPUT LANGUAGE MUST BE TURKISH.
-- Tone: Warm, sincere and supportive, but not overly sentimental.
-- Format: Use Markdown headings (#, ##, ###).
-- Length: Around 700–1,000 words.
+Yazım kuralları:
+- ÇIKTI DİLİ MUTLAKA TÜRKÇE OLMALI.
+- Ton: Sıcak, samimi ve destekleyici, ancak aşırı duygusal değil.
+- Format: Markdown başlıkları kullan (#, ##, ###).
+- Uzunluk: Maksimum 300–350 kelime. Gereksiz tekrar ve uzun cümlelerden kaçın, net ve doğrudan yaz.
 
-REPORT SECTIONS (write in this order, all in Turkish):
+RAPOR BÖLÜMLERİ (bu sırayla yaz, hepsi Türkçe ve her bölümde en fazla 2–3 cümle olacak şekilde):
 
 # ${year} Yıllık Kişisel Gelişim Raporun
 
 ## 1. Yılın Genel Özeti
-Summarise the overall tone of the year, key themes and important changes. Acknowledge strengths and effort.
+En fazla 2–3 cümlede yılın genel tonunu, ana temaları ve önemli değişimleri özetle. Güçlü yönleri ve gösterilen çabayı takdir et.
 
 ## 2. Hedeflerdeki İlerleme
-Analyse progress by category; celebrate completed goals (especially those explicitly marked as completed - isCompleted=true), discuss challenging areas and unfinished goals in an honest but constructive way. Highlight the achievement of completing goals as a positive milestone and success.
+En fazla 2–3 cümlede kategoriye göre ilerlemeyi analiz et; tamamlanan hedefleri kutla (özellikle açıkça tamamlandı olarak işaretlenenler - isCompleted=true), zorlu alanları ve tamamlanmamış hedefleri dürüst ama yapıcı bir şekilde belirt.
 
 ## 3. Duygusal ve Mental Yolculuk
-Using check-in data, describe motivation swings, difficult periods and recovery moments. Highlight the user's resilience.
+En fazla 2–3 cümlede motivasyon dalgalanmalarını, zor dönemleri ve toparlanma anlarını özetle; kullanıcının dayanıklılığını vurgula.
 
 ## 4. En İyi Anlar ve Kilometre Taşları
-Talk about highlights, firsts and small but meaningful victories throughout the year.
+En fazla 2–3 cümlede yıl boyunca öne çıkan anları, ilkleri ve küçük ama anlamlı zaferleri anlat.
 
 ## 5. Öğrenilen Dersler
-Write 4–6 clear lessons and insights that can be taken from this year, as a bullet list in Turkish.
+Bu yıldan çıkarılabilecek 4–5 net dersi ve içgörüyü, kısa bir madde işareti listesi halinde yaz.
 
 ## 6. ${year + 1} Yılı İçin Öneriler
-Give 3–5 concrete focus areas, new goal ideas and actionable suggestions for the next year, in Turkish.
+En fazla 2–3 cümlede gelecek yıl için 3–4 somut odak alanı, yeni hedef fikirleri ve eyleme dönüştürülebilir öneriler ver, Türkçe.
 
-## 7. Kendine Mektup
-Write a short, motivating letter in Turkish that helps the user appreciate their own effort, in a compassionate yet realistic tone.
+## 7. Kendine Kısa Not
+Kullanıcının kendi çabasını takdir etmesine yardımcı olan, şefkatli ama gerçekçi bir tonda kısa bir not yaz, Türkçe.
 
-Throughout the text, address the reader directly using the Turkish second person singular ("sen").`;
+Metin boyunca okuyucuya doğrudan Türkçe ikinci tekil şahıs ("sen") ile hitap et.`;
 }
 

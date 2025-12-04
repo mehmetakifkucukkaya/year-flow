@@ -11,8 +11,8 @@ import '../../../shared/models/goal.dart';
 import '../../../shared/models/yearly_report.dart';
 import '../../../shared/providers/ai_providers.dart';
 import '../../../shared/providers/goal_providers.dart';
-import 'report_detail_page.dart';
 import '../providers/reports_providers.dart';
+import 'report_detail_page.dart';
 
 /// Raporlar ana sayfası
 ///
@@ -154,6 +154,25 @@ class _HeaderHero extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final colorScheme = Theme.of(context).colorScheme;
     final statsAsync = ref.watch(reportsStatsProvider);
+    final reportsAsync = ref.watch(reportsHistoryProvider);
+
+    final now = DateTime.now();
+    Report? currentYearReport;
+
+    reportsAsync.maybeWhen(
+      data: (reports) {
+        for (final report in reports) {
+          if (report.reportType == ReportType.yearly &&
+              report.periodStart.year == now.year) {
+            currentYearReport = report;
+            break;
+          }
+        }
+      },
+      orElse: () {},
+    );
+
+    final hasCurrentYearReport = currentYearReport != null;
 
     return Container(
       width: double.infinity,
@@ -232,10 +251,24 @@ class _HeaderHero extends ConsumerWidget {
                 Flexible(
                   child: FilledButton.icon(
                     onPressed: () {
-                      _showCreateReportDialog(context, ref);
+                      final report = currentYearReport;
+                      if (report != null) {
+                        ReportDetailPage.navigate(
+                          context,
+                          reportType: report.reportType,
+                          content: report.content,
+                          reportId: report.id,
+                          periodStart: report.periodStart,
+                          periodEnd: report.periodEnd,
+                        );
+                      } else {
+                        _showCreateReportDialog(context, ref);
+                      }
                     },
                     icon: const Icon(Icons.add_rounded, size: 18),
-                    label: const Text('Rapor Oluştur'),
+                    label: Text(
+                      hasCurrentYearReport ? 'Raporu Aç' : 'Rapor Oluştur',
+                    ),
                     style: FilledButton.styleFrom(
                       padding: const EdgeInsets.symmetric(
                         horizontal: AppSpacing.md,
@@ -640,41 +673,119 @@ class _CategoryProgressRow extends StatelessWidget {
 }
 
 /// Başarılar
-class _AchievementsSection extends StatelessWidget {
+class _AchievementsSection extends ConsumerWidget {
   const _AchievementsSection();
 
   @override
-  Widget build(BuildContext context) {
-    final achievements = [
-      'Yeni bir programlama dili öğrendim ve kişisel bir proje tamamladım.',
-      'Haftada 3 gün düzenli olarak spor yapma alışkanlığı kazandım.',
-      'Acil durum fonu için hedeflenen birikim miktarına ulaştım.',
-    ];
+  Widget build(BuildContext context, WidgetRef ref) {
+    final statsAsync = ref.watch(reportsStatsProvider);
 
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.white,
-        borderRadius: AppRadius.borderRadiusXl,
-        border: Border.all(color: AppColors.gray200),
+    return statsAsync.when(
+      loading: () => Container(
+        padding: const EdgeInsets.all(AppSpacing.lg),
+        decoration: const BoxDecoration(
+          color: AppColors.white,
+          borderRadius: AppRadius.borderRadiusXl,
+        ),
+        child: const Center(child: CircularProgressIndicator()),
       ),
-      padding: const EdgeInsets.all(AppSpacing.lg),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Başarılar',
-            style: AppTextStyles.titleMedium.copyWith(
-              fontWeight: FontWeight.w700,
+      error: (error, _) => Container(
+        padding: const EdgeInsets.all(AppSpacing.lg),
+        decoration: const BoxDecoration(
+          color: AppColors.white,
+          borderRadius: AppRadius.borderRadiusXl,
+        ),
+        child: Text('Veriler yüklenirken hata oluştu: $error'),
+      ),
+      data: (stats) {
+        if (stats.totalGoals == 0) {
+          return Container(
+            padding: const EdgeInsets.all(AppSpacing.lg),
+            decoration: const BoxDecoration(
+              color: AppColors.white,
+              borderRadius: AppRadius.borderRadiusXl,
             ),
+            child: Text(
+              'Henüz başarı hikayesi oluşturacak kadar veri yok. '
+              'Hedefler ekleyip check-in yaptıkça burada gelişimini göreceksin.',
+              style: AppTextStyles.bodyMedium.copyWith(
+                color: AppColors.gray600,
+              ),
+            ),
+          );
+        }
+
+        final completionRate = stats.totalGoals > 0
+            ? ((stats.completedGoals / stats.totalGoals) * 100).round()
+            : 0;
+
+        // En yüksek ortalama ilerlemeye sahip 1–2 kategori
+        final topCategories = stats.categoryProgress.entries.toList()
+          ..sort((a, b) => b.value.compareTo(a.value));
+
+        final leadingCategories = topCategories.take(2).toList();
+
+        final achievements = <String>[];
+
+        achievements.add(
+          'Bu yıl toplam ${stats.totalGoals} hedef üzerinde çalıştın ve '
+          '${stats.completedGoals} hedefi tamamladın '
+          '(tamamlanma oranı yaklaşık %$completionRate).',
+        );
+
+        achievements.add(
+          'Tüm hedefler arasında ortalama ilerleme düzeyin %'
+          '${stats.averageProgress.round()} civarında; bu, yıl boyunca '
+          'istikrarlı bir şekilde adım attığını gösteriyor.',
+        );
+
+        if (leadingCategories.isNotEmpty) {
+          final primary = leadingCategories.first;
+          final primaryValue = primary.value.round();
+
+          var text =
+              '"${primary.key.label}" kategorisinde yaklaşık %$primaryValue '
+              'ile en güçlü ilerlemeyi gösterdin';
+
+          if (leadingCategories.length > 1) {
+            final secondary = leadingCategories[1];
+            final secondaryValue = secondary.value.round();
+            text +=
+                ', "${secondary.key.label}" kategorisinde ise yaklaşık '
+                '%$secondaryValue seviyesine ulaştın.';
+          } else {
+            text += '.';
+          }
+
+          achievements.add(text);
+        }
+
+        return Container(
+          decoration: BoxDecoration(
+            color: AppColors.white,
+            borderRadius: AppRadius.borderRadiusXl,
+            border: Border.all(color: AppColors.gray200),
           ),
-          const SizedBox(height: AppSpacing.md),
-          for (final item in achievements) ...[
-            _AchievementCard(text: item),
-            if (item != achievements.last)
+          padding: const EdgeInsets.all(AppSpacing.lg),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Başarılar',
+                style: AppTextStyles.titleMedium.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
               const SizedBox(height: AppSpacing.md),
-          ],
-        ],
-      ),
+              for (final item in achievements) ...[
+                _AchievementCard(text: item),
+                if (item != achievements.last)
+                  const SizedBox(height: AppSpacing.md),
+              ],
+            ],
+          ),
+        );
+      },
     );
   }
 }
@@ -752,47 +863,120 @@ class _AchievementCard extends StatelessWidget {
 }
 
 /// Zorluklar & Çözümler
-class _ChallengesSection extends StatelessWidget {
+class _ChallengesSection extends ConsumerWidget {
   const _ChallengesSection();
 
   @override
-  Widget build(BuildContext context) {
-    final items = [
-      const _ChallengeData(
-        title: 'Zorluk: Projelerde zaman yönetimi.',
-        solution:
-            'Çözüm: Pomodoro tekniğini uygulayarak odaklanmayı artırdım.',
-      ),
-      const _ChallengeData(
-        title: 'Zorluk: Erken kalkma alışkanlığı.',
-        solution:
-            'Çözüm: Kademeli olarak alarm saatini geri çekerek vücudumu alıştırdım.',
-      ),
-    ];
+  Widget build(BuildContext context, WidgetRef ref) {
+    final statsAsync = ref.watch(reportsStatsProvider);
 
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.white,
-        borderRadius: AppRadius.borderRadiusXl,
-        border: Border.all(color: AppColors.gray200),
+    return statsAsync.when(
+      loading: () => Container(
+        padding: const EdgeInsets.all(AppSpacing.lg),
+        decoration: const BoxDecoration(
+          color: AppColors.white,
+          borderRadius: AppRadius.borderRadiusXl,
+        ),
+        child: const Center(child: CircularProgressIndicator()),
       ),
-      padding: const EdgeInsets.all(AppSpacing.lg),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Zorluklar & Çözümler',
-            style: AppTextStyles.titleMedium.copyWith(
-              fontWeight: FontWeight.w700,
+      error: (error, _) => Container(
+        padding: const EdgeInsets.all(AppSpacing.lg),
+        decoration: const BoxDecoration(
+          color: AppColors.white,
+          borderRadius: AppRadius.borderRadiusXl,
+        ),
+        child: Text('Veriler yüklenirken hata oluştu: $error'),
+      ),
+      data: (stats) {
+        if (stats.totalGoals == 0) {
+          return Container(
+            padding: const EdgeInsets.all(AppSpacing.lg),
+            decoration: const BoxDecoration(
+              color: AppColors.white,
+              borderRadius: AppRadius.borderRadiusXl,
             ),
+            child: Text(
+              'Hedef ve check-in verilerin oluştukça, zorlandığın alanlar ve '
+              'iyileştirme önerileri burada görünecek.',
+              style: AppTextStyles.bodyMedium.copyWith(
+                color: AppColors.gray600,
+              ),
+            ),
+          );
+        }
+
+        // En düşük ortalama ilerlemeye sahip 1–2 kategori
+        final entries = stats.categoryProgress.entries.toList()
+          ..sort((a, b) => a.value.compareTo(b.value));
+
+        final lowCategories = entries.where((e) => e.value < 50).toList();
+
+        final items = <_ChallengeData>[];
+
+        if (lowCategories.isNotEmpty) {
+          final first = lowCategories.first;
+          final value = first.value.round();
+          items.add(
+            _ChallengeData(
+              title:
+                  'Zorluk: "${first.key.label}" kategorisinde ilerleme görece düşük (yaklaşık %$value).',
+              solution:
+                  'Çözüm: Bu alanda haftaya 1–2 küçük, net aksiyon ekleyip '
+                  'check-in sıklığını artırmayı deneyebilirsin.',
+            ),
+          );
+        }
+
+        if (lowCategories.length > 1) {
+          final second = lowCategories[1];
+          final value = second.value.round();
+          items.add(
+            _ChallengeData(
+              title:
+                  'Zorluk: "${second.key.label}" hedeflerine odaklanmakta zorlanıyor olabilirsin (yaklaşık %$value).',
+              solution:
+                  'Çözüm: Bu hedefleri daha küçük adımlara bölmek ve '
+                  'haftalık olarak gözden geçirmek odaklanmayı artırabilir.',
+            ),
+          );
+        }
+
+        if (items.isEmpty) {
+          items.add(
+            const _ChallengeData(
+              title: 'Genel durum: Tüm kategorilerde sağlıklı bir ilerleme var.',
+              solution:
+                  'Çözüm: Yine de, motivasyonunu korumak için haftalık olarak '
+                  'önceliklerini gözden geçirmek iyi bir fikir olabilir.',
+            ),
+          );
+        }
+
+        return Container(
+          decoration: BoxDecoration(
+            color: AppColors.white,
+            borderRadius: AppRadius.borderRadiusXl,
+            border: Border.all(color: AppColors.gray200),
           ),
-          const SizedBox(height: AppSpacing.md),
-          for (final item in items) ...[
-            _ChallengeCard(data: item),
-            if (item != items.last) const SizedBox(height: AppSpacing.md),
-          ],
-        ],
-      ),
+          padding: const EdgeInsets.all(AppSpacing.lg),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Zorluklar & Çözümler',
+                style: AppTextStyles.titleMedium.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(height: AppSpacing.md),
+              for (final item in items) ...[
+                _ChallengeCard(data: item),
+                if (item != items.last) const SizedBox(height: AppSpacing.md),
+              ],
+            ],
+          ),
+        );
+      },
     );
   }
 }
@@ -1165,6 +1349,46 @@ class _CreateReportBottomSheetState
   ReportType? _selectedType;
   bool _isGenerating = false;
 
+  Report? _findExistingReport(
+    List<Report> reports, {
+    required ReportType type,
+    required DateTime periodStart,
+    required DateTime periodEnd,
+  }) {
+    for (final report in reports) {
+      if (report.reportType != type) continue;
+
+      final start = report.periodStart;
+      final end = report.periodEnd;
+
+      switch (type) {
+        case ReportType.weekly:
+          final sameStartDay = start.year == periodStart.year &&
+              start.month == periodStart.month &&
+              start.day == periodStart.day;
+          final sameEndDay = end.year == periodEnd.year &&
+              end.month == periodEnd.month &&
+              end.day == periodEnd.day;
+          if (sameStartDay && sameEndDay) {
+            return report;
+          }
+          break;
+        case ReportType.monthly:
+          if (start.year == periodStart.year &&
+              start.month == periodStart.month) {
+            return report;
+          }
+          break;
+        case ReportType.yearly:
+          if (start.year == periodStart.year) {
+            return report;
+          }
+          break;
+      }
+    }
+    return null;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -1213,6 +1437,11 @@ class _CreateReportBottomSheetState
       final allCheckIns =
           allCheckInsResults.expand((checkIns) => checkIns).toList();
 
+      // Var olan raporları oku (AI çağrısından önce)
+      final repository = ref.read(goalRepositoryProvider);
+      final existingReports =
+          await repository.watchAllReports(userId).first;
+
       final aiService = ref.read(aiServiceProvider);
       String content;
 
@@ -1235,6 +1464,26 @@ class _CreateReportBottomSheetState
                     .isBefore(periodEnd.add(const Duration(days: 1)));
           }).toList();
 
+          final existingWeekly = _findExistingReport(
+            existingReports,
+            type: ReportType.weekly,
+            periodStart: periodStart,
+            periodEnd: periodEnd,
+          );
+
+          if (existingWeekly != null) {
+            Navigator.of(context).pop();
+            ReportDetailPage.navigate(
+              context,
+              reportType: existingWeekly.reportType,
+              content: existingWeekly.content,
+              reportId: existingWeekly.id,
+              periodStart: existingWeekly.periodStart,
+              periodEnd: existingWeekly.periodEnd,
+            );
+            return;
+          }
+
           content = await aiService.generateWeeklyReport(
             userId: userId,
             weekStart: periodStart,
@@ -1253,6 +1502,26 @@ class _CreateReportBottomSheetState
                 ci.createdAt.month == now.month;
           }).toList();
 
+          final existingMonthly = _findExistingReport(
+            existingReports,
+            type: ReportType.monthly,
+            periodStart: periodStart,
+            periodEnd: periodEnd,
+          );
+
+          if (existingMonthly != null) {
+            Navigator.of(context).pop();
+            ReportDetailPage.navigate(
+              context,
+              reportType: existingMonthly.reportType,
+              content: existingMonthly.content,
+              reportId: existingMonthly.id,
+              periodStart: existingMonthly.periodStart,
+              periodEnd: existingMonthly.periodEnd,
+            );
+            return;
+          }
+
           content = await aiService.generateMonthlyReport(
             userId: userId,
             year: now.year,
@@ -1269,6 +1538,26 @@ class _CreateReportBottomSheetState
           final yearCheckIns = allCheckIns.where((ci) {
             return ci.createdAt.year == now.year;
           }).toList();
+
+          final existingYearly = _findExistingReport(
+            existingReports,
+            type: ReportType.yearly,
+            periodStart: periodStart,
+            periodEnd: periodEnd,
+          );
+
+          if (existingYearly != null) {
+            Navigator.of(context).pop();
+            ReportDetailPage.navigate(
+              context,
+              reportType: existingYearly.reportType,
+              content: existingYearly.content,
+              reportId: existingYearly.id,
+              periodStart: existingYearly.periodStart,
+              periodEnd: existingYearly.periodEnd,
+            );
+            return;
+          }
 
           content = await aiService.generateYearlyReport(
             userId: userId,
@@ -1299,6 +1588,7 @@ class _CreateReportBottomSheetState
           context,
           reportType: _selectedType!,
           content: content,
+          reportId: report.id,
           periodStart: periodStart,
           periodEnd: periodEnd,
         );
@@ -1572,7 +1862,7 @@ class _ReportsHistorySection extends ConsumerWidget {
             ),
             child: Column(
               children: [
-                Icon(
+                const Icon(
                   Icons.description_outlined,
                   size: 48,
                   color: AppColors.gray400,
@@ -1635,6 +1925,7 @@ class _ReportsHistorySection extends ConsumerWidget {
                       context,
                       reportType: report.reportType,
                       content: report.content,
+                      reportId: report.id,
                       periodStart: report.periodStart,
                       periodEnd: report.periodEnd,
                     );
@@ -1716,7 +2007,7 @@ class _ReportHistoryItem extends StatelessWidget {
                 ],
               ),
             ),
-            Icon(
+            const Icon(
               Icons.chevron_right_rounded,
               color: AppColors.gray400,
             ),

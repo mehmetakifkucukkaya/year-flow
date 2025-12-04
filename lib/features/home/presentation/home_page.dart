@@ -7,8 +7,12 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_radius.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_text_styles.dart';
+import '../../../core/widgets/index.dart';
 import '../../../shared/models/goal.dart';
 import '../../../shared/providers/goal_providers.dart';
+import '../../auth/providers/auth_providers.dart';
+
+final _namePromptShownProvider = StateProvider<bool>((ref) => false);
 
 class HomePage extends ConsumerWidget {
   const HomePage({super.key});
@@ -16,17 +20,128 @@ class HomePage extends ConsumerWidget {
   // Premium background color
   static const Color _premiumBackground = Color(0xFFF9FAFB);
 
+  void _maybeShowNamePrompt(BuildContext context, WidgetRef ref) {
+    final authState = ref.read(authStateProvider);
+    final user = authState.currentUser;
+    final hasName = (user?.displayName?.trim().isNotEmpty ?? false);
+    final alreadyShown = ref.read(_namePromptShownProvider);
+
+    if (hasName || alreadyShown) return;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      ref.read(_namePromptShownProvider.notifier).state = true;
+
+      final controller = TextEditingController(
+        text: user?.displayName?.trim() ?? '',
+      );
+
+      await showModalBottomSheet<void>(
+        context: context,
+        isScrollControlled: true,
+        backgroundColor: Colors.white,
+        shape: const RoundedRectangleBorder(
+          borderRadius: AppRadius.borderRadiusTopXl,
+        ),
+        builder: (sheetContext) {
+          return Padding(
+            padding: EdgeInsets.only(
+              left: AppSpacing.lg,
+              right: AppSpacing.lg,
+              top: AppSpacing.lg,
+              bottom: MediaQuery.of(sheetContext).viewInsets.bottom +
+                  AppSpacing.lg,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'İsmini belirleyelim',
+                  style: AppTextStyles.titleLarge.copyWith(
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.gray900,
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                Text(
+                  'Sana ekranda adınla hitap edelim. İstemezsen bu adımı her zaman profilinden değiştirebilirsin.',
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    color: AppColors.gray700,
+                    height: 1.4,
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.lg),
+                AppTextField(
+                  controller: controller,
+                  label: 'İsim',
+                  textInputAction: TextInputAction.done,
+                ),
+                const SizedBox(height: AppSpacing.lg),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextButton(
+                        onPressed: () => Navigator.of(sheetContext).pop(),
+                        child: const Text('Daha sonra'),
+                      ),
+                    ),
+                    const SizedBox(width: AppSpacing.sm),
+                    Expanded(
+                      child: FilledButton(
+                        onPressed: () async {
+                          final newName = controller.text.trim();
+                          try {
+                            await ref
+                                .read(authStateProvider.notifier)
+                                .updateProfile(
+                                  displayName:
+                                      newName.isEmpty ? null : newName,
+                                  email: null,
+                                );
+                            if (sheetContext.mounted) {
+                              Navigator.of(sheetContext).pop();
+                              AppSnackbar.showSuccess(
+                                context,
+                                message: 'İsmin kaydedildi',
+                              );
+                            }
+                          } catch (e) {
+                            if (sheetContext.mounted) {
+                              AppSnackbar.showError(
+                                context,
+                                message: e
+                                    .toString()
+                                    .replaceFirst('Exception: ', ''),
+                              );
+                            }
+                          }
+                        },
+                        child: const Text('Kaydet'),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          );
+        },
+      );
+    });
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final goalsAsync = ref.watch(goalsStreamProvider);
     final weeklySummaryAsync = ref.watch(weeklyCheckInSummaryProvider);
+
+    _maybeShowNamePrompt(context, ref);
 
     return Container(
       color: _premiumBackground,
       child: CustomScrollView(
         slivers: [
           // SafeArea for status bar
-          SliverSafeArea(
+          const SliverSafeArea(
             bottom: false,
             sliver: SliverToBoxAdapter(
               child: _TopAppBar(),
@@ -314,9 +429,50 @@ class _WeeklySummaryErrorCard extends StatelessWidget {
 }
 
 /// Top App Bar - Logo, greeting, profile button
-class _TopAppBar extends StatelessWidget {
+class _TopAppBar extends ConsumerWidget {
+  const _TopAppBar();
+
+  String _buildGreeting(String? displayName) {
+    final now = DateTime.now();
+    final hour = now.hour;
+
+    String timeGreeting;
+    if (hour < 12) {
+      timeGreeting = 'Günaydın';
+    } else if (hour < 18) {
+      timeGreeting = 'Merhaba';
+    } else {
+      timeGreeting = 'İyi akşamlar';
+    }
+
+    final name = (displayName?.trim().isNotEmpty ?? false)
+        ? displayName!.trim()
+        : 'KUllanıcı';
+
+    return '$timeGreeting, $name';
+  }
+
+  String _buildInitials(String? displayName) {
+    if (displayName == null || displayName.trim().isEmpty) {
+      return 'YF';
+    }
+
+    final parts = displayName.trim().split(RegExp(r'\s+'));
+    if (parts.length == 1) {
+      return parts.first.characters.take(2).toString().toUpperCase();
+    }
+
+    final first = parts.first.characters.first.toString();
+    final last = parts.last.characters.first.toString();
+    return (first + last).toUpperCase();
+  }
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final authState = ref.watch(authStateProvider);
+    final user = authState.currentUser;
+    final greeting = _buildGreeting(user?.displayName);
+
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: AppSpacing.lg,
@@ -330,7 +486,7 @@ class _TopAppBar extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Merhaba, Akif',
+                greeting,
                 style: AppTextStyles.headlineLarge.copyWith(
                   fontWeight: FontWeight.w800,
                   letterSpacing: -0.8,
@@ -340,16 +496,13 @@ class _TopAppBar extends StatelessWidget {
               const SizedBox(height: 2),
               Text(
                 'Bugün nasıl geçiyor?',
-                style: AppTextStyles.bodySmall.copyWith(
+                style: AppTextStyles.bodyMedium.copyWith(
                   color: AppColors.gray600,
                   fontWeight: FontWeight.w500,
                 ),
               ),
             ],
           ),
-          const SizedBox(
-              width:
-                  48), // Notification button yerine boşluk (home'da bildirim yok)
         ],
       ),
     );

@@ -318,6 +318,7 @@ final routerProvider = Provider<GoRouter>((ref) {
             child: ReportDetailPage(
               reportType: extra['reportType'] as ReportType,
               content: extra['content'] as String,
+              reportId: extra['reportId'] as String?,
               periodStart: extra['periodStart'] as DateTime?,
               periodEnd: extra['periodEnd'] as DateTime?,
             ),

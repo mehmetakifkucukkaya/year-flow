@@ -141,7 +141,7 @@ function buildMonthlyReportPrompt(
 
   const monthName = monthNames[month - 1];
 
-  return `Sen deneyimli bir Türkçe konuşan kişisel gelişim analisti ve koçusun. Görevin, ${year} yılının ${monthName} ayı verilerini okuyup kullanıcının kişisel gelişim yolculuğu hakkında anlamlı, ilham verici ve dengeli bir aylık rapor yazmak.
+  return `Sen deneyimli bir Türkçe konuşan kişisel gelişim analisti ve koçusun. Görevin, ${year} yılının ${monthName} ayı verilerini okuyup kullanıcının kişisel gelişim yolculuğu hakkında **kısa, öz ve okunması kolay** bir aylık rapor yazmak.
 
 ÖZET VERİLER (zaten Türkçe):
 - Ay: ${monthName} ${year}
@@ -197,32 +197,29 @@ Yazım kuralları:
 - ÇIKTI DİLİ MUTLAKA TÜRKÇE OLMALI.
 - Ton: Sıcak, samimi ve destekleyici, ancak aşırı duygusal değil.
 - Format: Markdown başlıkları kullan (#, ##, ###).
-- Uzunluk: Yaklaşık 600–800 kelime.
+- Uzunluk: Maksimum 250–300 kelime. Gereksiz tekrar ve uzun cümlelerden kaçın, net ve doğrudan yaz.
 
-RAPOR BÖLÜMLERİ (bu sırayla yaz, hepsi Türkçe):
+RAPOR BÖLÜMLERİ (bu sırayla yaz, hepsi Türkçe ve her bölümde en fazla 2–3 cümle olacak şekilde):
 
 # ${monthName} ${year} Aylık Kişisel Gelişim Raporun
 
 ## 1. Ayın Genel Özeti
-Ayın genel tonunu özetle, temel temaları ve önemli değişiklikleri belirt. Güçlü yönleri ve çabayı takdir et.
+En fazla 2–3 cümlede ayın genel tonunu özetle; temel temaları ve önemli değişiklikleri belirt. Güçlü yönleri ve çabayı takdir et.
 
 ## 2. Hedeflerdeki İlerleme
-Kategoriye göre ilerlemeyi analiz et; tamamlanan hedefleri kutla (özellikle açıkça tamamlandı olarak işaretlenenler - isCompleted=true), zorlu alanları ve tamamlanmamış hedefleri dürüst ama yapıcı bir şekilde tartış. Hedef tamamlama başarısını pozitif bir kilometre taşı ve başarı olarak vurgula.
+En fazla 2–3 cümlede kategoriye göre ilerlemeyi analiz et; tamamlanan hedefleri kutla (özellikle açıkça tamamlandı olarak işaretlenenler - isCompleted=true) ve zorlu alanları dürüst ama yapıcı bir şekilde belirt.
 
 ## 3. Duygusal ve Mental Yolculuk
-Check-in verilerini kullanarak motivasyon değişimlerini, zorlu dönemleri ve toparlanma anlarını açıkla. Kullanıcının dayanıklılığını vurgula.
+En fazla 2–3 cümlede motivasyon ve duygu dalgalanmalarını, zor dönemleri ve toparlanma anlarını özetle; kullanıcının dayanıklılığını vurgula.
 
 ## 4. Ayın En İyi Anları ve Kilometre Taşları
-Ay boyunca öne çıkan anları, ilkleri ve küçük ama anlamlı zaferleri anlat.
+En fazla 2–3 cümlede ay boyunca öne çıkan anları, ilkleri ve küçük ama anlamlı zaferleri anlat.
 
 ## 5. Öğrenilen Dersler
-Bu aydan çıkarılabilecek 4–5 net ders ve içgörüyü, Türkçe madde işareti listesi olarak yaz.
+Bu aydan çıkarılabilecek 3–4 net dersi ve içgörüyü, kısa bir madde işareti listesi halinde yaz.
 
 ## 6. Gelecek Ay İçin Öneriler
-Önümüzdeki ay için 3–4 somut odak alanı, yeni hedef fikirleri ve eyleme dönüştürülebilir öneriler ver, Türkçe.
-
-## 7. Kendine Mektup
-Kullanıcının kendi çabasını takdir etmesine yardımcı olan, şefkatli ama gerçekçi bir tonda kısa bir mektup yaz, Türkçe.
+En fazla 2–3 cümlede önümüzdeki ay için 2–3 somut odak alanı ve eyleme dönüştürülebilir öneri ver, Türkçe.
 
 Metin boyunca okuyucuya doğrudan Türkçe ikinci tekil şahıs ("sen") ile hitap et.`;
 }

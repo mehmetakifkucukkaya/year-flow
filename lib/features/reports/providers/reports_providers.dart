@@ -22,62 +22,69 @@ class ReportsStats {
 }
 
 /// Reports statistics provider
-final reportsStatsProvider = FutureProvider<ReportsStats>((ref) async {
+///
+/// - `watchAllGoals` stream'i sayesinde hedeflerdeki her değişimde (ekleme,
+///   güncelleme, tamamlama/arsivleme) yeniden hesaplanır.
+/// - Check-in sayıları ve kategori ortalamaları da her emisyon için
+///   güncellenir; böylece rapor sayfası açıldığında en güncel durumu gösterir.
+final reportsStatsProvider = StreamProvider<ReportsStats>((ref) {
   final userId = ref.read(currentUserIdProvider);
   if (userId == null) {
-    return const ReportsStats(
-      totalGoals: 0,
-      completedGoals: 0,
-      totalCheckIns: 0,
-      averageProgress: 0,
-      categoryProgress: {},
+    return Stream.value(
+      const ReportsStats(
+        totalGoals: 0,
+        completedGoals: 0,
+        totalCheckIns: 0,
+        averageProgress: 0,
+        categoryProgress: {},
+      ),
     );
   }
 
   final repository = ref.read(goalRepositoryProvider);
-  final goals = await repository.fetchGoals(userId);
 
-  // Calculate stats
-  final totalGoals = goals.length;
-  final completedGoals = goals.where((g) => g.progress >= 100).length;
-  
-  // Calculate total check-ins
-  int totalCheckIns = 0;
-  final categoryProgressMap = <GoalCategory, List<int>>{};
-  
-              for (final goal in goals) {
-                // Get check-ins for this goal
-                final checkIns = await repository.watchCheckIns(goal.id, userId).first;
-    totalCheckIns += checkIns.length;
-    
-    // Track progress by category
-    if (!categoryProgressMap.containsKey(goal.category)) {
-      categoryProgressMap[goal.category] = [];
+  // Tüm hedefleri (aktif + tamamlanmış/arşivlenmiş) dinle
+  return repository.watchAllGoals(userId).asyncMap((goals) async {
+    // Calculate stats
+    final totalGoals = goals.length;
+    final completedGoals =
+        goals.where((g) => g.isCompleted || g.progress >= 100).length;
+
+    // Calculate total check-ins & category progress (completed dahil)
+    int totalCheckIns = 0;
+    final categoryProgressMap = <GoalCategory, List<int>>{};
+
+    for (final goal in goals) {
+      final checkIns =
+          await repository.watchCheckIns(goal.id, userId).first;
+      totalCheckIns += checkIns.length;
+
+      categoryProgressMap.putIfAbsent(goal.category, () => []);
+      categoryProgressMap[goal.category]!.add(goal.progress);
     }
-    categoryProgressMap[goal.category]!.add(goal.progress);
-  }
 
-  // Calculate average progress
-  final averageProgress = goals.isEmpty
-      ? 0.0
-      : goals.map((g) => g.progress).reduce((a, b) => a + b) / goals.length;
-
-  // Calculate category averages
-  final categoryProgress = <GoalCategory, double>{};
-  for (final entry in categoryProgressMap.entries) {
-    final progresses = entry.value;
-    categoryProgress[entry.key] = progresses.isEmpty
+    // Calculate average progress
+    final averageProgress = goals.isEmpty
         ? 0.0
-        : progresses.reduce((a, b) => a + b) / progresses.length;
-  }
+        : goals.map((g) => g.progress).reduce((a, b) => a + b) / goals.length;
 
-  return ReportsStats(
-    totalGoals: totalGoals,
-    completedGoals: completedGoals,
-    totalCheckIns: totalCheckIns,
-    averageProgress: averageProgress,
-    categoryProgress: categoryProgress,
-  );
+    // Calculate category averages
+    final categoryProgress = <GoalCategory, double>{};
+    for (final entry in categoryProgressMap.entries) {
+      final progresses = entry.value;
+      categoryProgress[entry.key] = progresses.isEmpty
+          ? 0.0
+          : progresses.reduce((a, b) => a + b) / progresses.length;
+    }
+
+    return ReportsStats(
+      totalGoals: totalGoals,
+      completedGoals: completedGoals,
+      totalCheckIns: totalCheckIns,
+      averageProgress: averageProgress,
+      categoryProgress: categoryProgress,
+    );
+  });
 });
 
 /// Reports history provider - Tüm geçmiş raporları getirir
