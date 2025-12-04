@@ -7,6 +7,85 @@ service cloud.firestore {
       return request.auth != null;
     }
 
+    // Ortak validasyon helper'ları
+    function isNonEmptyString(value, maxLen) {
+      return value is string && value.size() > 0 && value.size() <= maxLen;
+    }
+
+    function isOptionalString(value, maxLen) {
+      return !(value is string) || value.size() <= maxLen;
+    }
+
+    function isOptionalTimestamp(value) {
+      return value == null || value is timestamp;
+    }
+
+    function isOptionalBoolean(value) {
+      return !(value is bool) || value in [true, false];
+    }
+
+    function isOptionalNumber(value, min, max) {
+      return !(value is int || value is float) ||
+        (value >= min && value <= max);
+    }
+
+    // Goal dokümanı için alan validasyonu
+    function isValidGoal(data) {
+      return
+        isNonEmptyString(data.title, 200) &&
+        isNonEmptyString(data.category, 50) &&
+        isOptionalString(data.description, 2000) &&
+        isOptionalString(data.motivation, 2000) &&
+        data.createdAt is timestamp &&
+        isOptionalTimestamp(data.targetDate) &&
+        isOptionalTimestamp(data.completedAt) &&
+        isOptionalBoolean(data.isArchived) &&
+        isOptionalBoolean(data.isCompleted) &&
+        isOptionalNumber(data.progress, 0, 100) &&
+        // subGoals dizi boyutu ve alanları sınırla
+        (!('subGoals' in data) ||
+          (data.subGoals is list &&
+            data.subGoals.size() <= 50 &&
+            data.subGoals.every(subGoal =>
+              isNonEmptyString(subGoal.title, 200) &&
+              isOptionalTimestamp(subGoal.dueDate) &&
+              isOptionalBoolean(subGoal.isCompleted)
+            )
+          )
+        );
+    }
+
+    // Check-in dokümanı için alan validasyonu
+    function isValidCheckIn(data) {
+      return
+        isNonEmptyString(data.goalId, 128) &&
+        isNonEmptyString(data.userId, 128) &&
+        data.createdAt is timestamp &&
+        isOptionalNumber(data.score, 1, 10) &&
+        isOptionalNumber(data.progressDelta, -100, 100) &&
+        isOptionalString(data.note, 2000);
+    }
+
+    // Note dokümanı için alan validasyonu
+    function isValidNote(data) {
+      return
+        isNonEmptyString(data.goalId, 128) &&
+        isNonEmptyString(data.userId, 128) &&
+        data.createdAt is timestamp &&
+        isNonEmptyString(data.content, 4000);
+    }
+
+    // Report dokümanı için alan validasyonu
+    function isValidReport(data) {
+      return
+        isNonEmptyString(data.userId, 128) &&
+        isNonEmptyString(data.reportType, 50) &&
+        data.periodStart is timestamp &&
+        data.periodEnd is timestamp &&
+        data.generatedAt is timestamp &&
+        isNonEmptyString(data.content, 20000);
+    }
+
     // Users collection - kullanıcılar kendi bilgilerini okuyabilir, herkes yazabilir (auth sırasında)
     match /users/{userId} {
       allow read: if isAuthenticated() && request.auth.uid == userId;
@@ -14,27 +93,59 @@ service cloud.firestore {
       
       // Goals subcollection - kullanıcıya özel hedefler
       match /goals/{goalId} {
-        allow read, write: if isAuthenticated() && request.auth.uid == userId;
+        allow read: if isAuthenticated() && request.auth.uid == userId;
+
+        // Yazma işlemlerinde alan validasyonu uygula
+        allow create, update: if isAuthenticated() &&
+          request.auth.uid == userId &&
+          isValidGoal(request.resource.data);
+
+        // Silme sadece sahibi tarafından
+        allow delete: if isAuthenticated() && request.auth.uid == userId;
       }
       
       // Check-ins subcollection - kullanıcıya özel check-in'ler
       match /checkIns/{checkInId} {
-        allow read, write: if isAuthenticated() && request.auth.uid == userId;
+        allow read: if isAuthenticated() && request.auth.uid == userId;
+
+        allow create, update: if isAuthenticated() &&
+          request.auth.uid == userId &&
+          isValidCheckIn(request.resource.data);
+
+        allow delete: if isAuthenticated() && request.auth.uid == userId;
       }
       
       // Yearly reports subcollection - kullanıcıya özel raporlar (legacy)
       match /yearlyReports/{reportId} {
-        allow read, write: if isAuthenticated() && request.auth.uid == userId;
+        allow read: if isAuthenticated() && request.auth.uid == userId;
+
+        allow create, update: if isAuthenticated() &&
+          request.auth.uid == userId &&
+          isValidReport(request.resource.data);
+
+        allow delete: if isAuthenticated() && request.auth.uid == userId;
       }
       
       // Reports subcollection - kullanıcıya özel raporlar (tüm türler: haftalık, aylık, yıllık)
       match /reports/{reportId} {
-        allow read, write: if isAuthenticated() && request.auth.uid == userId;
+        allow read: if isAuthenticated() && request.auth.uid == userId;
+
+        allow create, update: if isAuthenticated() &&
+          request.auth.uid == userId &&
+          isValidReport(request.resource.data);
+
+        allow delete: if isAuthenticated() && request.auth.uid == userId;
       }
       
       // Notes subcollection - kullanıcıya özel notlar
       match /notes/{noteId} {
-        allow read, write: if isAuthenticated() && request.auth.uid == userId;
+        allow read: if isAuthenticated() && request.auth.uid == userId;
+
+        allow create, update: if isAuthenticated() &&
+          request.auth.uid == userId &&
+          isValidNote(request.resource.data);
+
+        allow delete: if isAuthenticated() && request.auth.uid == userId;
       }
     }
   }

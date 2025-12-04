@@ -8,6 +8,7 @@ import {defineSecret} from 'firebase-functions/params';
 import {setGlobalOptions} from 'firebase-functions/v2';
 import * as logger from 'firebase-functions/logger';
 import * as dotenv from 'dotenv';
+import * as admin from 'firebase-admin';
 import {GeminiClient} from './ai/gemini-client';
 import {optimizeGoal} from './ai/optimize-goal';
 import {generateSuggestions} from './ai/generate-suggestions';
@@ -23,11 +24,17 @@ import {
   GenerateMonthlyReportResponse,
   SuggestSubGoalsResponse,
 } from './types/ai-types';
+import {onSchedule} from 'firebase-functions/v2/scheduler';
 
 // Load environment variables in local / emulator environments.
 // On deployed Cloud Functions, environment variables should be configured
 // via the platform and will already be available in process.env.
 dotenv.config();
+
+// Initialize Admin SDK (idempotent)
+if (!admin.apps.length) {
+  admin.initializeApp();
+}
 
 // Global options for cost control
 setGlobalOptions({
@@ -38,6 +45,222 @@ setGlobalOptions({
 // Define secret for Gemini API key
 // To set: firebase functions:secrets:set GEMINI_API_KEY
 const geminiApiKeySecret = defineSecret('GEMINI_API_KEY');
+
+/**
+ * Basic input sanitization helpers
+ */
+function sanitizeString(
+  value: unknown,
+  fieldName: string,
+  maxLength: number,
+  required = true,
+): string | undefined {
+  if (value === undefined || value === null) {
+    if (required) {
+      throw new HttpsError(
+        'invalid-argument',
+        `${fieldName} is required`,
+      );
+    }
+    return undefined;
+  }
+
+  if (typeof value !== 'string') {
+    throw new HttpsError(
+      'invalid-argument',
+      `${fieldName} must be a string`,
+    );
+  }
+
+  const trimmed = value.trim();
+
+  if (required && trimmed.length === 0) {
+    throw new HttpsError(
+      'invalid-argument',
+      `${fieldName} cannot be empty`,
+    );
+  }
+
+  if (trimmed.length > maxLength) {
+    throw new HttpsError(
+      'invalid-argument',
+      `${fieldName} is too long (max ${maxLength} characters)`,
+    );
+  }
+
+  return trimmed;
+}
+
+function sanitizeArraySize(
+  value: unknown,
+  fieldName: string,
+  maxLength: number,
+): void {
+  if (value === undefined || value === null) {
+    return;
+  }
+
+  if (!Array.isArray(value)) {
+    throw new HttpsError(
+      'invalid-argument',
+      `${fieldName} must be an array`,
+    );
+  }
+
+  if (value.length > maxLength) {
+    throw new HttpsError(
+      'invalid-argument',
+      `${fieldName} is too large (max ${maxLength} items)`,
+    );
+  }
+}
+
+/**
+ * Simple Firestore-based per-user rate limiting for AI endpoints.
+ * Prevents abuse & cost explosion.
+ */
+const RATE_LIMIT_COLLECTION = 'aiRateLimits';
+
+async function enforceRateLimit(
+  userId: string,
+  endpoint: string,
+  maxPerMinute: number,
+  maxPerDay: number,
+): Promise<void> {
+  const db = admin.firestore();
+  const now = admin.firestore.Timestamp.now();
+  const docRef = db.collection(RATE_LIMIT_COLLECTION).doc(userId);
+
+  await db.runTransaction(async (tx) => {
+    const snap = await tx.get(docRef);
+    const data = snap.exists ? snap.data() as any : {};
+
+    const endpointKey = endpoint;
+    const perEndpoint = data[endpointKey] || {};
+
+    const minuteWindowMs = 60 * 1000;
+    const dayWindowMs = 24 * 60 * 60 * 1000;
+
+    const lastMinuteTs: admin.firestore.Timestamp =
+      perEndpoint.lastMinuteTs || now;
+    const lastDayTs: admin.firestore.Timestamp =
+      perEndpoint.lastDayTs || now;
+
+    const lastMinuteDate = lastMinuteTs.toDate();
+    const lastDayDate = lastDayTs.toDate();
+    const nowDate = now.toDate();
+
+    let minuteCount =
+      perEndpoint.minuteCount && nowDate.getTime() - lastMinuteDate.getTime() < minuteWindowMs
+        ? perEndpoint.minuteCount as number
+        : 0;
+    let dayCount =
+      perEndpoint.dayCount && nowDate.getTime() - lastDayDate.getTime() < dayWindowMs
+        ? perEndpoint.dayCount as number
+        : 0;
+
+    minuteCount += 1;
+    dayCount += 1;
+
+    if (minuteCount > maxPerMinute || dayCount > maxPerDay) {
+      throw new HttpsError(
+        'resource-exhausted',
+        'AI rate limit exceeded. Please try again later.',
+      );
+    }
+
+    tx.set(
+      docRef,
+      {
+        [endpointKey]: {
+          minuteCount,
+          dayCount,
+          lastMinuteTs: now,
+          lastDayTs: now,
+        },
+        updatedAt: now,
+      },
+      {merge: true},
+    );
+  });
+}
+
+/**
+ * Scheduled cleanup job to remove orphan checkIns and notes
+ * that reference non-existing goals.
+ *
+ * Çalışma şekli:
+ * - Her çalıştığında sınırlı sayıda (ör. 500) check-in ve note dokümanını tarar.
+ * - İlgili goal dokümanı yoksa, orphan kabul edip siler.
+ * - Maliyet için her koşuda sınırlı sayıda doküman işlenir.
+ */
+export const cleanupOrphansJob = onSchedule(
+  {
+    schedule: 'every 24 hours',
+    timeZone: 'Etc/UTC',
+    region: 'europe-west1',
+  },
+  async () => {
+    const db = admin.firestore();
+    const batchSize = 500;
+
+    // Helper: orphan temizliği için generic fonksiyon
+    async function cleanupCollection(
+      collectionPath: string,
+      type: 'checkIns' | 'notes',
+    ): Promise<void> {
+      const snap = await db
+        .collectionGroup(collectionPath)
+        .limit(batchSize)
+        .get();
+
+      if (snap.empty) {
+        return;
+      }
+
+      const batch = db.batch();
+      let deleteCount = 0;
+
+      for (const doc of snap.docs) {
+        const data = doc.data() as any;
+        const goalId = data.goalId as string | undefined;
+        const userId = data.userId as string | undefined;
+
+        if (!goalId || !userId) {
+          continue;
+        }
+
+        const goalRef = db
+          .collection('users')
+          .doc(userId)
+          .collection('goals')
+          .doc(goalId);
+
+        const goalSnap = await goalRef.get();
+        if (!goalSnap.exists) {
+          batch.delete(doc.ref);
+          deleteCount += 1;
+        }
+      }
+
+      if (deleteCount > 0) {
+        await batch.commit();
+        logger.info('Orphan cleanup completed', {
+          collectionPath,
+          deleted: deleteCount,
+        });
+      }
+    }
+
+    try {
+      await cleanupCollection('checkIns', 'checkIns');
+      await cleanupCollection('notes', 'notes');
+    } catch (error: any) {
+      logger.error('Error in cleanupOrphansJob', error);
+      throw error;
+    }
+  },
+);
 
 /**
  * Initialize Gemini client with secret
@@ -70,18 +293,34 @@ export const optimizeGoalFunction = onCall(
       throw new HttpsError('unauthenticated', 'User must be authenticated');
     }
 
-    const {goalTitle, category} = request.data;
+    // Per-user rate limiting
+    await enforceRateLimit(request.auth.uid, 'optimizeGoal', 10, 100);
 
-    if (!goalTitle || !category) {
-      throw new HttpsError(
-        'invalid-argument',
-        'goalTitle and category are required'
-      );
-    }
+    const rawGoalTitle = request.data.goalTitle;
+    const rawCategory = request.data.category;
+
+    const goalTitle = sanitizeString(rawGoalTitle, 'goalTitle', 200, true);
+    const category = sanitizeString(rawCategory, 'category', 50, true);
+
+    // Optional fields
+    const motivation = sanitizeString(
+      request.data.motivation,
+      'motivation',
+      2000,
+      false,
+    );
 
     try {
       const geminiClient = getGeminiClient(geminiApiKeySecret.value());
-      const result = await optimizeGoal(request.data, geminiClient);
+      const result = await optimizeGoal(
+        {
+          ...request.data,
+          goalTitle,
+          category,
+          motivation,
+        },
+        geminiClient,
+      );
 
       logger.info('Goal optimized successfully', {
         userId: request.auth.uid,
@@ -124,6 +363,11 @@ export const generateSuggestionsFunction = onCall(
     if (!goals || !Array.isArray(goals)) {
       throw new HttpsError('invalid-argument', 'goals array is required');
     }
+
+    // Rate limit + payload size limits
+    await enforceRateLimit(userId, 'generateSuggestions', 5, 50);
+    sanitizeArraySize(goals, 'goals', 200);
+    sanitizeArraySize(checkIns, 'checkIns', 2000);
 
     try {
       const geminiClient = getGeminiClient(geminiApiKeySecret.value());
@@ -175,6 +419,10 @@ export const generateYearlyReportFunction = onCall(
       );
     }
 
+    await enforceRateLimit(userId, 'generateYearlyReport', 3, 20);
+    sanitizeArraySize(goals, 'goals', 300);
+    sanitizeArraySize(checkIns, 'checkIns', 5000);
+
     try {
       const geminiClient = getGeminiClient(geminiApiKeySecret.value());
       const result = await generateYearlyReport(request.data, geminiClient);
@@ -212,18 +460,25 @@ export const suggestSubGoalsFunction = onCall(
       throw new HttpsError('unauthenticated', 'User must be authenticated');
     }
 
-    const {goalTitle, category} = request.data;
+    // Per-user rate limiting
+    await enforceRateLimit(request.auth.uid, 'suggestSubGoals', 15, 150);
 
-    if (!goalTitle || !category) {
-      throw new HttpsError(
-        'invalid-argument',
-        'goalTitle and category are required'
-      );
-    }
+    const rawGoalTitle = request.data.goalTitle;
+    const rawCategory = request.data.category;
+
+    const goalTitle = sanitizeString(rawGoalTitle, 'goalTitle', 200, true);
+    const category = sanitizeString(rawCategory, 'category', 50, true);
 
     try {
       const geminiClient = getGeminiClient(geminiApiKeySecret.value());
-      const result = await suggestSubGoals(request.data, geminiClient);
+      const result = await suggestSubGoals(
+        {
+          ...request.data,
+          goalTitle,
+          category,
+        },
+        geminiClient,
+      );
 
       logger.info('Sub-goal suggestions generated', {
         userId: request.auth.uid,
@@ -270,6 +525,10 @@ export const generateWeeklyReportFunction = onCall(
         'weekStart, weekEnd and goals array are required'
       );
     }
+
+    await enforceRateLimit(userId, 'generateWeeklyReport', 5, 50);
+    sanitizeArraySize(goals, 'goals', 200);
+    sanitizeArraySize(checkIns, 'checkIns', 2000);
 
     try {
       const geminiClient = getGeminiClient(geminiApiKeySecret.value());
@@ -322,6 +581,10 @@ export const generateMonthlyReportFunction = onCall(
         'year, month and goals array are required'
       );
     }
+
+    await enforceRateLimit(userId, 'generateMonthlyReport', 3, 30);
+    sanitizeArraySize(goals, 'goals', 300);
+    sanitizeArraySize(checkIns, 'checkIns', 5000);
 
     try {
       const geminiClient = getGeminiClient(geminiApiKeySecret.value());

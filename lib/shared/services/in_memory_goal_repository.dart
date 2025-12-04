@@ -37,9 +37,11 @@ class InMemoryGoalRepository implements GoalRepository {
   }
 
   @override
-  Future<Goal?> fetchGoalById(String goalId) async {
+  Future<Goal?> fetchGoalById(String goalId, String userId) async {
     try {
-      return _goals.firstWhere((g) => g.id == goalId);
+      return _goals.firstWhere(
+        (g) => g.id == goalId && g.userId == userId,
+      );
     } catch (_) {
       return null;
     }
@@ -63,8 +65,9 @@ class InMemoryGoalRepository implements GoalRepository {
   }
 
   @override
-  Future<void> archiveGoal(String goalId) async {
-    final index = _goals.indexWhere((g) => g.id == goalId);
+  Future<void> archiveGoal(String goalId, String userId) async {
+    final index =
+        _goals.indexWhere((g) => g.id == goalId && g.userId == userId);
     if (index != -1) {
       final goal = _goals[index];
       _goals[index] = goal.copyWith(
@@ -74,8 +77,9 @@ class InMemoryGoalRepository implements GoalRepository {
   }
 
   @override
-  Future<void> completeGoal(String goalId) async {
-    final index = _goals.indexWhere((g) => g.id == goalId);
+  Future<void> completeGoal(String goalId, String userId) async {
+    final index =
+        _goals.indexWhere((g) => g.id == goalId && g.userId == userId);
     if (index != -1) {
       final goal = _goals[index];
       _goals[index] = goal.copyWith(
@@ -88,8 +92,10 @@ class InMemoryGoalRepository implements GoalRepository {
   }
 
   @override
-  Future<void> deleteGoal(String goalId) async {
-    _goals.removeWhere((g) => g.id == goalId);
+  Future<void> deleteGoal(String goalId, String userId) async {
+    _goals.removeWhere(
+      (g) => g.id == goalId && g.userId == userId,
+    );
   }
 
   @override
@@ -171,7 +177,7 @@ class InMemoryGoalRepository implements GoalRepository {
   }
 
   @override
-  Future<void> deleteNote(String noteId) async {
+  Future<void> deleteNote(String noteId, String userId) async {
     // In-memory implementation - no-op
   }
 

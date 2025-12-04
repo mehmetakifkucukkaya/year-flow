@@ -464,7 +464,7 @@ class _DataAndPrivacySection extends ConsumerWidget {
                   blurRadius: 30,
                   offset: const Offset(0, 16),
                 ),
-              ],
+              ], 
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,

@@ -61,6 +61,7 @@ class FirestoreGoalRepository implements GoalRepository {
       // Sonra memory'de filtrele (index gerektirmemek için)
       yield* _FirestoreCollections._userGoalsCollection(_firestore, userId)
           .orderBy('createdAt', descending: true)
+          .limit(AppConstants.pageSize)
           .snapshots()
           .map((snapshot) {
         try {
@@ -101,6 +102,7 @@ class FirestoreGoalRepository implements GoalRepository {
       // Tüm goal'ları al (isArchived filtresi olmadan)
       yield* _FirestoreCollections._userGoalsCollection(_firestore, userId)
           .orderBy('createdAt', descending: true)
+          .limit(AppConstants.pageSize)
           .snapshots()
           .map((snapshot) {
         try {
@@ -135,6 +137,7 @@ class FirestoreGoalRepository implements GoalRepository {
     final snapshot = await _FirestoreCollections._userGoalsCollection(
             _firestore, userId)
         .orderBy('createdAt', descending: true)
+        .limit(AppConstants.pageSize)
         .get();
 
     return snapshot.docs
@@ -152,34 +155,18 @@ class FirestoreGoalRepository implements GoalRepository {
   }
 
   @override
-  Future<Goal?> fetchGoalById(String goalId) async {
-    // GoalId ile direkt erişim için tüm kullanıcıların goals koleksiyonlarında arama yapmalıyız
-    // Ancak bu verimsiz olabilir. Alternatif: goalId'yi userId ile birlikte saklamak
-    // Şimdilik eski yapıyı koruyoruz ama userId'yi de parametre olarak almalıyız
-    // Ancak interface'de userId yok, bu yüzden tüm kullanıcılarda arama yapacağız
-    // Bu geçici bir çözüm - ideal olarak goalId userId içermeli veya interface güncellenmeli
+  Future<Goal?> fetchGoalById(String goalId, String userId) async {
+    final doc = await _FirestoreCollections._userGoalsCollection(
+      _firestore,
+      userId,
+    ).doc(goalId).get();
 
-    // Önce mevcut kullanıcının goals'ında ara
-    // Not: Bu metodun çağrıldığı yerlerde userId bilgisi olmalı
-    // Şimdilik tüm users collection'ında arama yapacağız (verimsiz ama çalışır)
-    final usersSnapshot =
-        await _firestore.collection(_FirestoreCollections.users).get();
-
-    for (final userDoc in usersSnapshot.docs) {
-      final goalDoc = await userDoc.reference
-          .collection(_FirestoreCollections.goals)
-          .doc(goalId)
-          .get();
-
-      if (goalDoc.exists) {
-        final data = goalDoc.data();
-        if (data != null) {
-          return _goalFromFirestore(goalDoc.id, data);
-        }
-      }
+    final data = doc.data();
+    if (data == null) {
+      return null;
     }
 
-    return null;
+    return _goalFromFirestore(doc.id, data as Map<String, dynamic>);
   }
 
   @override
@@ -216,76 +203,28 @@ class FirestoreGoalRepository implements GoalRepository {
   }
 
   @override
-  Future<void> archiveGoal(String goalId) async {
-    // archiveGoal için userId gerekli, ama interface'de yok
-    // Tüm kullanıcılarda arama yapmak yerine, mevcut kullanıcının goals'ında ara
-    // Not: Bu metodun çağrıldığı yerlerde userId bilgisi olmalı
-    // Şimdilik tüm users collection'ında arama yapacağız ama sadece kendi verilerine erişebiliriz
-    final usersSnapshot =
-        await _firestore.collection(_FirestoreCollections.users).get();
-
-    for (final userDoc in usersSnapshot.docs) {
-      final goalDoc = await userDoc.reference
-          .collection(_FirestoreCollections.goals)
-          .doc(goalId)
-          .get();
-
-      if (goalDoc.exists) {
-        await goalDoc.reference.update({'isArchived': true});
-        return;
-      }
-    }
+  Future<void> archiveGoal(String goalId, String userId) async {
+    await _FirestoreCollections._userGoalsCollection(_firestore, userId)
+        .doc(goalId)
+        .update({'isArchived': true});
   }
 
   @override
-  Future<void> completeGoal(String goalId) async {
-    // completeGoal için userId gerekli, ama interface'de yok
-    // Tüm kullanıcılarda arama yapmak yerine, mevcut kullanıcının goals'ında ara
-    // Not: Bu metodun çağrıldığı yerlerde userId bilgisi olmalı
-    // Şimdilik tüm users collection'ında arama yapacağız ama sadece kendi verilerine erişebiliriz
-    final usersSnapshot =
-        await _firestore.collection(_FirestoreCollections.users).get();
-
-    for (final userDoc in usersSnapshot.docs) {
-      final goalDoc = await userDoc.reference
-          .collection(_FirestoreCollections.goals)
-          .doc(goalId)
-          .get();
-
-      if (goalDoc.exists) {
-        // Hedefi tamamla ve otomatik olarak arşive taşı
-        await goalDoc.reference.update({
-          'isCompleted': true,
-          'isArchived': true,
-          'progress': 100,
-        });
-        return;
-      }
-    }
-
-    throw Exception('Hedef bulunamadı');
+  Future<void> completeGoal(String goalId, String userId) async {
+    await _FirestoreCollections._userGoalsCollection(_firestore, userId)
+        .doc(goalId)
+        .update({
+      'isCompleted': true,
+      'isArchived': true,
+      'progress': 100,
+    });
   }
 
   @override
-  Future<void> deleteGoal(String goalId) async {
-    // deleteGoal için userId gerekli, ama interface'de yok
-    // Tüm kullanıcılarda arama yapmak yerine, mevcut kullanıcının goals'ında ara
-    // Not: Bu metodun çağrıldığı yerlerde userId bilgisi olmalı
-    // Şimdilik tüm users collection'ında arama yapacağız ama sadece kendi verilerine erişebiliriz
-    final usersSnapshot =
-        await _firestore.collection(_FirestoreCollections.users).get();
-
-    for (final userDoc in usersSnapshot.docs) {
-      final goalDoc = await userDoc.reference
-          .collection(_FirestoreCollections.goals)
-          .doc(goalId)
-          .get();
-
-      if (goalDoc.exists) {
-        await goalDoc.reference.delete();
-        return;
-      }
-    }
+  Future<void> deleteGoal(String goalId, String userId) async {
+    await _FirestoreCollections._userGoalsCollection(_firestore, userId)
+        .doc(goalId)
+        .delete();
   }
 
   @override
@@ -303,6 +242,7 @@ class FirestoreGoalRepository implements GoalRepository {
             _firestore, userId)
         .where('goalId', isEqualTo: goalId)
         .orderBy('createdAt', descending: true)
+        .limit(AppConstants.pageSize)
         .snapshots()
         .map((snapshot) => snapshot.docs
             .map((doc) {
@@ -340,6 +280,7 @@ class FirestoreGoalRepository implements GoalRepository {
     try {
       return _FirestoreCollections._userCheckInsCollection(
               _firestore, userId)
+          .orderBy('createdAt', descending: true)
           .snapshots()
           .map((snapshot) => snapshot.docs
               .map((doc) {
@@ -533,6 +474,7 @@ class FirestoreGoalRepository implements GoalRepository {
       return _FirestoreCollections._userNotesCollection(_firestore, userId)
           .where('goalId', isEqualTo: goalId)
           .orderBy('createdAt', descending: true)
+          .limit(AppConstants.pageSize)
           .snapshots()
           .map((snapshot) {
         return snapshot.docs
@@ -578,27 +520,13 @@ class FirestoreGoalRepository implements GoalRepository {
   }
 
   @override
-  Future<void> deleteNote(String noteId) async {
-    // deleteNote için userId gerekli, ama interface'de yok
-    // Not: Bu metodun çağrıldığı yerlerde userId bilgisi olmalı
-    // Şimdilik tüm kullanıcılarda arama yapacağız
+  Future<void> deleteNote(String noteId, String userId) async {
     try {
-      final usersSnapshot =
-          await _firestore.collection(_FirestoreCollections.users).get();
-
-      for (final userDoc in usersSnapshot.docs) {
-        final noteDoc = await userDoc.reference
-            .collection(_FirestoreCollections.notes)
-            .doc(noteId)
-            .get();
-
-        if (noteDoc.exists) {
-          await noteDoc.reference.delete();
-          return;
-        }
-      }
+      await _FirestoreCollections._userNotesCollection(_firestore, userId)
+          .doc(noteId)
+          .delete();
     } catch (e) {
-      print('Error deleting note: $e');
+      print('Error deleting note for user $userId: $e');
       rethrow;
     }
   }

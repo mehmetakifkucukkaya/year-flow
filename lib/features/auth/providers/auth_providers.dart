@@ -14,14 +14,16 @@ final firebaseAuthProvider = Provider<FirebaseAuth>((ref) {
 
 /// GoogleSignIn instance provider
 final googleSignInProvider = Provider<GoogleSignIn>((ref) {
-  // Android için serverClientId (Web client ID) gerekli - idToken almak için
-  // google-services.json'dan client_type: 3 olan Web client ID kullanılmalı
-  // iOS için otomatik olarak GoogleService-Info.plist'ten alınır
+  // Android için serverClientId (Web client ID) gerekli - idToken almak için.
+  // Güvenlik için bu değer derleme zamanı ortam değişkeninden okunur.
+  // Tanımlama örneği:
+  // flutter run --dart-define=GOOGLE_SERVER_CLIENT_ID=xxx.apps.googleusercontent.com
+  const serverClientId =
+      String.fromEnvironment('GOOGLE_SERVER_CLIENT_ID', defaultValue: '');
   return GoogleSignIn(
     scopes: ['email', 'profile'],
-    // Web client ID (client_type: 3) - google-services.json'dan alındı
-    serverClientId:
-        '111770215758-gjlg8cjkd0fictaj3ri9upc9tvghp0cj.apps.googleusercontent.com',
+    // Web client ID (client_type: 3) - ortam değişkeninden alınır
+    serverClientId: serverClientId.isEmpty ? null : serverClientId,
   );
 });
 
@@ -156,54 +158,37 @@ class AuthNotifier extends StateNotifier<AuthState> {
         );
       }
     } on FirebaseAuthException catch (e) {
-      String errorMessage = 'Giriş sırasında bir hata oluştu.';
-      
-      // Firebase hata kodlarına göre Türkçe mesajlar
+      String errorMessage =
+          'Giriş yapılamadı. E-posta veya şifre hatalı olabilir, lütfen tekrar deneyin.';
+
+      // Kullanıcı var/yok ayrımını gizlemek için hesapla ilgili hatalarda
+      // tek bir genel mesaj kullanıyoruz (account enumeration riskini azaltmak için).
       switch (e.code) {
         case 'user-not-found':
-          errorMessage = 'Bu e-posta adresi ile kayıtlı kullanıcı bulunamadı.';
-          break;
         case 'wrong-password':
-          errorMessage = 'Şifre yanlış. Lütfen tekrar deneyin.';
-          break;
         case 'invalid-email':
-          errorMessage = 'Geçersiz e-posta adresi.';
-          break;
         case 'invalid-credential':
-          // Şifre çok kısa olabilir, önce form validasyonu kontrol edilmeli
-          // Ama eğer buraya geldiyse, gerçekten yanlış bilgi girilmiş demektir
-          errorMessage = 'E-posta veya şifre hatalı. Lütfen bilgilerinizi kontrol edin.';
+          errorMessage =
+              'Giriş yapılamadı. E-posta veya şifre hatalı olabilir, lütfen tekrar deneyin.';
           break;
         case 'user-disabled':
           errorMessage = 'Bu hesap devre dışı bırakılmış.';
           break;
         case 'too-many-requests':
-          errorMessage = 'Çok fazla başarısız giriş denemesi. Lütfen daha sonra tekrar deneyin.';
+          errorMessage =
+              'Çok fazla başarısız giriş denemesi. Lütfen daha sonra tekrar deneyin.';
           break;
         case 'operation-not-allowed':
-          errorMessage = 'Bu giriş yöntemi şu anda kullanılamıyor.';
+          errorMessage =
+              'Bu giriş yöntemi şu anda kullanılamıyor. Lütfen daha sonra tekrar deneyin.';
           break;
         case 'network-request-failed':
           errorMessage = 'İnternet bağlantınızı kontrol edin.';
           break;
-        case 'weak-password':
-          errorMessage = 'Şifre çok zayıf. Daha güçlü bir şifre seçin.';
-          break;
-        case 'email-already-in-use':
-          errorMessage = 'Bu e-posta adresi zaten kullanılıyor.';
-          break;
         default:
-          // Eğer bilinmeyen bir hata kodu varsa, mesajı Türkçe'ye çevirmeye çalış
-          final englishMessage = e.message ?? '';
-          if (englishMessage.contains('incorrect') || englishMessage.contains('wrong')) {
-            errorMessage = 'E-posta veya şifre hatalı. Lütfen bilgilerinizi kontrol edin.';
-          } else if (englishMessage.contains('expired')) {
-            errorMessage = 'Oturum süresi dolmuş. Lütfen tekrar giriş yapın.';
-          } else if (englishMessage.contains('malformed')) {
-            errorMessage = 'Geçersiz giriş bilgileri. Lütfen bilgilerinizi kontrol edin.';
-          } else {
-            errorMessage = 'Giriş sırasında bir hata oluştu. Lütfen tekrar deneyin.';
-          }
+          errorMessage =
+              'Giriş sırasında bir hata oluştu. Lütfen tekrar deneyin.';
+          break;
       }
       
       state = state.copyWith(

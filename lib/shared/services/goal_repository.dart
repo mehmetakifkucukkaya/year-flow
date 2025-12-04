@@ -10,17 +10,17 @@ abstract class GoalRepository {
 
   Future<List<Goal>> fetchGoals(String userId);
 
-  Future<Goal?> fetchGoalById(String goalId);
+  Future<Goal?> fetchGoalById(String goalId, String userId);
 
   Future<Goal> createGoal(Goal goal);
 
   Future<Goal> updateGoal(Goal goal);
 
-  Future<void> archiveGoal(String goalId);
+  Future<void> archiveGoal(String goalId, String userId);
 
-  Future<void> completeGoal(String goalId);
+  Future<void> completeGoal(String goalId, String userId);
 
-  Future<void> deleteGoal(String goalId);
+  Future<void> deleteGoal(String goalId, String userId);
 
   /// Belirli bir kullanıcıya ait hedefi sil (security rules ile uyumlu)
   Future<void> deleteGoalForUser(String goalId, String userId);
@@ -61,5 +61,5 @@ abstract class GoalRepository {
 
   Future<void> addNote(Note note);
 
-  Future<void> deleteNote(String noteId);
+  Future<void> deleteNote(String noteId, String userId);
 }

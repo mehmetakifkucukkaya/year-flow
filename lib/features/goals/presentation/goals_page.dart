@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/router/app_routes.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_radius.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../shared/models/goal.dart';
@@ -799,34 +800,101 @@ class _CompletedGoalCard extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Header: Category badge
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 6,
-                  ),
-                  decoration: BoxDecoration(
-                    color: categoryColor.withOpacity(0.12),
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        goal.category.emoji,
-                        style: const TextStyle(fontSize: 16),
+                // Header: Category badge + "Aktiflere taşı" aksiyonu
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
                       ),
-                      const SizedBox(width: 6),
-                      Text(
-                        goal.category.label,
-                        style: AppTextStyles.labelSmall.copyWith(
-                          color: categoryColor,
-                          fontWeight: FontWeight.w600,
-                          fontSize: 12,
-                        ),
+                      decoration: BoxDecoration(
+                        color: categoryColor.withOpacity(0.12),
+                        borderRadius: BorderRadius.circular(16),
                       ),
-                    ],
-                  ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            goal.category.emoji,
+                            style: const TextStyle(fontSize: 16),
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            goal.category.label,
+                            style: AppTextStyles.labelSmall.copyWith(
+                              color: categoryColor,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const Spacer(),
+                    IconButton(
+                      icon: const Icon(
+                        Icons.restart_alt_rounded,
+                        size: 20,
+                        color: AppColors.gray600,
+                      ),
+                      tooltip: 'Aktif hedeflere geri al',
+                      onPressed: () async {
+                        final shouldUncomplete = await showDialog<bool>(
+                          context: context,
+                          barrierColor: Colors.black.withOpacity(0.5),
+                          builder: (context) => _UncompleteGoalDialog(
+                            goalTitle: goal.title,
+                          ),
+                        );
+
+                        if (shouldUncomplete == true && context.mounted) {
+                          final userId = ref.read(currentUserIdProvider);
+                          if (userId == null) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text(
+                                  'Bu işlemi yapmak için giriş yapmalısın.',
+                                ),
+                              ),
+                            );
+                            return;
+                          }
+
+                          try {
+                            final repository =
+                                ref.read(goalRepositoryProvider);
+                            final updatedGoal = goal.copyWith(
+                              isArchived: false,
+                              isCompleted: false,
+                              completedAt: null,
+                            );
+                            await repository.updateGoal(updatedGoal);
+
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text(
+                                    'Hedef tekrar aktifler listesine taşındı.',
+                                  ),
+                                ),
+                              );
+                            }
+                          } catch (e) {
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    'Hedef güncellenirken hata oluştu: $e',
+                                  ),
+                                ),
+                              );
+                            }
+                          }
+                        }
+                      },
+                    ),
+                  ],
                 ),
                 const SizedBox(height: AppSpacing.md),
                 // Title
@@ -939,6 +1007,128 @@ class _CompletedGoalCard extends ConsumerWidget {
               ],
             ),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Completed hedefi tekrar aktifler listesine taşıma diyaloğu
+class _UncompleteGoalDialog extends StatelessWidget {
+  const _UncompleteGoalDialog({required this.goalTitle});
+
+  final String goalTitle;
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      backgroundColor: Colors.transparent,
+      contentPadding: EdgeInsets.zero,
+      insetPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+      shape: const RoundedRectangleBorder(
+        borderRadius: AppRadius.borderRadiusXl,
+      ),
+      content: Container(
+        padding: const EdgeInsets.all(AppSpacing.xl),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: AppRadius.borderRadiusXl,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.12),
+              blurRadius: 24,
+              offset: const Offset(0, 12),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Icon circle
+            Center(
+              child: Container(
+                width: 64,
+                height: 64,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: AppColors.primary.withOpacity(0.08),
+                ),
+                child: const Icon(
+                  Icons.restart_alt_rounded,
+                  size: 32,
+                  color: AppColors.primary,
+                ),
+              ),
+            ),
+            const SizedBox(height: AppSpacing.lg),
+            // Title
+            Text(
+              'Hedefi tekrar aktifleştir',
+              style: AppTextStyles.titleLarge.copyWith(
+                fontWeight: FontWeight.w700,
+                color: AppColors.gray900,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            // Description
+            Text(
+              '"$goalTitle" hedefini tamamlananlardan çıkarıp tekrar aktif hedefler listesine almak istiyor musun?',
+              style: AppTextStyles.bodyMedium.copyWith(
+                color: AppColors.gray700,
+                height: 1.5,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: AppSpacing.xl),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () => Navigator.of(context).pop(false),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(
+                        vertical: AppSpacing.md,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(AppRadius.lg),
+                      ),
+                    ),
+                    child: Text(
+                      'İptal',
+                      style: AppTextStyles.bodyMedium.copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.gray800,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.md),
+                Expanded(
+                  child: FilledButton(
+                    onPressed: () => Navigator.of(context).pop(true),
+                    style: FilledButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(
+                        vertical: AppSpacing.md,
+                      ),
+                      backgroundColor: AppColors.primary,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(AppRadius.lg),
+                      ),
+                    ),
+                    child: Text(
+                      'Evet, aktifleştir',
+                      style: AppTextStyles.bodyMedium.copyWith(
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
         ),
       ),
     );

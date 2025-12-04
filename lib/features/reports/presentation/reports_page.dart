@@ -209,7 +209,7 @@ class _HeaderHero extends ConsumerWidget {
           ),
           const SizedBox(height: AppSpacing.xs),
           Text(
-            'Your journey this year at a glance.',
+            'Yolculuğuna genel bir bakış atalım',
             style: AppTextStyles.bodyMedium.copyWith(
               color: AppColors.gray700,
             ),
@@ -944,7 +944,8 @@ class _ChallengesSection extends ConsumerWidget {
         if (items.isEmpty) {
           items.add(
             const _ChallengeData(
-              title: 'Genel durum: Tüm kategorilerde sağlıklı bir ilerleme var.',
+              title:
+                  'Genel durum: Tüm kategorilerde sağlıklı bir ilerleme var.',
               solution:
                   'Çözüm: Yine de, motivasyonunu korumak için haftalık olarak '
                   'önceliklerini gözden geçirmek iyi bir fikir olabilir.',
@@ -971,7 +972,8 @@ class _ChallengesSection extends ConsumerWidget {
               const SizedBox(height: AppSpacing.md),
               for (final item in items) ...[
                 _ChallengeCard(data: item),
-                if (item != items.last) const SizedBox(height: AppSpacing.md),
+                if (item != items.last)
+                  const SizedBox(height: AppSpacing.md),
               ],
             ],
           ),

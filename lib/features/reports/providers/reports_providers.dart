@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/constants/app_constants.dart';
+import '../../../shared/models/check_in.dart';
 import '../../../shared/models/yearly_report.dart';
 import '../../../shared/providers/goal_providers.dart';
 
@@ -50,14 +51,23 @@ final reportsStatsProvider = StreamProvider<ReportsStats>((ref) {
     final completedGoals =
         goals.where((g) => g.isCompleted || g.progress >= 100).length;
 
+    // Tüm check-in kayıtlarını tek sorguda al (N+1 sorgu problemini önlemek için)
+    final allCheckIns = await repository.watchAllCheckIns(userId).first;
+
+    // goalId -> checkIns eşlemesi
+    final checkInsByGoal = <String, List<CheckIn>>{};
+    for (final checkIn in allCheckIns) {
+      checkInsByGoal.putIfAbsent(checkIn.goalId, () => []);
+      checkInsByGoal[checkIn.goalId]!.add(checkIn);
+    }
+
     // Calculate total check-ins & category progress (completed dahil)
     int totalCheckIns = 0;
     final categoryProgressMap = <GoalCategory, List<int>>{};
 
     for (final goal in goals) {
-      final checkIns =
-          await repository.watchCheckIns(goal.id, userId).first;
-      totalCheckIns += checkIns.length;
+      final goalCheckIns = checkInsByGoal[goal.id] ?? const <CheckIn>[];
+      totalCheckIns += goalCheckIns.length;
 
       categoryProgressMap.putIfAbsent(goal.category, () => []);
       categoryProgressMap[goal.category]!.add(goal.progress);
