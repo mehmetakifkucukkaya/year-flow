@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../core/router/app_routes.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_radius.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_text_styles.dart';
+import '../../../core/widgets/index.dart';
 import '../../../shared/providers/goal_providers.dart';
 import '../../auth/providers/auth_providers.dart';
 
@@ -109,8 +112,11 @@ class _ProfileBodyState extends ConsumerState<_ProfileBody> {
               TextField(
                 controller: emailController,
                 keyboardType: TextInputType.emailAddress,
+                readOnly: true,
+                enabled: false,
                 decoration: const InputDecoration(
                   labelText: 'E-posta',
+                  helperText: 'E-posta adresi değiştirilemez',
                 ),
               ),
               const SizedBox(height: AppSpacing.lg),
@@ -118,16 +124,35 @@ class _ProfileBodyState extends ConsumerState<_ProfileBody> {
                 width: double.infinity,
                 height: 48,
                 child: FilledButton(
-                  onPressed: () {
-                    setState(() {
-                      _name = nameController.text.trim().isEmpty
-                          ? _name
-                          : nameController.text.trim();
-                      _email = emailController.text.trim().isEmpty
-                          ? _email
-                          : emailController.text.trim();
-                    });
-                    Navigator.of(ctx).pop();
+                  onPressed: () async {
+                    final newName = nameController.text.trim();
+
+                    try {
+                      await ref
+                          .read(authStateProvider.notifier)
+                          .updateProfile(
+                            displayName: newName.isEmpty ? null : newName,
+                            email: null,
+                          );
+
+                      if (mounted) {
+                        AppSnackbar.showSuccess(
+                          context,
+                          message: 'Profil bilgileri güncellendi',
+                        );
+                        Navigator.of(ctx).pop();
+                      }
+                    } catch (e) {
+                      if (mounted) {
+                        AppSnackbar.showError(
+                          context,
+                          message: e.toString().replaceFirst(
+                                'Exception: ',
+                                '',
+                              ),
+                        );
+                      }
+                    }
                   },
                   child: const Text('Kaydet'),
                 ),
@@ -167,6 +192,8 @@ class _ProfileBodyState extends ConsumerState<_ProfileBody> {
             email: email,
             onEdit: () => _showEditProfileSheet(context),
           ),
+          const SizedBox(height: AppSpacing.xl),
+          const _ProfileSecuritySection(),
         ],
       ),
     );
@@ -176,6 +203,556 @@ class _ProfileBodyState extends ConsumerState<_ProfileBody> {
     // Firebase'den kullanıcı oluşturulma tarihini almak için
     // Şimdilik null döndürüyoruz, gerekirse Firestore'dan alınabilir
     return null;
+  }
+}
+
+/// Profil sayfasında şifre değiştirme ve hesap silme alanı
+class _ProfileSecuritySection extends ConsumerWidget {
+  const _ProfileSecuritySection();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: AppSpacing.xxl),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
+          child: Container(
+            height: 1,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.centerLeft,
+                end: Alignment.centerRight,
+                colors: [
+                  AppColors.gray400.withOpacity(0.0),
+                  AppColors.gray500.withOpacity(0.8),
+                  AppColors.gray600.withOpacity(0.0),
+                ],
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: AppSpacing.lg),
+        const _ProfileDangerZoneSection(),
+      ],
+    );
+  }
+}
+
+/// Ayarlardaki tehlikeli işlemler bölümü, profil sayfasına taşındı
+class _ProfileDangerZoneSection extends ConsumerWidget {
+  const _ProfileDangerZoneSection();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        SizedBox(
+          width: double.infinity,
+          height: 48,
+          child: OutlinedButton(
+            onPressed: () {
+              _showChangePasswordDialog(context, ref);
+            },
+            style: OutlinedButton.styleFrom(
+              side: BorderSide(
+                color: AppColors.gray300.withOpacity(0.9),
+              ),
+              shape: const RoundedRectangleBorder(
+                borderRadius: AppRadius.borderRadiusXl,
+              ),
+            ),
+            child: Text(
+              'Şifreyi Değiştir',
+              style: AppTextStyles.bodyMedium.copyWith(
+                fontWeight: FontWeight.w600,
+                color: AppColors.gray800,
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        SizedBox(
+          width: double.infinity,
+          height: 52,
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Color(0xFFFF4B4B),
+                  Color(0xFFDC2626),
+                ],
+              ),
+              borderRadius: AppRadius.borderRadiusXl,
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.error.withOpacity(0.35),
+                  blurRadius: 18,
+                  offset: const Offset(0, 8),
+                ),
+              ],
+            ),
+            child: FilledButton.icon(
+              onPressed: () {
+                _showDeleteAccountDialog(context, ref);
+              },
+              style: FilledButton.styleFrom(
+                backgroundColor: Colors.transparent,
+                elevation: 0,
+                shape: const RoundedRectangleBorder(
+                  borderRadius: AppRadius.borderRadiusXl,
+                ),
+              ),
+              icon: const Icon(
+                Icons.delete_forever_rounded,
+                color: Colors.white,
+              ),
+              label: Text(
+                'Hesabı Sil',
+                style: AppTextStyles.bodyMedium.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _showChangePasswordDialog(BuildContext context, WidgetRef ref) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) => _ChangePasswordBottomSheet(ref: ref),
+    );
+  }
+
+  void _showDeleteAccountDialog(
+      BuildContext context, WidgetRef ref) async {
+    final shouldDelete = await showDialog<bool>(
+      context: context,
+      barrierColor: Colors.black.withOpacity(0.5),
+      builder: (context) => const _DeleteAccountConfirmationDialog(),
+    );
+
+    if (shouldDelete == true && context.mounted) {
+      try {
+        await ref.read(authStateProvider.notifier).deleteAccount();
+        if (context.mounted) {
+          AppSnackbar.showSuccess(
+            context,
+            message: 'Hesabınız başarıyla silindi',
+          );
+          await Future.delayed(const Duration(milliseconds: 500));
+          if (context.mounted) {
+            context.go(AppRoutes.login);
+          }
+        }
+      } catch (e) {
+        if (context.mounted) {
+          AppSnackbar.showError(
+            context,
+            message: 'Hesap silinirken hata oluştu: $e',
+          );
+        }
+      }
+    }
+  }
+}
+
+/// Aşağıdaki widgetlar ayarlardan taşındı: şifre değiştir & hesap sil
+
+class _ChangePasswordBottomSheet extends ConsumerStatefulWidget {
+  const _ChangePasswordBottomSheet({required this.ref});
+
+  final WidgetRef ref;
+
+  @override
+  ConsumerState<_ChangePasswordBottomSheet> createState() =>
+      _ChangePasswordBottomSheetState();
+}
+
+class _ChangePasswordBottomSheetState
+    extends ConsumerState<_ChangePasswordBottomSheet> {
+  final _formKey = GlobalKey<FormState>();
+  final _currentPasswordController = TextEditingController();
+  final _newPasswordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
+  bool _obscureCurrentPassword = true;
+  bool _obscureNewPassword = true;
+  bool _obscureConfirmPassword = true;
+  bool _isLoading = false;
+
+  @override
+  void dispose() {
+    _currentPasswordController.dispose();
+    _newPasswordController.dispose();
+    _confirmPasswordController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _handleChangePassword() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    if (_newPasswordController.text != _confirmPasswordController.text) {
+      AppSnackbar.showError(context, message: 'Yeni şifreler eşleşmiyor');
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    try {
+      await widget.ref.read(authStateProvider.notifier).changePassword(
+            currentPassword: _currentPasswordController.text,
+            newPassword: _newPasswordController.text,
+          );
+
+      if (mounted) {
+        AppSnackbar.showSuccess(
+          context,
+          message: 'Şifre başarıyla değiştirildi',
+        );
+        Navigator.of(context).pop();
+      }
+    } catch (e) {
+      if (mounted) {
+        AppSnackbar.showError(
+          context,
+          message: e.toString().replaceFirst('Exception: ', ''),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      padding: EdgeInsets.only(
+        left: AppSpacing.lg,
+        right: AppSpacing.lg,
+        top: AppSpacing.lg,
+        bottom: MediaQuery.of(context).viewInsets.bottom + AppSpacing.lg,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header
+          Row(
+            children: [
+              Text(
+                'Şifreyi Değiştir',
+                style: AppTextStyles.titleLarge.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const Spacer(),
+              IconButton(
+                onPressed: () => Navigator.of(context).pop(),
+                icon: const Icon(Icons.close_rounded),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.lg),
+          // Form
+          Form(
+            key: _formKey,
+            child: Column(
+              children: [
+                TextFormField(
+                  controller: _currentPasswordController,
+                  obscureText: _obscureCurrentPassword,
+                  decoration: InputDecoration(
+                    labelText: 'Mevcut Şifre',
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _obscureCurrentPassword
+                            ? Icons.visibility_outlined
+                            : Icons.visibility_off_outlined,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _obscureCurrentPassword =
+                              !_obscureCurrentPassword;
+                        });
+                      },
+                    ),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Mevcut şifrenizi girin';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: AppSpacing.md),
+                TextFormField(
+                  controller: _newPasswordController,
+                  obscureText: _obscureNewPassword,
+                  decoration: InputDecoration(
+                    labelText: 'Yeni Şifre',
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _obscureNewPassword
+                            ? Icons.visibility_outlined
+                            : Icons.visibility_off_outlined,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _obscureNewPassword = !_obscureNewPassword;
+                        });
+                      },
+                    ),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Yeni şifrenizi girin';
+                    }
+                    if (value.length < 6) {
+                      return 'Şifre en az 6 karakter olmalı';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: AppSpacing.md),
+                TextFormField(
+                  controller: _confirmPasswordController,
+                  obscureText: _obscureConfirmPassword,
+                  decoration: InputDecoration(
+                    labelText: 'Yeni Şifre (Tekrar)',
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _obscureConfirmPassword
+                            ? Icons.visibility_outlined
+                            : Icons.visibility_off_outlined,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _obscureConfirmPassword =
+                              !_obscureConfirmPassword;
+                        });
+                      },
+                    ),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Yeni şifrenizi tekrar girin';
+                    }
+                    if (value != _newPasswordController.text) {
+                      return 'Şifreler eşleşmiyor';
+                    }
+                    return null;
+                  },
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: AppSpacing.xl),
+          // Buttons
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: _isLoading
+                      ? null
+                      : () => Navigator.of(context).pop(),
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    side: const BorderSide(
+                      color: AppColors.gray300,
+                      width: 1.5,
+                    ),
+                    shape: const RoundedRectangleBorder(
+                      borderRadius: AppRadius.borderRadiusLg,
+                    ),
+                  ),
+                  child: Text(
+                    'İptal',
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.gray800,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: AppSpacing.md),
+              Expanded(
+                flex: 2,
+                child: FilledButton(
+                  onPressed: _isLoading ? null : _handleChangePassword,
+                  style: FilledButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: const RoundedRectangleBorder(
+                      borderRadius: AppRadius.borderRadiusLg,
+                    ),
+                    elevation: 0,
+                  ),
+                  child: _isLoading
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                                Colors.white),
+                          ),
+                        )
+                      : Text(
+                          'Şifreyi Değiştir',
+                          style: AppTextStyles.bodyMedium.copyWith(
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                          ),
+                        ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _DeleteAccountConfirmationDialog extends StatelessWidget {
+  const _DeleteAccountConfirmationDialog();
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      backgroundColor: Colors.transparent,
+      contentPadding: EdgeInsets.zero,
+      insetPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+      shape: const RoundedRectangleBorder(
+        borderRadius: AppRadius.borderRadiusXl,
+      ),
+      content: Container(
+        padding: const EdgeInsets.all(AppSpacing.xl),
+        decoration: BoxDecoration(
+          color: AppColors.white,
+          borderRadius: AppRadius.borderRadiusXl,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 30,
+              offset: const Offset(0, 15),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 64,
+              height: 64,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: const LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    Color(0xFFFF7070),
+                    Color(0xFFDC2626),
+                  ],
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFFDC2626).withOpacity(0.4),
+                    blurRadius: 16,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
+              ),
+              child: const Icon(
+                Icons.delete_forever_rounded,
+                color: Colors.white,
+                size: 32,
+              ),
+            ),
+            const SizedBox(height: AppSpacing.lg),
+            Text(
+              'Hesabı Sil',
+              style: AppTextStyles.titleLarge.copyWith(
+                fontWeight: FontWeight.w700,
+                color: AppColors.gray900,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            Text(
+              'Hesabınızı silmek istediğinize emin misiniz? Bu işlem geri alınamaz ve tüm verileriniz kalıcı olarak silinecektir.',
+              style: AppTextStyles.bodyMedium.copyWith(
+                color: AppColors.gray700,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: AppSpacing.xl),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () => Navigator.of(context).pop(false),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      side: const BorderSide(
+                        color: AppColors.gray300,
+                        width: 1.5,
+                      ),
+                      shape: const RoundedRectangleBorder(
+                        borderRadius: AppRadius.borderRadiusLg,
+                      ),
+                    ),
+                    child: Text(
+                      'İptal',
+                      style: AppTextStyles.bodyMedium.copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.gray800,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.md),
+                Expanded(
+                  child: FilledButton(
+                    onPressed: () => Navigator.of(context).pop(true),
+                    style: FilledButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      backgroundColor: const Color(0xFFFF5252),
+                      shape: const RoundedRectangleBorder(
+                        borderRadius: AppRadius.borderRadiusLg,
+                      ),
+                      elevation: 0,
+                    ),
+                    child: Text(
+                      'Hesabı Sil',
+                      style: AppTextStyles.bodyMedium.copyWith(
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
 

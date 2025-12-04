@@ -105,14 +105,17 @@ class CustomTransitionPage<T> extends Page<T> {
 
 /// Router provider
 final routerProvider = Provider<GoRouter>((ref) {
-  final authState = ref.watch(authStateProvider);
+  // Sadece isAuthenticated alanını dinleyelim; böylece
+  // displayName gibi profil güncellemeleri router'ı yeniden
+  // oluşturup kullanıcıyı /home'a fırlatmaz.
+  final isAuthenticated =
+      ref.watch(authStateProvider.select((s) => s.isAuthenticated));
 
   return GoRouter(
     initialLocation:
-        authState.isAuthenticated ? AppRoutes.home : AppRoutes.login,
+        isAuthenticated ? AppRoutes.home : AppRoutes.login,
     debugLogDiagnostics: false,
     redirect: (context, state) {
-      final isAuthenticated = authState.isAuthenticated;
       final isAuthRoute = state.uri.path == AppRoutes.login ||
           state.uri.path == AppRoutes.register ||
           state.uri.path == AppRoutes.forgotPassword;

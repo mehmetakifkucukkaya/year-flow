@@ -58,6 +58,12 @@ abstract class AuthRepository {
 
   /// Hesabı sil (Firebase Auth + Firestore cleanup)
   Future<void> deleteAccount();
+
+  /// Profil bilgilerini güncelle (displayName ve/veya email)
+  Future<AppUser> updateProfile({
+    String? displayName,
+    String? email,
+  });
 }
 
 /// FirebaseAuth tabanlı repository implementasyonu
@@ -317,6 +323,47 @@ class FirebaseAuthRepository implements AuthRepository {
       // Auth silme başarısız olursa hata fırlat
       throw Exception('Firebase Auth hesabı silinirken hata oluştu: $e');
     }
+  }
+
+  @override
+  Future<AppUser> updateProfile({
+    String? displayName,
+    String? email,
+  }) async {
+    final user = _firebaseAuth.currentUser;
+    if (user == null) {
+      throw Exception('Kullanıcı giriş yapmamış');
+    }
+
+    bool hasChanges = false;
+
+    // İsim güncelle
+    if (displayName != null &&
+        displayName.trim().isNotEmpty &&
+        displayName.trim() != user.displayName) {
+      await user.updateProfile(displayName: displayName.trim());
+      hasChanges = true;
+    }
+
+    // E-posta güncelle
+    if (email != null &&
+        email.trim().isNotEmpty &&
+        email.trim() != user.email) {
+      await user.updateEmail(email.trim());
+      hasChanges = true;
+    }
+
+    if (hasChanges) {
+      await user.reload();
+    }
+
+    final updatedUser = _firebaseAuth.currentUser ?? user;
+    final appUser = AppUser.fromFirebaseUser(updatedUser);
+
+    // Firestore'daki user dokümanını da güncelle
+    await _saveUserToFirestore(appUser);
+
+    return appUser;
   }
 }
 

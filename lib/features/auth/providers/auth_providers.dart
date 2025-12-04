@@ -433,5 +433,41 @@ class AuthNotifier extends StateNotifier<AuthState> {
       rethrow;
     }
   }
+
+  /// Profil bilgilerini güncelle (isim ve/veya e-posta)
+  Future<void> updateProfile({
+    String? displayName,
+    String? email,
+  }) async {
+    state = state.copyWith(
+      isLoading: true,
+      errorMessage: null,
+    );
+
+    try {
+      final updatedUser = await authRepository.updateProfile(
+        displayName: displayName,
+        email: email,
+      );
+
+      state = state.copyWith(
+        isLoading: false,
+        currentUser: updatedUser,
+        errorMessage: null,
+      );
+    } on FirebaseAuthException catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        errorMessage: e.message ?? 'Profil güncellenirken hata oluştu.',
+      );
+      rethrow;
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        errorMessage: e.toString(),
+      );
+      rethrow;
+    }
+  }
 }
 

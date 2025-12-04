@@ -49,8 +49,6 @@ class SettingsPage extends ConsumerWidget {
                   SizedBox(height: AppSpacing.xl),
                   _LogoutSection(),
                   SizedBox(height: AppSpacing.xxl),
-                  _DangerZoneSection(),
-                  SizedBox(height: AppSpacing.xxl),
                 ],
               ),
             ),
