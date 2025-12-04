@@ -93,6 +93,11 @@ class InMemoryGoalRepository implements GoalRepository {
   }
 
   @override
+  Future<void> deleteGoalForUser(String goalId, String userId) async {
+    _goals.removeWhere((g) => g.id == goalId && g.userId == userId);
+  }
+
+  @override
   Stream<List<CheckIn>> watchCheckIns(
       String goalId, String userId) async* {
     yield _checkIns

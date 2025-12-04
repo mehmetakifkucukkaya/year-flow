@@ -1,3 +1,4 @@
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -442,6 +443,182 @@ class _DataAndPrivacySection extends ConsumerWidget {
     );
   }
 
+  Future<void> _importBackup(BuildContext context, WidgetRef ref) async {
+    // Kullanıcıya uyarı göster: mevcut veriler silinecek
+    final shouldImport = await showDialog<bool>(
+      context: context,
+      barrierColor: Colors.black.withOpacity(0.55),
+      barrierDismissible: true,
+      builder: (dialogContext) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          insetPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+          child: Container(
+            padding: const EdgeInsets.all(AppSpacing.xl),
+            decoration: BoxDecoration(
+              color: AppColors.white,
+              borderRadius: AppRadius.borderRadiusXl,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.12),
+                  blurRadius: 30,
+                  offset: const Offset(0, 16),
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 60,
+                  height: 60,
+                  decoration: BoxDecoration(
+                    borderRadius: AppRadius.borderRadiusFull,
+                    gradient: const LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        Color(0xFFFFB74D),
+                        Color(0xFFF57C00),
+                      ],
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFFF57C00).withOpacity(0.35),
+                        blurRadius: 18,
+                        offset: const Offset(0, 10),
+                      ),
+                    ],
+                  ),
+                  child: const Icon(
+                    Icons.warning_amber_rounded,
+                    color: Colors.white,
+                    size: 32,
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.lg),
+                Text(
+                  'Yedekten Geri Yükle',
+                  style: AppTextStyles.titleLarge.copyWith(
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.gray900,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                Text(
+                  'Seçtiğin yedek dosyası, şu anki tüm hedef ve rapor verilerini silecek '
+                  've yerlerine yedekteki verileri koyacaktır.\n\n'
+                  'Bu işlem geri alınamaz. Devam etmek istediğine emin misin?',
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    color: AppColors.gray700,
+                    height: 1.5,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: AppSpacing.xl),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () =>
+                            Navigator.of(dialogContext).pop(false),
+                        style: OutlinedButton.styleFrom(
+                          padding:
+                              const EdgeInsets.symmetric(vertical: 14),
+                          side: const BorderSide(
+                            color: AppColors.gray300,
+                            width: 1.5,
+                          ),
+                          shape: const RoundedRectangleBorder(
+                            borderRadius: AppRadius.borderRadiusLg,
+                          ),
+                        ),
+                        child: Text(
+                          'Vazgeç',
+                          style: AppTextStyles.bodyMedium.copyWith(
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.gray800,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: AppSpacing.md),
+                    Expanded(
+                      child: FilledButton(
+                        onPressed: () =>
+                            Navigator.of(dialogContext).pop(true),
+                        style: FilledButton.styleFrom(
+                          padding:
+                              const EdgeInsets.symmetric(vertical: 14),
+                          shape: const RoundedRectangleBorder(
+                            borderRadius: AppRadius.borderRadiusLg,
+                          ),
+                          elevation: 0,
+                        ),
+                        child: Text(
+                          'Evet, devam et',
+                          style: AppTextStyles.bodyMedium.copyWith(
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+
+    if (shouldImport != true) {
+      return;
+    }
+
+    final userId = ref.read(currentUserIdProvider);
+    if (userId == null) {
+      AppSnackbar.showError(context, message: 'Giriş yapmanız gerekiyor');
+      return;
+    }
+
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['json'],
+      );
+
+      if (result == null || result.files.single.path == null) {
+        // Kullanıcı seçim yapmadan çıktı
+        return;
+      }
+
+      final filePath = result.files.single.path!;
+      final exportService = ref.read(exportServiceProvider);
+      await exportService.importBackupFromJson(
+        userId: userId,
+        filePath: filePath,
+      );
+
+      if (context.mounted) {
+        AppSnackbar.showSuccess(
+          context,
+          message:
+              'Yedek başarıyla içe aktarıldı. Hedefler ekranını yenileyerek kontrol edebilirsin.',
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        AppSnackbar.showError(
+          context,
+          message: e.toString().replaceFirst('Exception: ', ''),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Column(
@@ -476,20 +653,20 @@ class _DataAndPrivacySection extends ConsumerWidget {
           child: Column(
             children: [
               _SettingsTile._(
-                icon: Icons.cloud_download_rounded,
-                title: 'Hedef ve Raporları yedekle / dışa aktar',
-                trailing: const _ChevronWithLabel(label: 'Dışa aktar'),
-                onTap: () {
-                  _showExportOptionsDialog(context, 'goals_reports');
-                },
-              ),
-              const Divider(height: 1),
-              _SettingsTile._(
                 icon: Icons.file_download_rounded,
                 title: 'Tüm verilerimi indir',
                 trailing: const _ChevronWithLabel(label: 'JSON / CSV'),
                 onTap: () {
                   _showExportOptionsDialog(context, 'all_data');
+                },
+              ),
+              const Divider(height: 1),
+              _SettingsTile._(
+                icon: Icons.upload_rounded,
+                title: 'Yedekten geri yükle',
+                trailing: const _ChevronWithLabel(label: 'JSON'),
+                onTap: () {
+                  _importBackup(context, ref);
                 },
               ),
             ],
@@ -1234,7 +1411,8 @@ class _ExportOptionsBottomSheetState
       if (mounted) {
         AppSnackbar.showSuccess(
           context,
-          message: 'Veriler başarıyla export edildi',
+          message:
+              'Yedekleme tamamlandı. Dosyalar > İndirilenler klasöründen ulaşabilirsin.',
         );
         Navigator.of(context).pop();
       }
@@ -1267,9 +1445,7 @@ class _ExportOptionsBottomSheetState
           Row(
             children: [
               Text(
-                widget.type == 'goals_reports'
-                    ? 'Hedef ve Raporları Dışa Aktar'
-                    : 'Tüm Verileri Dışa Aktar',
+                'Tüm Verileri Dışa Aktar',
                 style: AppTextStyles.titleLarge.copyWith(
                   fontWeight: FontWeight.w700,
                 ),
@@ -1283,7 +1459,7 @@ class _ExportOptionsBottomSheetState
           ),
           const SizedBox(height: AppSpacing.lg),
           Text(
-            'Format seçin:',
+            'Verilerini hangi formatta kaydetmek istersin?',
             style: AppTextStyles.bodyMedium.copyWith(
               color: AppColors.gray700,
             ),
@@ -1294,9 +1470,9 @@ class _ExportOptionsBottomSheetState
               Expanded(
                 child: OutlinedButton.icon(
                   onPressed:
-                      _isLoading ? null : () => _handleExport('json'),
-                  icon: const Icon(Icons.code_rounded),
-                  label: const Text('JSON'),
+                      _isLoading ? null : () => _handleExport('csv'),
+                  icon: const Icon(Icons.table_chart_rounded),
+                  label: const Text('Tablo (CSV)'),
                   style: OutlinedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     side: const BorderSide(
@@ -1313,9 +1489,9 @@ class _ExportOptionsBottomSheetState
               Expanded(
                 child: OutlinedButton.icon(
                   onPressed:
-                      _isLoading ? null : () => _handleExport('csv'),
-                  icon: const Icon(Icons.table_chart_rounded),
-                  label: const Text('CSV'),
+                      _isLoading ? null : () => _handleExport('json'),
+                  icon: const Icon(Icons.code_rounded),
+                  label: const Text('Gelişmiş (JSON)'),
                   style: OutlinedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     side: const BorderSide(

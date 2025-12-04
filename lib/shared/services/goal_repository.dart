@@ -22,6 +22,9 @@ abstract class GoalRepository {
 
   Future<void> deleteGoal(String goalId);
 
+  /// Belirli bir kullanıcıya ait hedefi sil (security rules ile uyumlu)
+  Future<void> deleteGoalForUser(String goalId, String userId);
+
   // Check-ins
   Stream<List<CheckIn>> watchCheckIns(String goalId, String userId);
 

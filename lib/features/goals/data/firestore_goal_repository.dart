@@ -288,6 +288,13 @@ class FirestoreGoalRepository implements GoalRepository {
     }
   }
 
+  @override
+  Future<void> deleteGoalForUser(String goalId, String userId) async {
+    await _FirestoreCollections._userGoalsCollection(_firestore, userId)
+        .doc(goalId)
+        .delete();
+  }
+
   // ==================== Check-ins ====================
 
   @override
