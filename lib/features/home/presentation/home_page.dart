@@ -177,7 +177,10 @@ class HomePage extends ConsumerWidget {
                 'Hedeflerin',
                 style: AppTextStyles.headlineMedium.copyWith(
                   fontWeight: FontWeight.bold,
+                  fontSize: MediaQuery.of(context).size.width < 360 ? 22 : null,
                 ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
             ),
           ),
@@ -472,36 +475,82 @@ class _TopAppBar extends ConsumerWidget {
     final authState = ref.watch(authStateProvider);
     final user = authState.currentUser;
     final greeting = _buildGreeting(user?.displayName);
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmallScreen = screenWidth < 360;
 
     return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.lg,
+      padding: EdgeInsets.symmetric(
+        horizontal: screenWidth < 360 ? AppSpacing.md : AppSpacing.lg,
         vertical: AppSpacing.lg,
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                greeting,
-                style: AppTextStyles.headlineLarge.copyWith(
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: -0.8,
-                  color: AppColors.gray900,
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  greeting,
+                  style: AppTextStyles.headlineLarge.copyWith(
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: -0.8,
+                    color: AppColors.gray900,
+                    fontSize: isSmallScreen ? 22 : null,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  'Bugün nasıl geçiyor?',
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    color: AppColors.gray600,
+                    fontWeight: FontWeight.w500,
+                    fontSize: isSmallScreen ? 13 : null,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: AppSpacing.md),
+          // Profile button
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.06),
+                  blurRadius: 12,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: () => context.push(AppRoutes.profile),
+                borderRadius: BorderRadius.circular(24),
+                child: Container(
+                  width: 48,
+                  height: 48,
+                  alignment: Alignment.center,
+                  child: Text(
+                    _buildInitials(user?.displayName),
+                    style: AppTextStyles.labelMedium.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.primary,
+                      fontSize: isSmallScreen ? 14 : 16,
+                    ),
+                  ),
                 ),
               ),
-              const SizedBox(height: 2),
-              Text(
-                'Bugün nasıl geçiyor?',
-                style: AppTextStyles.bodyMedium.copyWith(
-                  color: AppColors.gray600,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ],
+            ),
           ),
         ],
       ),
@@ -935,7 +984,10 @@ class _UpcomingCheckInsSection extends ConsumerWidget {
                 'Yaklaşan Check-in\'lerin',
                 style: AppTextStyles.headlineMedium.copyWith(
                   fontWeight: FontWeight.bold,
+                  fontSize: MediaQuery.of(context).size.width < 360 ? 22 : null,
                 ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
               ),
             ),
             // İçerik
@@ -1060,6 +1112,8 @@ class _UpcomingCheckInsSection extends ConsumerWidget {
                                               .copyWith(
                                             color: AppColors.gray600,
                                           ),
+                                          maxLines: 2,
+                                          overflow: TextOverflow.ellipsis,
                                         ),
                                       ],
                                     ),

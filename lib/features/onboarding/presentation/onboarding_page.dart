@@ -306,20 +306,32 @@ class _OnboardingSlide2 extends StatelessWidget {
               children: [
                 Text(
                   'Düzenli ilerlemelerle yolculuğunu takip et.',
-                  style:
-                      Theme.of(context).textTheme.headlineMedium?.copyWith(
-                            color: AppColors.gray900,
-                            fontWeight: FontWeight.bold,
-                          ),
+                  style: Theme.of(context)
+                      .textTheme
+                      .headlineMedium
+                      ?.copyWith(
+                        color: AppColors.gray900,
+                        fontWeight: FontWeight.bold,
+                        fontSize: MediaQuery.of(context).size.width < 360
+                            ? 22
+                            : null,
+                      ),
                   textAlign: TextAlign.center,
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
                 ),
                 AppSpacers.md,
                 Text(
                   'Aylık check-in\'lerle hedeflerindeki ilerlemeyi kaydet, motivasyonunu koru ve başarılarını kutla.',
                   style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                         color: AppColors.gray700,
+                        fontSize: MediaQuery.of(context).size.width < 360
+                            ? 14
+                            : null,
                       ),
                   textAlign: TextAlign.center,
+                  maxLines: 4,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),

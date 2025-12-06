@@ -256,18 +256,26 @@ class _GoalDetailPageState extends ConsumerState<GoalDetailPage>
                     ),
                   ),
 
-                  // Header Section with Progress - Compact
-                  _PremiumHeaderSection(goal: goalDetail),
+                  // Header Section - %55 alan içinde scroll edilebilir
+                  Flexible(
+                    flex: 55,
+                    child: SingleChildScrollView(
+                      physics: const ClampingScrollPhysics(),
+                      child: _PremiumHeaderSection(goal: goalDetail),
+                    ),
+                  ),
 
-                  // Tab Navigation
+                  // TabBar - Sabit, her zaman görünür
                   _PremiumTabBar(controller: _tabController),
 
-                  // Tab Content - Expanded to take remaining space
-                  Expanded(
+                  // Tab Content - %45 alan
+                  Flexible(
+                    flex: 45,
                     child: Container(
                       color: _premiumBackground,
                       child: TabBarView(
                         controller: _tabController,
+                        physics: const AlwaysScrollableScrollPhysics(),
                         children: [
                           _TimelineTab(timelineItems: timelineItems),
                           _NotesTab(goalId: goalDetail.goalId),
@@ -552,7 +560,7 @@ class _PremiumAppBar extends ConsumerWidget {
   }
 }
 
-/// Premium Header Section
+/// Premium Header Section - Responsive and Compact
 class _PremiumHeaderSection extends StatelessWidget {
   const _PremiumHeaderSection({required this.goal});
 
@@ -560,11 +568,27 @@ class _PremiumHeaderSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenHeight = MediaQuery.of(context).size.height;
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmallScreen = screenHeight < 700 || screenWidth < 360;
+    final isVerySmallScreen = screenHeight < 650 || screenWidth < 340;
+
+    // Responsive progress size - %35 alan için çok daha küçük
+    final progressSize =
+        isVerySmallScreen ? 60.0 : (isSmallScreen ? 70.0 : 80.0);
+    final titleFontSize =
+        isVerySmallScreen ? 14.0 : (isSmallScreen ? 16.0 : 18.0);
+    final verticalPadding = isVerySmallScreen
+        ? 4.0
+        : (isSmallScreen ? AppSpacing.xs : AppSpacing.sm);
+    final spacingBetween =
+        isVerySmallScreen ? 2.0 : (isSmallScreen ? 4.0 : 6.0);
+
     return Container(
       color: _GoalDetailPageState._premiumBackground,
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.lg,
-        vertical: AppSpacing.md,
+      padding: EdgeInsets.symmetric(
+        horizontal: screenWidth < 360 ? AppSpacing.md : AppSpacing.lg,
+        vertical: verticalPadding,
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -574,39 +598,43 @@ class _PremiumHeaderSection extends StatelessWidget {
             goal.title,
             style: AppTextStyles.headlineLarge.copyWith(
               fontWeight: FontWeight.bold,
-              fontSize: 22,
+              fontSize: titleFontSize,
               letterSpacing: -0.6,
               height: 1.2,
             ),
             textAlign: TextAlign.center,
-            maxLines: 3,
+            maxLines: isSmallScreen ? 2 : 3,
+            overflow: TextOverflow.ellipsis,
           ),
-          const SizedBox(height: AppSpacing.sm),
+          SizedBox(height: spacingBetween),
 
           if (goal.description != null &&
               goal.description!.isNotEmpty) ...[
             Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+              padding: EdgeInsets.symmetric(
+                horizontal: isSmallScreen ? AppSpacing.xs : AppSpacing.md,
+              ),
               child: Text(
                 goal.description!,
                 style: AppTextStyles.bodySmall.copyWith(
                   color: AppColors.gray700,
                   height: 1.4,
+                  fontSize: isSmallScreen ? 11 : null,
                 ),
                 textAlign: TextAlign.center,
-                maxLines: 3,
+                maxLines: isSmallScreen ? 2 : 3,
                 overflow: TextOverflow.ellipsis,
               ),
             ),
-            const SizedBox(height: AppSpacing.md),
+            SizedBox(height: spacingBetween),
           ],
 
-          // Category Chip - Softer pastel colors
+          // Category Chip - Softer pastel colors (Daha küçük)
           Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 8,
+            padding: EdgeInsets.symmetric(
+              horizontal:
+                  isVerySmallScreen ? 8 : (isSmallScreen ? 10 : 12),
+              vertical: isVerySmallScreen ? 3 : (isSmallScreen ? 4 : 5),
             ),
             decoration: BoxDecoration(
               color: goal.categoryBackgroundColor.withOpacity(0.3),
@@ -617,33 +645,36 @@ class _PremiumHeaderSection extends StatelessWidget {
               style: AppTextStyles.labelMedium.copyWith(
                 color: goal.categoryColor,
                 fontWeight: FontWeight.w600,
-                fontSize: 14,
+                fontSize:
+                    isVerySmallScreen ? 10 : (isSmallScreen ? 11 : 12),
               ),
             ),
           ),
-          const SizedBox(height: AppSpacing.lg),
+          SizedBox(height: spacingBetween),
 
-          // Premium Progress Ring - Smaller size
+          // Premium Progress Ring - Responsive size
           _PremiumCircularProgress(
             progress: goal.progress,
-            progressColor: goal.isCompleted
-                ? AppColors.success
-                : goal.categoryColor,
+            progressColor:
+                goal.isCompleted ? AppColors.success : goal.categoryColor,
+            size: progressSize,
           ),
-          const SizedBox(height: AppSpacing.sm),
+          SizedBox(height: spacingBetween),
 
-          // Status Text - More visible
+          // Status Text - Daha küçük
           Text(
-            goal.isCompleted ? 'Hedef Tamamlandı 🎉' : 'İlerleme Kaydedildi',
+            goal.isCompleted
+                ? 'Hedef Tamamlandı 🎉'
+                : 'İlerleme Kaydedildi',
             style: AppTextStyles.bodyMedium.copyWith(
               color: goal.isCompleted
                   ? AppColors.success
                   : _GoalDetailPageState._statusTextColor,
               fontWeight: FontWeight.w500,
-              fontSize: 14,
+              fontSize: isVerySmallScreen ? 10 : (isSmallScreen ? 11 : 12),
             ),
           ),
-          const SizedBox(height: AppSpacing.md),
+          SizedBox(height: spacingBetween),
 
           // Next Check-in Card - Frosted glass effect with subtle arrow
           ClipRRect(
@@ -651,9 +682,10 @@ class _PremiumHeaderSection extends StatelessWidget {
             child: BackdropFilter(
               filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
               child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.lg,
-                  vertical: AppSpacing.sm,
+                padding: EdgeInsets.symmetric(
+                  horizontal:
+                      isSmallScreen ? AppSpacing.md : AppSpacing.lg,
+                  vertical: AppSpacing.xs,
                 ),
                 decoration: BoxDecoration(
                   color: Colors.white.withOpacity(0.75),
@@ -673,24 +705,34 @@ class _PremiumHeaderSection extends StatelessWidget {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.calendar_today_outlined,
-                      size: 18,
+                      size: isVerySmallScreen
+                          ? 14
+                          : (isSmallScreen ? 15 : 16),
                       color: AppColors.gray600,
                     ),
-                    const SizedBox(width: AppSpacing.sm),
-                    Text(
-                      'Sonraki Check-in: ${goal.nextCheckIn}',
-                      style: AppTextStyles.bodySmall.copyWith(
-                        color: AppColors.gray700,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
+                    const SizedBox(width: 4),
+                    Flexible(
+                      child: Text(
+                        'Sonraki Check-in: ${goal.nextCheckIn}',
+                        style: AppTextStyles.bodySmall.copyWith(
+                          color: AppColors.gray700,
+                          fontSize: isVerySmallScreen
+                              ? 10
+                              : (isSmallScreen ? 11 : 12),
+                          fontWeight: FontWeight.w600,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                    const SizedBox(width: AppSpacing.sm),
-                    const Icon(
+                    const SizedBox(width: 4),
+                    Icon(
                       Icons.arrow_forward_ios_rounded,
-                      size: 14,
+                      size: isVerySmallScreen
+                          ? 10
+                          : (isSmallScreen ? 11 : 12),
                       color: AppColors.gray500,
                     ),
                   ],
@@ -704,19 +746,24 @@ class _PremiumHeaderSection extends StatelessWidget {
   }
 }
 
-/// Premium Circular Progress - With gradient and shadow (Compact size)
+/// Premium Circular Progress - With gradient and shadow (Responsive size)
 class _PremiumCircularProgress extends StatelessWidget {
   const _PremiumCircularProgress({
     required this.progress,
     required this.progressColor,
+    this.size = 120.0,
   });
 
   final double progress;
   final Color progressColor;
+  final double size;
 
   @override
   Widget build(BuildContext context) {
-    const size = 150.0;
+    final fontSize = size * 0.25; // Responsive font size
+    final strokeWidth = size * 0.08; // Responsive stroke width
+    final innerSize = size - (size * 0.2); // Responsive inner circle
+
     return Container(
       width: size,
       height: size,
@@ -725,9 +772,9 @@ class _PremiumCircularProgress extends StatelessWidget {
         boxShadow: [
           BoxShadow(
             color: progressColor.withOpacity(0.22),
-            offset: const Offset(0, 18),
-            blurRadius: 36,
-            spreadRadius: -8,
+            offset: Offset(0, size * 0.12),
+            blurRadius: size * 0.24,
+            spreadRadius: -(size * 0.05),
           ),
         ],
       ),
@@ -736,17 +783,18 @@ class _PremiumCircularProgress extends StatelessWidget {
         children: [
           // Gradient progress + track
           CustomPaint(
-            size: const Size.square(size),
+            size: Size.square(size),
             painter: _GradientCircularProgressPainter(
               progress: progress / 100,
               baseColor: AppColors.gray200,
               progressColor: progressColor,
+              strokeWidth: strokeWidth,
             ),
           ),
           // Inner glow circle
           Container(
-            width: size - 32,
-            height: size - 32,
+            width: innerSize,
+            height: innerSize,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               gradient: RadialGradient(
@@ -774,7 +822,7 @@ class _PremiumCircularProgress extends StatelessWidget {
                 '${progress.toInt()}%',
                 style: AppTextStyles.headlineLarge.copyWith(
                   fontWeight: FontWeight.w800,
-                  fontSize: 38,
+                  fontSize: fontSize,
                   letterSpacing: -1.4,
                   color: AppColors.gray900,
                 ),
@@ -792,26 +840,28 @@ class _GradientCircularProgressPainter extends CustomPainter {
     required this.progress,
     required this.baseColor,
     required this.progressColor,
+    this.strokeWidth = 12.0,
   });
 
   final double progress;
   final Color baseColor;
   final Color progressColor;
+  final double strokeWidth;
 
   @override
   void paint(Canvas canvas, Size size) {
     final center = Offset(size.width / 2, size.height / 2);
-    final radius = (size.width / 2) - 10;
+    final radius = (size.width / 2) - (strokeWidth / 2);
 
     final basePaint = Paint()
       ..color = baseColor
-      ..strokeWidth = 12
+      ..strokeWidth = strokeWidth
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round;
 
     final progressPaint = Paint()
       ..color = progressColor
-      ..strokeWidth = 12
+      ..strokeWidth = strokeWidth
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round;
 
@@ -842,11 +892,12 @@ class _GradientCircularProgressPainter extends CustomPainter {
       covariant _GradientCircularProgressPainter oldDelegate) {
     return oldDelegate.progress != progress ||
         oldDelegate.baseColor != baseColor ||
-        oldDelegate.progressColor != progressColor;
+        oldDelegate.progressColor != progressColor ||
+        oldDelegate.strokeWidth != strokeWidth;
   }
 }
 
-/// Premium Tab Bar - Elegant design with pill highlight
+/// Premium Tab Bar - Elegant design with pill highlight (Responsive)
 class _PremiumTabBar extends StatelessWidget {
   const _PremiumTabBar({required this.controller});
 
@@ -854,11 +905,17 @@ class _PremiumTabBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmallScreen = screenWidth < 360;
+    final isVerySmallScreen = screenWidth < 340;
+
     return Container(
       color: _GoalDetailPageState._premiumBackground,
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.lg,
-        vertical: AppSpacing.md,
+      padding: EdgeInsets.symmetric(
+        horizontal: isVerySmallScreen
+            ? AppSpacing.sm
+            : (isSmallScreen ? AppSpacing.md : AppSpacing.lg),
+        vertical: isVerySmallScreen ? 4.0 : (isSmallScreen ? 6.0 : 8.0),
       ),
       child: Container(
         padding: const EdgeInsets.all(4),
@@ -885,12 +942,14 @@ class _PremiumTabBar extends StatelessWidget {
           indicatorSize: TabBarIndicatorSize.tab,
           labelStyle: AppTextStyles.labelMedium.copyWith(
             fontWeight: FontWeight.w600,
-            fontSize: 14,
+            fontSize: isSmallScreen ? 12 : 14,
           ),
           unselectedLabelStyle: AppTextStyles.labelMedium.copyWith(
             fontWeight: FontWeight.w500,
-            fontSize: 14,
+            fontSize: isSmallScreen ? 12 : 14,
           ),
+          isScrollable:
+              isSmallScreen, // Küçük ekranlarda scroll edilebilir
           tabs: const [
             Tab(text: 'Timeline'),
             Tab(text: 'Notlar'),
@@ -976,7 +1035,7 @@ enum _TimelineItemType {
   checkIn,
 }
 
-/// Timeline Tab - Premium design with more spacing
+/// Timeline Tab - Premium design with more spacing (Büyütüldü)
 class _TimelineTab extends StatelessWidget {
   const _TimelineTab({required this.timelineItems});
 
@@ -985,9 +1044,12 @@ class _TimelineTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final items = List<_TimelineItem>.from(timelineItems);
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmallScreen = screenWidth < 360;
+    final padding = isSmallScreen ? AppSpacing.md : AppSpacing.lg;
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(AppSpacing.lg),
+      padding: EdgeInsets.all(padding),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -998,16 +1060,19 @@ class _TimelineTab extends StatelessWidget {
                 style: AppTextStyles.bodyMedium.copyWith(
                   fontWeight: FontWeight.w600,
                   color: AppColors.gray700,
+                  fontSize: isSmallScreen ? 14 : 15,
                 ),
               ),
-              const SizedBox(height: AppSpacing.xs),
+              SizedBox(
+                  height: isSmallScreen ? AppSpacing.xs : AppSpacing.sm),
             ],
             _PremiumTimelineItem(
               item: items[i],
               isLast: i == items.length - 1,
             ),
             if (i < items.length - 1)
-              const SizedBox(height: AppSpacing.lg),
+              SizedBox(
+                  height: isSmallScreen ? AppSpacing.md : AppSpacing.lg),
           ],
         ],
       ),
@@ -1058,17 +1123,22 @@ class _PremiumTimelineItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmallScreen = screenWidth < 360;
+    final iconSize = isSmallScreen ? 26.0 : 28.0;
+    final iconInnerSize = isSmallScreen ? 14.0 : 16.0;
+
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Timeline indicator with lighter connecting line
+        // Timeline indicator with lighter connecting line (Küçültüldü)
         SizedBox(
-          width: 28,
+          width: iconSize,
           child: Column(
             children: [
               Container(
-                width: 28,
-                height: 28,
+                width: iconSize,
+                height: iconSize,
                 decoration: BoxDecoration(
                   color: _backgroundColor,
                   shape: BoxShape.circle,
@@ -1091,7 +1161,7 @@ class _PremiumTimelineItem extends StatelessWidget {
                 ),
                 child: Icon(
                   _icon,
-                  size: 16,
+                  size: iconInnerSize,
                   color: item.type == _TimelineItemType.checkIn
                       ? _iconColor
                       : Colors.white,
@@ -1100,7 +1170,7 @@ class _PremiumTimelineItem extends StatelessWidget {
               if (!isLast)
                 Container(
                   width: 2,
-                  height: 60,
+                  height: isSmallScreen ? 50 : 60,
                   margin: const EdgeInsets.only(top: AppSpacing.xs),
                   decoration: BoxDecoration(
                     color:
@@ -1111,14 +1181,15 @@ class _PremiumTimelineItem extends StatelessWidget {
             ],
           ),
         ),
-        const SizedBox(width: AppSpacing.lg),
-        // Content with card-like wrapper
+        SizedBox(width: isSmallScreen ? AppSpacing.sm : AppSpacing.md),
+        // Content with card-like wrapper (Küçültüldü)
         Expanded(
           child: Container(
-            padding: const EdgeInsets.all(AppSpacing.md),
+            padding: EdgeInsets.all(
+                isSmallScreen ? AppSpacing.sm : AppSpacing.md),
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(14),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withOpacity(0.03),
@@ -1135,25 +1206,28 @@ class _PremiumTimelineItem extends StatelessWidget {
                   item.title,
                   style: AppTextStyles.bodyMedium.copyWith(
                     fontWeight: FontWeight.w600,
-                    fontSize: 15,
+                    fontSize: isSmallScreen ? 13 : 14,
                     height: 1.3,
                   ),
                 ),
-                const SizedBox(height: AppSpacing.xs),
+                SizedBox(height: isSmallScreen ? 2 : AppSpacing.xs),
                 Text(
                   item.date,
                   style: AppTextStyles.bodySmall.copyWith(
                     color: AppColors.gray600,
-                    fontSize: 13,
+                    fontSize: isSmallScreen ? 11 : 12,
                   ),
                 ),
                 if (item.note != null) ...[
-                  const SizedBox(height: AppSpacing.md),
+                  SizedBox(
+                      height:
+                          isSmallScreen ? AppSpacing.xs : AppSpacing.sm),
                   Container(
-                    padding: const EdgeInsets.all(AppSpacing.md),
+                    padding: EdgeInsets.all(
+                        isSmallScreen ? AppSpacing.xs : AppSpacing.sm),
                     decoration: BoxDecoration(
                       color: const Color(0xFFF9FAFB), // Pastel background
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(10),
                       border: Border.all(
                         color: AppColors.gray200.withOpacity(0.5),
                         width: 1,
@@ -1163,8 +1237,8 @@ class _PremiumTimelineItem extends StatelessWidget {
                       item.note!,
                       style: AppTextStyles.bodySmall.copyWith(
                         color: AppColors.gray700,
-                        fontSize: 13,
-                        height: 1.5,
+                        fontSize: isSmallScreen ? 11 : 12,
+                        height: 1.4,
                       ),
                     ),
                   ),
@@ -1276,12 +1350,31 @@ class _NotesTab extends ConsumerWidget {
                         FilledButton.icon(
                           onPressed: () =>
                               _showAddNoteDialog(context, ref),
-                          icon: const Icon(Icons.add_rounded),
-                          label: const Text('Not Ekle'),
+                          icon: Icon(
+                            Icons.add_rounded,
+                            size: MediaQuery.of(context).size.width < 360
+                                ? 18
+                                : 20,
+                          ),
+                          label: Text(
+                            'Not Ekle',
+                            style: AppTextStyles.bodyMedium.copyWith(
+                              fontSize:
+                                  MediaQuery.of(context).size.width < 360
+                                      ? 13
+                                      : 14,
+                            ),
+                          ),
                           style: FilledButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: AppSpacing.xl,
-                              vertical: AppSpacing.md,
+                            padding: EdgeInsets.symmetric(
+                              horizontal:
+                                  MediaQuery.of(context).size.width < 360
+                                      ? AppSpacing.lg
+                                      : AppSpacing.xl,
+                              vertical:
+                                  MediaQuery.of(context).size.width < 360
+                                      ? AppSpacing.sm
+                                      : AppSpacing.md,
                             ),
                             shape: const RoundedRectangleBorder(
                               borderRadius: AppRadius.borderRadiusLg,
@@ -1297,18 +1390,22 @@ class _NotesTab extends ConsumerWidget {
           );
         }
 
+        final screenWidth = MediaQuery.of(context).size.width;
+        final isSmallScreen = screenWidth < 360;
+        final padding = isSmallScreen ? AppSpacing.md : AppSpacing.lg;
+
         return Stack(
           children: [
             SingleChildScrollView(
-              padding: const EdgeInsets.all(AppSpacing.lg),
+              padding: EdgeInsets.all(padding),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
                     children: [
-                      const Icon(
+                      Icon(
                         Icons.info_outline_rounded,
-                        size: 16,
+                        size: isSmallScreen ? 14 : 16,
                         color: AppColors.gray500,
                       ),
                       const SizedBox(width: AppSpacing.xs),
@@ -1317,13 +1414,15 @@ class _NotesTab extends ConsumerWidget {
                           'Notu düzenlemek için karta dokun, silmek için sağdaki çöp ikonuna bas.',
                           style: AppTextStyles.bodySmall.copyWith(
                             color: AppColors.gray500,
-                            fontSize: 13,
+                            fontSize: isSmallScreen ? 11 : 12,
                           ),
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: AppSpacing.md),
+                  SizedBox(
+                      height:
+                          isSmallScreen ? AppSpacing.sm : AppSpacing.md),
                   for (int i = 0; i < notes.length; i++) ...[
                     _NoteCard(
                       note: notes[i],
@@ -1340,16 +1439,16 @@ class _NotesTab extends ConsumerWidget {
             ),
             // Floating Action Button - Minimal and elegant
             Positioned(
-              bottom: 24,
-              right: 16,
+              bottom: 20,
+              right: 14,
               child: Container(
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(28),
+                  borderRadius: BorderRadius.circular(24),
                   boxShadow: [
                     BoxShadow(
                       color: AppColors.primary.withOpacity(0.3),
-                      offset: const Offset(0, 4),
-                      blurRadius: 12,
+                      offset: const Offset(0, 3),
+                      blurRadius: 10,
                       spreadRadius: 0,
                     ),
                   ],
@@ -1358,10 +1457,12 @@ class _NotesTab extends ConsumerWidget {
                   onPressed: () => _showAddNoteDialog(context, ref),
                   backgroundColor: AppColors.primary,
                   elevation: 0,
-                  child: const Icon(
+                  mini: true,
+                  child: Icon(
                     Icons.add_rounded,
                     color: Colors.white,
-                    size: 24,
+                    size:
+                        MediaQuery.of(context).size.width < 360 ? 20 : 22,
                   ),
                 ),
               ),
@@ -2306,8 +2407,11 @@ class _SubtasksTabState extends ConsumerState<_SubtasksTab> {
                           child: FilledButton(
                             onPressed: () => _showEditDialog(),
                             style: FilledButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(
-                                vertical: 14,
+                              padding: EdgeInsets.symmetric(
+                                vertical:
+                                    MediaQuery.of(context).size.width < 360
+                                        ? 12
+                                        : 13,
                               ),
                               shape: const RoundedRectangleBorder(
                                 borderRadius: AppRadius.borderRadiusLg,
@@ -2318,6 +2422,10 @@ class _SubtasksTabState extends ConsumerState<_SubtasksTab> {
                               style: AppTextStyles.bodyMedium.copyWith(
                                 fontWeight: FontWeight.w700,
                                 color: Colors.white,
+                                fontSize:
+                                    MediaQuery.of(context).size.width < 360
+                                        ? 13
+                                        : 14,
                               ),
                             ),
                           ),
@@ -2364,19 +2472,23 @@ class _SubtasksTabState extends ConsumerState<_SubtasksTab> {
       );
     }
 
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmallScreen = screenWidth < 360;
+    final padding = isSmallScreen ? AppSpacing.md : AppSpacing.lg;
+
     return Stack(
       children: [
         SingleChildScrollView(
-          padding: const EdgeInsets.all(AppSpacing.lg),
+          padding: EdgeInsets.all(padding),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Icon(
+                  Icon(
                     Icons.info_outline_rounded,
-                    size: 16,
+                    size: isSmallScreen ? 14 : 16,
                     color: AppColors.gray500,
                   ),
                   const SizedBox(width: AppSpacing.xs),
@@ -2388,10 +2500,10 @@ class _SubtasksTabState extends ConsumerState<_SubtasksTab> {
                           'Alt görevi düzenlemek için karta dokun, tamamlamak için soldaki çembere bas.',
                           style: AppTextStyles.bodySmall.copyWith(
                             color: AppColors.gray500,
-                            fontSize: 13,
+                            fontSize: isSmallScreen ? 11 : 12,
                           ),
                         ),
-                        const SizedBox(height: AppSpacing.xs),
+                        const SizedBox(height: 4),
                         TextButton.icon(
                           onPressed: _isSuggesting
                               ? null
@@ -2403,22 +2515,23 @@ class _SubtasksTabState extends ConsumerState<_SubtasksTab> {
                             minimumSize: Size.zero,
                           ),
                           icon: _isSuggesting
-                              ? const SizedBox(
-                                  width: 14,
-                                  height: 14,
-                                  child: CircularProgressIndicator(
+                              ? SizedBox(
+                                  width: isSmallScreen ? 12 : 14,
+                                  height: isSmallScreen ? 12 : 14,
+                                  child: const CircularProgressIndicator(
                                     strokeWidth: 2,
                                   ),
                                 )
-                              : const Icon(
+                              : Icon(
                                   Icons.auto_awesome_rounded,
-                                  size: 16,
+                                  size: isSmallScreen ? 14 : 15,
                                 ),
                           label: Text(
                             'AI ile alt görev öner',
                             style: AppTextStyles.bodySmall.copyWith(
                               color: AppColors.primary,
                               fontWeight: FontWeight.w600,
+                              fontSize: isSmallScreen ? 11 : 12,
                             ),
                           ),
                         ),
@@ -2427,7 +2540,8 @@ class _SubtasksTabState extends ConsumerState<_SubtasksTab> {
                   ),
                 ],
               ),
-              const SizedBox(height: AppSpacing.md),
+              SizedBox(
+                  height: isSmallScreen ? AppSpacing.md : AppSpacing.lg),
               for (int i = 0; i < _subGoals.length; i++) ...[
                 _SubtaskCard(
                   subGoal: _subGoals[i],
@@ -2442,7 +2556,9 @@ class _SubtasksTabState extends ConsumerState<_SubtasksTab> {
                       : () => _deleteSubGoal(_subGoals[i]),
                 ),
                 if (i < _subGoals.length - 1)
-                  const SizedBox(height: AppSpacing.md),
+                  SizedBox(
+                      height:
+                          isSmallScreen ? AppSpacing.md : AppSpacing.lg),
               ],
               const SizedBox(height: 80),
             ],
@@ -2450,15 +2566,17 @@ class _SubtasksTabState extends ConsumerState<_SubtasksTab> {
         ),
         if (!widget.isGoalCompleted)
           Positioned(
-            bottom: 24,
-            right: 16,
+            bottom: 20,
+            right: 14,
             child: FloatingActionButton(
               onPressed: () => _showEditDialog(),
               backgroundColor: AppColors.primary,
               elevation: 0,
-              child: const Icon(
+              mini: true,
+              child: Icon(
                 Icons.add_rounded,
                 color: Colors.white,
+                size: MediaQuery.of(context).size.width < 360 ? 20 : 22,
               ),
             ),
           ),
@@ -2483,10 +2601,14 @@ class _SubtaskCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmallScreen = screenWidth < 360;
+    final cardPadding = isSmallScreen ? AppSpacing.sm : AppSpacing.md;
+
     return GestureDetector(
       onTap: onEdit,
       child: Container(
-        padding: const EdgeInsets.all(AppSpacing.md),
+        padding: EdgeInsets.all(cardPadding),
         decoration: BoxDecoration(
           gradient: const LinearGradient(
             begin: Alignment.topLeft,
@@ -2496,24 +2618,24 @@ class _SubtaskCard extends StatelessWidget {
               Color(0xFFE8F0FF),
             ],
           ),
-          borderRadius: BorderRadius.circular(18),
+          borderRadius: BorderRadius.circular(14),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.03),
-              offset: const Offset(0, 8),
-              blurRadius: 18,
-              spreadRadius: -4,
+              offset: const Offset(0, 6),
+              blurRadius: 12,
+              spreadRadius: -2,
             ),
           ],
         ),
         child: Row(
           children: [
-            // Checkbox
+            // Checkbox (Küçültüldü)
             InkWell(
               onTap: onToggle,
               child: Container(
-                width: 24,
-                height: 24,
+                width: isSmallScreen ? 22 : 24,
+                height: isSmallScreen ? 22 : 24,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   gradient: subGoal.isCompleted
@@ -2546,16 +2668,16 @@ class _SubtaskCard extends StatelessWidget {
                       : null,
                 ),
                 child: subGoal.isCompleted
-                    ? const Icon(
+                    ? Icon(
                         Icons.check,
-                        size: 16,
+                        size: isSmallScreen ? 14 : 16,
                         color: Colors.white,
                       )
                     : null,
               ),
             ),
-            const SizedBox(width: AppSpacing.md),
-            // Task content
+            SizedBox(width: isSmallScreen ? AppSpacing.sm : AppSpacing.md),
+            // Task content (Küçültüldü)
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -2566,23 +2688,27 @@ class _SubtaskCard extends StatelessWidget {
                       color: subGoal.isCompleted
                           ? AppColors.gray600
                           : AppColors.gray900,
-                      fontSize: 14,
+                      fontSize: isSmallScreen ? 13 : 14,
                       fontWeight: FontWeight.w600,
                       decoration: subGoal.isCompleted
                           ? TextDecoration.lineThrough
                           : null,
                     ),
+                    maxLines: 3,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ],
               ),
             ),
             IconButton(
               onPressed: onDelete,
-              icon: const Icon(
+              icon: Icon(
                 Icons.delete_outline_rounded,
-                size: 20,
+                size: isSmallScreen ? 18 : 20,
                 color: AppColors.error,
               ),
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(),
             ),
           ],
         ),

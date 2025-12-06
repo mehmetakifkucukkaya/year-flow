@@ -204,122 +204,244 @@ class _GoalsPageState extends ConsumerState<GoalsPage>
 
                   // Tab Bar - Modern Design
                   SliverToBoxAdapter(
-                    child: Padding(
-                      padding: const EdgeInsets.only(
-                        left: AppSpacing.lg,
-                        right: AppSpacing.lg,
-                        top: AppSpacing.sm,
-                        bottom: AppSpacing.sm,
-                      ),
-                      child: Container(
-                        padding: const EdgeInsets.all(4),
-                        decoration: BoxDecoration(
-                          color: AppColors.gray100,
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: TabBar(
-                          controller: _tabController,
-                          indicator: BoxDecoration(
-                            borderRadius: BorderRadius.circular(16),
-                            color: Colors.white,
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.08),
-                                blurRadius: 8,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
+                    child: Builder(
+                      builder: (context) {
+                        final screenWidth =
+                            MediaQuery.of(context).size.width;
+                        final isSmallScreen = screenWidth < 360;
+                        final horizontalPadding = isSmallScreen
+                            ? AppSpacing.md
+                            : AppSpacing.md + 4;
+                        return Padding(
+                          padding: EdgeInsets.only(
+                            left: horizontalPadding,
+                            right: horizontalPadding,
+                            top: AppSpacing.sm,
+                            bottom: AppSpacing.sm,
                           ),
-                          indicatorSize: TabBarIndicatorSize.tab,
-                          dividerColor: Colors.transparent,
-                          labelColor: AppColors.primary,
-                          unselectedLabelColor: AppColors.gray600,
-                          labelStyle: AppTextStyles.labelMedium.copyWith(
-                            fontWeight: FontWeight.w700,
-                            fontSize: 13,
-                          ),
-                          unselectedLabelStyle:
-                              AppTextStyles.labelMedium.copyWith(
-                            fontWeight: FontWeight.w500,
-                            fontSize: 13,
-                          ),
-                          tabs: [
-                            Tab(
-                              height: 44,
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.center,
-                                children: [
-                                  const Icon(Icons.flag_rounded, size: 18),
-                                  const SizedBox(width: 8),
-                                  const Text('Aktif'),
-                                  if (activeGoals.isNotEmpty) ...[
-                                    const SizedBox(width: 6),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 6,
-                                        vertical: 2,
+                          child: Container(
+                            padding: const EdgeInsets.all(3),
+                            decoration: BoxDecoration(
+                              color: AppColors.gray100,
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Builder(
+                              builder: (context) {
+                                final screenWidth =
+                                    MediaQuery.of(context).size.width;
+                                final isSmallScreen = screenWidth < 360;
+                                return TabBar(
+                                  controller: _tabController,
+                                  indicator: BoxDecoration(
+                                    borderRadius:
+                                        BorderRadius.circular(16),
+                                    color: Colors.white,
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color:
+                                            Colors.black.withOpacity(0.08),
+                                        blurRadius: 8,
+                                        offset: const Offset(0, 2),
                                       ),
-                                      decoration: BoxDecoration(
-                                        color: AppColors.primary
-                                            .withOpacity(0.15),
-                                        borderRadius:
-                                            BorderRadius.circular(10),
+                                    ],
+                                  ),
+                                  indicatorSize: TabBarIndicatorSize.tab,
+                                  dividerColor: Colors.transparent,
+                                  labelColor: AppColors.primary,
+                                  unselectedLabelColor: AppColors.gray600,
+                                  labelStyle:
+                                      AppTextStyles.labelMedium.copyWith(
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: isSmallScreen ? 11 : 12,
+                                  ),
+                                  unselectedLabelStyle:
+                                      AppTextStyles.labelMedium.copyWith(
+                                    fontWeight: FontWeight.w500,
+                                    fontSize: isSmallScreen ? 11 : 12,
+                                  ),
+                                  isScrollable:
+                                      false, // Tab'lar eşit genişlikte olacak
+                                  tabAlignment: TabAlignment.fill,
+                                  tabs: [
+                                    Tab(
+                                      height: 44,
+                                      child: Builder(
+                                        builder: (context) {
+                                          final screenWidth =
+                                              MediaQuery.of(context)
+                                                  .size
+                                                  .width;
+                                          final isSmallScreen =
+                                              screenWidth < 360;
+                                          return Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Icon(
+                                                Icons.flag_rounded,
+                                                size: isSmallScreen
+                                                    ? 15
+                                                    : 16,
+                                              ),
+                                              SizedBox(
+                                                  width: isSmallScreen
+                                                      ? 4
+                                                      : 6),
+                                              Flexible(
+                                                child: Text(
+                                                  'Aktif',
+                                                  style: AppTextStyles
+                                                      .labelMedium
+                                                      .copyWith(
+                                                    fontSize: isSmallScreen
+                                                        ? 11
+                                                        : 12,
+                                                  ),
+                                                  maxLines: 1,
+                                                  overflow: TextOverflow
+                                                      .ellipsis,
+                                                ),
+                                              ),
+                                              if (activeGoals
+                                                  .isNotEmpty) ...[
+                                                SizedBox(
+                                                    width: isSmallScreen
+                                                        ? 3
+                                                        : 4),
+                                                Container(
+                                                  padding:
+                                                      EdgeInsets.symmetric(
+                                                    horizontal:
+                                                        isSmallScreen
+                                                            ? 5
+                                                            : 6,
+                                                    vertical: 2,
+                                                  ),
+                                                  decoration:
+                                                      BoxDecoration(
+                                                    color: AppColors
+                                                        .primary
+                                                        .withOpacity(0.15),
+                                                    borderRadius:
+                                                        BorderRadius
+                                                            .circular(10),
+                                                  ),
+                                                  child: Text(
+                                                    '${activeGoals.length}',
+                                                    style: AppTextStyles
+                                                        .labelSmall
+                                                        .copyWith(
+                                                      fontWeight:
+                                                          FontWeight.w700,
+                                                      fontSize:
+                                                          isSmallScreen
+                                                              ? 10
+                                                              : 11,
+                                                      color: AppColors
+                                                          .primary,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ],
+                                          );
+                                        },
                                       ),
-                                      child: Text(
-                                        '${activeGoals.length}',
-                                        style: AppTextStyles.labelSmall
-                                            .copyWith(
-                                          fontWeight: FontWeight.w700,
-                                          fontSize: 11,
-                                          color: AppColors.primary,
-                                        ),
+                                    ),
+                                    Tab(
+                                      height: 44,
+                                      child: Builder(
+                                        builder: (context) {
+                                          final screenWidth =
+                                              MediaQuery.of(context)
+                                                  .size
+                                                  .width;
+                                          final isSmallScreen =
+                                              screenWidth < 360;
+                                          return Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Icon(
+                                                Icons.check_circle_rounded,
+                                                size: isSmallScreen
+                                                    ? 15
+                                                    : 16,
+                                              ),
+                                              SizedBox(
+                                                  width: isSmallScreen
+                                                      ? 4
+                                                      : 6),
+                                              Flexible(
+                                                child: Text(
+                                                  'Tamamlanan',
+                                                  style: AppTextStyles
+                                                      .labelMedium
+                                                      .copyWith(
+                                                    fontSize: isSmallScreen
+                                                        ? 11
+                                                        : 12,
+                                                  ),
+                                                  maxLines: 1,
+                                                  overflow: TextOverflow
+                                                      .ellipsis,
+                                                ),
+                                              ),
+                                              if (completedGoals
+                                                  .isNotEmpty) ...[
+                                                SizedBox(
+                                                    width: isSmallScreen
+                                                        ? 3
+                                                        : 4),
+                                                Container(
+                                                  padding:
+                                                      EdgeInsets.symmetric(
+                                                    horizontal:
+                                                        isSmallScreen
+                                                            ? 5
+                                                            : 6,
+                                                    vertical: 2,
+                                                  ),
+                                                  decoration:
+                                                      BoxDecoration(
+                                                    color: AppColors
+                                                        .primary
+                                                        .withOpacity(0.15),
+                                                    borderRadius:
+                                                        BorderRadius
+                                                            .circular(10),
+                                                  ),
+                                                  child: Text(
+                                                    '${completedGoals.length}',
+                                                    style: AppTextStyles
+                                                        .labelSmall
+                                                        .copyWith(
+                                                      fontWeight:
+                                                          FontWeight.w700,
+                                                      fontSize:
+                                                          isSmallScreen
+                                                              ? 10
+                                                              : 11,
+                                                      color: AppColors
+                                                          .primary,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ],
+                                          );
+                                        },
                                       ),
                                     ),
                                   ],
-                                ],
-                              ),
+                                );
+                              },
                             ),
-                            Tab(
-                              height: 44,
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.center,
-                                children: [
-                                  const Icon(Icons.check_circle_rounded,
-                                      size: 18),
-                                  const SizedBox(width: 8),
-                                  const Text('Tamamlanan'),
-                                  if (completedGoals.isNotEmpty) ...[
-                                    const SizedBox(width: 6),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 6,
-                                        vertical: 2,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: AppColors.primary
-                                            .withOpacity(0.15),
-                                        borderRadius:
-                                            BorderRadius.circular(10),
-                                      ),
-                                      child: Text(
-                                        '${completedGoals.length}',
-                                        style: AppTextStyles.labelSmall
-                                            .copyWith(
-                                          fontWeight: FontWeight.w700,
-                                          fontSize: 11,
-                                          color: AppColors.primary,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
+                          ),
+                        );
+                      },
                     ),
                   ),
 
@@ -1282,6 +1404,8 @@ class _GoalCard extends ConsumerWidget {
                           fontWeight: FontWeight.bold,
                           height: 1.3, // Increased line height
                         ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                     const SizedBox(width: AppSpacing.sm),
@@ -1311,14 +1435,19 @@ class _GoalCard extends ConsumerWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Text(
-                      lastCheckInLabel,
-                      style: AppTextStyles.bodySmall.copyWith(
-                        color: const Color(0xFF6B7280), // Softer gray
-                        fontWeight: FontWeight.w500, // Medium weight
-                        height: 1.4, // Increased line height
+                    Expanded(
+                      child: Text(
+                        lastCheckInLabel,
+                        style: AppTextStyles.bodySmall.copyWith(
+                          color: const Color(0xFF6B7280), // Softer gray
+                          fontWeight: FontWeight.w500, // Medium weight
+                          height: 1.4, // Increased line height
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
+                    const SizedBox(width: AppSpacing.sm),
                     Text(
                       '${goal.progress.toInt()}%',
                       style: AppTextStyles.bodyMedium.copyWith(

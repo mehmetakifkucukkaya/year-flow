@@ -75,6 +75,17 @@ class AppSnackbar {
     required IconData icon,
     required Duration duration,
   }) {
+    // Alt kısımda buton olup olmadığını kontrol et
+    // Goal edit/create sayfalarında 60px buton + padding'ler = ~100px
+    // Her zaman yeterli margin bırak (alt butonların üstüne gelmesin)
+    final viewInsets = MediaQuery.of(context).viewInsets.bottom;
+
+    // Klavye açık değilse ve alt kısımda buton olabilir
+    // Güvenli margin: 100px (buton + padding + spacing)
+    final bottomMargin = viewInsets == 0
+        ? 100.0 // Klavye kapalıysa alt butonlar için yeterli margin
+        : 16.0; // Klavye açıksa normal margin
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Container(
@@ -109,7 +120,12 @@ class AppSnackbar {
         ),
         backgroundColor: backgroundColor,
         behavior: SnackBarBehavior.floating,
-        margin: const EdgeInsets.all(16),
+        margin: EdgeInsets.only(
+          left: 16,
+          right: 16,
+          top: 16,
+          bottom: bottomMargin,
+        ),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         shape: const RoundedRectangleBorder(
           borderRadius: AppRadius.borderRadiusXl,

@@ -205,51 +205,65 @@ class _HeaderHero extends ConsumerWidget {
             style: AppTextStyles.headlineMedium.copyWith(
               fontWeight: FontWeight.w800,
               letterSpacing: -0.5,
+              fontSize:
+                  MediaQuery.of(context).size.width < 360 ? 24 : null,
             ),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
           ),
           const SizedBox(height: AppSpacing.xs),
           Text(
             'Yolculuğuna genel bir bakış atalım',
             style: AppTextStyles.bodyMedium.copyWith(
               color: AppColors.gray700,
+              fontSize:
+                  MediaQuery.of(context).size.width < 360 ? 13 : null,
             ),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
           ),
           const SizedBox(height: AppSpacing.md),
-          SizedBox(
-            width: double.infinity,
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.sm,
-                    vertical: AppSpacing.xs,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.9),
-                    borderRadius: AppRadius.borderRadiusFull,
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.star_rounded,
-                        size: 16,
-                        color: colorScheme.primary,
+          Align(
+            alignment: Alignment.centerRight,
+            child: Builder(
+              builder: (context) {
+                final screenWidth = MediaQuery.of(context).size.width;
+                final isSmallScreen = screenWidth < 380;
+                final buttonText =
+                    hasCurrentYearReport ? 'Raporu Aç' : 'Rapor Oluştur';
+
+                // Küçük ekranlarda sadece icon butonu
+                if (isSmallScreen && screenWidth < 340) {
+                  return FilledButton(
+                    onPressed: () {
+                      final report = currentYearReport;
+                      if (report != null) {
+                        ReportDetailPage.navigate(
+                          context,
+                          reportType: report.reportType,
+                          content: report.content,
+                          reportId: report.id,
+                          periodStart: report.periodStart,
+                          periodEnd: report.periodEnd,
+                        );
+                      } else {
+                        _showCreateReportDialog(context, ref);
+                      }
+                    },
+                    style: FilledButton.styleFrom(
+                      padding: const EdgeInsets.all(AppSpacing.sm),
+                      minimumSize: const Size(48, 48),
+                      shape: const RoundedRectangleBorder(
+                        borderRadius: AppRadius.borderRadiusFull,
                       ),
-                      const SizedBox(width: AppSpacing.xs),
-                      Text(
-                        'Yıllık Rapor',
-                        style: AppTextStyles.labelMedium.copyWith(
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.gray900,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const Spacer(),
-                Flexible(
-                  child: FilledButton.icon(
+                    ),
+                    child: const Icon(Icons.add_rounded, size: 20),
+                  );
+                }
+
+                // Küçük ekranlarda da tam metin göster
+                if (isSmallScreen) {
+                  return FilledButton.icon(
                     onPressed: () {
                       final report = currentYearReport;
                       if (report != null) {
@@ -267,7 +281,11 @@ class _HeaderHero extends ConsumerWidget {
                     },
                     icon: const Icon(Icons.add_rounded, size: 18),
                     label: Text(
-                      hasCurrentYearReport ? 'Raporu Aç' : 'Rapor Oluştur',
+                      buttonText,
+                      style: AppTextStyles.labelMedium.copyWith(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                     style: FilledButton.styleFrom(
                       padding: const EdgeInsets.symmetric(
@@ -278,11 +296,48 @@ class _HeaderHero extends ConsumerWidget {
                         borderRadius: AppRadius.borderRadiusFull,
                       ),
                     ),
+                  );
+                }
+
+                // Normal ekranlarda tam metin
+                return FilledButton.icon(
+                  onPressed: () {
+                    final report = currentYearReport;
+                    if (report != null) {
+                      ReportDetailPage.navigate(
+                        context,
+                        reportType: report.reportType,
+                        content: report.content,
+                        reportId: report.id,
+                        periodStart: report.periodStart,
+                        periodEnd: report.periodEnd,
+                      );
+                    } else {
+                      _showCreateReportDialog(context, ref);
+                    }
+                  },
+                  icon: const Icon(Icons.add_rounded, size: 20),
+                  label: Text(
+                    buttonText,
+                    style: AppTextStyles.labelMedium.copyWith(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
-                ),
-              ],
+                  style: FilledButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.lg,
+                      vertical: AppSpacing.md,
+                    ),
+                    shape: const RoundedRectangleBorder(
+                      borderRadius: AppRadius.borderRadiusFull,
+                    ),
+                  ),
+                );
+              },
             ),
           ),
+          const SizedBox(height: AppSpacing.md),
           statsAsync.maybeWhen(
             orElse: () => const SizedBox.shrink(),
             data: (stats) {
@@ -295,13 +350,10 @@ class _HeaderHero extends ConsumerWidget {
                   : completionRate >= 50
                       ? 'İyi bir ilerleme kaydettin! 💪'
                       : 'Yolculuğuna devam et! 🌱';
-              return Padding(
-                padding: const EdgeInsets.only(top: AppSpacing.xs),
-                child: Text(
-                  message,
-                  style: AppTextStyles.bodySmall.copyWith(
-                    color: AppColors.gray700,
-                  ),
+              return Text(
+                message,
+                style: AppTextStyles.bodySmall.copyWith(
+                  color: AppColors.gray700,
                 ),
               );
             },
