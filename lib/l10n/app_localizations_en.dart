@@ -574,6 +574,39 @@ class AppLocalizationsEn extends AppLocalizations {
   String get onboardingSlide3Description => 'See the progress you\'ve made throughout the year with AI-powered reports, understand your development with concrete data and get inspired for new goals.';
 
   @override
+  String get onboardingWelcomeTitle => 'Make your goals real.';
+
+  @override
+  String get onboardingWelcomeSubtitle => 'Turn your dreams into reality, one step at a time.';
+
+  @override
+  String get onboardingFeature1Title => 'Track your journey';
+
+  @override
+  String get onboardingFeature1Subtitle => 'Monthly check-ins help you stay on track and see how far you\'ve come.';
+
+  @override
+  String get onboardingFeature2Title => 'Celebrate every win';
+
+  @override
+  String get onboardingFeature2Subtitle => 'Visual progress and milestones keep you motivated along the way.';
+
+  @override
+  String get onboardingFeature3Title => 'See your growth with AI-powered reports.';
+
+  @override
+  String get onboardingFeature3Subtitle => 'Yearly snapshots & data-driven insights.';
+
+  @override
+  String get onboardingEndTitle => 'Ready to start your journey?';
+
+  @override
+  String get onboardingEndSubtitle => 'Let\'s turn your goals into achievements.';
+
+  @override
+  String get letsStart => 'Let\'s start';
+
+  @override
   String get alreadyHaveAccount => 'Already have an account? ';
 
   @override

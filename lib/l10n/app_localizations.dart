@@ -1145,6 +1145,72 @@ abstract class AppLocalizations {
   /// **'See the progress you\'ve made throughout the year with AI-powered reports, understand your development with concrete data and get inspired for new goals.'**
   String get onboardingSlide3Description;
 
+  /// Welcome screen main headline
+  ///
+  /// In en, this message translates to:
+  /// **'Make your goals real.'**
+  String get onboardingWelcomeTitle;
+
+  /// Welcome screen subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'Turn your dreams into reality, one step at a time.'**
+  String get onboardingWelcomeSubtitle;
+
+  /// Feature slide 1 title
+  ///
+  /// In en, this message translates to:
+  /// **'Track your journey'**
+  String get onboardingFeature1Title;
+
+  /// Feature slide 1 subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly check-ins help you stay on track and see how far you\'ve come.'**
+  String get onboardingFeature1Subtitle;
+
+  /// Feature slide 2 title
+  ///
+  /// In en, this message translates to:
+  /// **'Celebrate every win'**
+  String get onboardingFeature2Title;
+
+  /// Feature slide 2 subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'Visual progress and milestones keep you motivated along the way.'**
+  String get onboardingFeature2Subtitle;
+
+  /// Feature slide 3 title
+  ///
+  /// In en, this message translates to:
+  /// **'See your growth with AI-powered reports.'**
+  String get onboardingFeature3Title;
+
+  /// Feature slide 3 subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'Yearly snapshots & data-driven insights.'**
+  String get onboardingFeature3Subtitle;
+
+  /// Onboarding end screen title
+  ///
+  /// In en, this message translates to:
+  /// **'Ready to start your journey?'**
+  String get onboardingEndTitle;
+
+  /// Onboarding end screen subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'Let\'s turn your goals into achievements.'**
+  String get onboardingEndSubtitle;
+
+  /// Onboarding end screen CTA button
+  ///
+  /// In en, this message translates to:
+  /// **'Let\'s start'**
+  String get letsStart;
+
   /// Login link prefix text
   ///
   /// In en, this message translates to:

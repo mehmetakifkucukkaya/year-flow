@@ -1,6 +1,6 @@
 name: year_flow
 description: "YearFlow - Yıllık Hedef ve Kişisel Gelişim Uygulaması"
-publish_to: 'none'
+publish_to: "none"
 version: 1.0.0+1
 
 environment:
@@ -63,9 +63,11 @@ flutter:
   generate: true
 
   assets:
+    - assets/logo.png
     - assets/images/
     - assets/icons/
     - assets/illustrations/
+    - assets/onboarding/
 
   # fonts:
   #   - family: Inter

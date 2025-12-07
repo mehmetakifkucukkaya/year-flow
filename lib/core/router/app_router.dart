@@ -15,6 +15,7 @@ import '../../features/goals/presentation/goals_archive_page.dart';
 import '../../features/goals/presentation/goals_page.dart';
 import '../../features/home/presentation/home_page.dart';
 import '../../features/onboarding/presentation/onboarding_page.dart';
+import '../../features/onboarding/providers/onboarding_providers.dart';
 import '../../features/reports/presentation/report_detail_page.dart';
 import '../../features/reports/presentation/reports_page.dart';
 import '../../features/settings/presentation/privacy_security_page.dart';
@@ -117,37 +118,133 @@ final routerProvider = Provider<GoRouter>((ref) {
       !authState.isGoogleLoading &&
       authState.errorMessage == null;
 
+  // Onboarding tamamlandı mı kontrolü - try-catch ile güvenli okuma
+  // NOT: Initial location için sadece auth state'e bakıyoruz
+  // Onboarding state'i redirect logic'inde kontrol edilecek
+  bool isOnboardingCompleted = false;
+  try {
+    isOnboardingCompleted = ref.watch(onboardingCompletedProvider);
+  } catch (e) {
+    // Hata durumunda varsayılan olarak false
+    isOnboardingCompleted = false;
+  }
+
+  // Initial location belirleme
+  // Sadece auth state'e göre belirle - onboarding kontrolü redirect'te yapılacak
+  String getInitialLocation() {
+    if (isAuthenticated) {
+      return AppRoutes.home;
+    }
+    // Authenticated değilse - onboarding veya login'e git
+    // Redirect logic onboarding completed state'ine göre yönlendirecek
+    if (isOnboardingCompleted) {
+      return AppRoutes.login;
+    }
+    return AppRoutes.onboarding;
+  }
+
   return GoRouter(
-    initialLocation:
-        isAuthenticated ? AppRoutes.home : AppRoutes.onboarding,
+    initialLocation: getInitialLocation(),
     debugLogDiagnostics: false,
     redirect: (context, state) {
-      final isAuthRoute = state.uri.path == AppRoutes.login ||
-          state.uri.path == AppRoutes.register ||
-          state.uri.path == AppRoutes.forgotPassword;
-      final isHomeRoute = state.uri.path == AppRoutes.home ||
-          state.uri.path == AppRoutes.goals ||
-          state.uri.path == AppRoutes.reports ||
-          state.uri.path == AppRoutes.settings;
+      try {
+        // Redirect içinde güncel state'leri oku
+        final currentAuthState = ref.read(authStateProvider);
+        final currentIsAuthenticated = currentAuthState.isAuthenticated &&
+            !currentAuthState.isLoading &&
+            !currentAuthState.isEmailLoading &&
+            !currentAuthState.isGoogleLoading &&
+            currentAuthState.errorMessage == null;
 
-      // Eğer authenticated ise ve auth sayfalarına gitmeye çalışıyorsa home'a yönlendir
-      if (isAuthenticated && isAuthRoute) {
-        return AppRoutes.home;
+        bool currentIsOnboardingCompleted = false;
+        try {
+          currentIsOnboardingCompleted =
+              ref.read(onboardingCompletedProvider);
+        } catch (e) {
+          // Hata durumunda varsayılan olarak false
+          currentIsOnboardingCompleted = false;
+        }
+
+        final currentPath = state.uri.path;
+        final isAuthRoute = currentPath == AppRoutes.login ||
+            currentPath == AppRoutes.register ||
+            currentPath == AppRoutes.forgotPassword;
+        final isHomeRoute = currentPath == AppRoutes.home ||
+            currentPath == AppRoutes.goals ||
+            currentPath == AppRoutes.reports ||
+            currentPath == AppRoutes.settings;
+        final isOnboardingRoute = currentPath == AppRoutes.onboarding;
+
+        // Eğer authenticated ise:
+        if (currentIsAuthenticated) {
+          // Auth sayfalarına gitmeye çalışıyorsa home'a yönlendir
+          if (isAuthRoute) {
+            return AppRoutes.home;
+          }
+          // Onboarding'e gitmeye çalışıyorsa home'a yönlendir
+          if (isOnboardingRoute) {
+            return AppRoutes.home;
+          }
+        }
+
+        // Eğer authenticated değilse:
+        if (!currentIsAuthenticated) {
+          // Home sayfalarına gitmeye çalışıyorsa login'e yönlendir
+          if (isHomeRoute) {
+            return AppRoutes.login;
+          }
+          // Onboarding tamamlanmadıysa ve auth sayfalarına gitmeye çalışıyorsa onboarding'e yönlendir
+          // NOT: Onboarding route'undan login'e otomatik redirect yapmıyoruz - kullanıcı skip/continue ile geçmeli
+          if (!currentIsOnboardingCompleted && isAuthRoute) {
+            return AppRoutes.onboarding;
+          }
+          // Onboarding tamamlandıysa ve auth sayfalarına erişmeye çalışıyorsa izin ver (null döndür)
+        }
+
+        return null; // Yönlendirme yok
+      } catch (e) {
+        // Hata durumunda null döndür (navigation devam etsin)
+        debugPrint('Router redirect error: $e');
+        return null;
       }
-
-      // Eğer authenticated değilse ve home sayfalarına gitmeye çalışıyorsa login'e yönlendir
-      if (!isAuthenticated && isHomeRoute) {
-        return AppRoutes.login;
-      }
-
-      return null; // Yönlendirme yok
     },
     routes: [
-      // Splash Screen (şimdilik login'e yönlendiriyor)
+      // Splash Screen
       GoRoute(
         path: AppRoutes.splash,
         name: 'splash',
-        redirect: (context, state) => AppRoutes.login,
+        redirect: (context, state) {
+          try {
+            final currentAuthState = ref.read(authStateProvider);
+            final currentIsAuthenticated =
+                currentAuthState.isAuthenticated &&
+                    !currentAuthState.isLoading &&
+                    !currentAuthState.isEmailLoading &&
+                    !currentAuthState.isGoogleLoading &&
+                    currentAuthState.errorMessage == null;
+
+            bool currentIsOnboardingCompleted = false;
+            try {
+              currentIsOnboardingCompleted =
+                  ref.read(onboardingCompletedProvider);
+            } catch (e) {
+              // Hata durumunda varsayılan olarak false
+              currentIsOnboardingCompleted = false;
+            }
+
+            if (currentIsAuthenticated) {
+              return AppRoutes.home;
+            }
+            if (currentIsOnboardingCompleted) {
+              return AppRoutes.login;
+            }
+            return AppRoutes.onboarding;
+          } catch (e) {
+            // Hata durumunda onboarding'e yönlendir
+            debugPrint('Splash redirect error: $e');
+            return AppRoutes.onboarding;
+          }
+        },
       ),
 
       // Auth Routes

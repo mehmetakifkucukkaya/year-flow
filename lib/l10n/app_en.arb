@@ -833,6 +833,50 @@
   "@onboardingSlide3Description": {
     "description": "Onboarding slide 3 description"
   },
+  "onboardingWelcomeTitle": "Make your goals real.",
+  "@onboardingWelcomeTitle": {
+    "description": "Welcome screen main headline"
+  },
+  "onboardingWelcomeSubtitle": "Turn your dreams into reality, one step at a time.",
+  "@onboardingWelcomeSubtitle": {
+    "description": "Welcome screen subtitle"
+  },
+  "onboardingFeature1Title": "Track your journey",
+  "@onboardingFeature1Title": {
+    "description": "Feature slide 1 title"
+  },
+  "onboardingFeature1Subtitle": "Monthly check-ins help you stay on track and see how far you've come.",
+  "@onboardingFeature1Subtitle": {
+    "description": "Feature slide 1 subtitle"
+  },
+  "onboardingFeature2Title": "Celebrate every win",
+  "@onboardingFeature2Title": {
+    "description": "Feature slide 2 title"
+  },
+  "onboardingFeature2Subtitle": "Visual progress and milestones keep you motivated along the way.",
+  "@onboardingFeature2Subtitle": {
+    "description": "Feature slide 2 subtitle"
+  },
+  "onboardingFeature3Title": "See your growth with AI-powered reports.",
+  "@onboardingFeature3Title": {
+    "description": "Feature slide 3 title"
+  },
+  "onboardingFeature3Subtitle": "Yearly snapshots & data-driven insights.",
+  "@onboardingFeature3Subtitle": {
+    "description": "Feature slide 3 subtitle"
+  },
+  "onboardingEndTitle": "Ready to start your journey?",
+  "@onboardingEndTitle": {
+    "description": "Onboarding end screen title"
+  },
+  "onboardingEndSubtitle": "Let's turn your goals into achievements.",
+  "@onboardingEndSubtitle": {
+    "description": "Onboarding end screen subtitle"
+  },
+  "letsStart": "Let's start",
+  "@letsStart": {
+    "description": "Onboarding end screen CTA button"
+  },
   "alreadyHaveAccount": "Already have an account? ",
   "@alreadyHaveAccount": {
     "description": "Login link prefix text"

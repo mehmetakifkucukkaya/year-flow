@@ -574,6 +574,39 @@ class AppLocalizationsTr extends AppLocalizations {
   String get onboardingSlide3Description => 'AI destekli raporlarla yıl boyunca kaydettiğin ilerlemeyi gör, somut verilerle gelişimini anla ve yeni hedefler için ilham al.';
 
   @override
+  String get onboardingWelcomeTitle => 'Hedeflerini gerçekleştir.';
+
+  @override
+  String get onboardingWelcomeSubtitle => 'Hayallerini gerçeğe dönüştür, adım adım.';
+
+  @override
+  String get onboardingFeature1Title => 'Yolculuğunu takip et';
+
+  @override
+  String get onboardingFeature1Subtitle => 'Aylık check-in\'lerle ilerlemeni gör ve hedeflerine odaklan.';
+
+  @override
+  String get onboardingFeature2Title => 'Her başarıyı kutla';
+
+  @override
+  String get onboardingFeature2Subtitle => 'Görsel ilerleme ve kilometre taşları seni motive etmeye devam eder.';
+
+  @override
+  String get onboardingFeature3Title => 'AI destekli raporlarla büyümeni gör.';
+
+  @override
+  String get onboardingFeature3Subtitle => 'Yıllık özetler ve veri odaklı içgörüler.';
+
+  @override
+  String get onboardingEndTitle => 'Yolculuğuna başlamaya hazır mısın?';
+
+  @override
+  String get onboardingEndSubtitle => 'Hedeflerini başarılara dönüştürelim.';
+
+  @override
+  String get letsStart => 'Başlayalım';
+
+  @override
   String get alreadyHaveAccount => 'Zaten bir hesabın var mı? ';
 
   @override
