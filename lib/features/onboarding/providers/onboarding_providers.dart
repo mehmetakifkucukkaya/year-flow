@@ -7,14 +7,11 @@ import 'package:shared_preferences/shared_preferences.dart';
 final onboardingCompletedProvider =
     StateNotifierProvider<OnboardingCompletedNotifier, bool>((ref) {
   final notifier = OnboardingCompletedNotifier();
-  // Başlangıçta state'i yükle (async ama await etmeden - fire and forget)
+  // Başlangıçta state'i hemen yükle (async)
   // State güncellendiğinde provider otomatik olarak rebuild edecek
-  // NOT: Initialize işlemi widget tree hazır olduktan sonra yapılmalı
-  WidgetsBinding.instance.addPostFrameCallback((_) {
-    notifier.initialize().catchError((error) {
-      // Hata durumunda sessizce devam et
-      debugPrint('Onboarding provider initialization error: $error');
-    });
+  notifier.initialize().catchError((error) {
+    // Hata durumunda sessizce devam et
+    debugPrint('Onboarding provider initialization error: $error');
   });
   return notifier;
 });

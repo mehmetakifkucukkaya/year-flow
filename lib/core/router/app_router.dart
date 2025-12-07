@@ -119,27 +119,27 @@ final routerProvider = Provider<GoRouter>((ref) {
       authState.errorMessage == null;
 
   // Onboarding tamamlandı mı kontrolü - try-catch ile güvenli okuma
-  // NOT: Initial location için sadece auth state'e bakıyoruz
-  // Onboarding state'i redirect logic'inde kontrol edilecek
+  // İlk açılışta false olacak (henüz yüklenmemişse), sonra SharedPreferences'tan yüklenecek
   bool isOnboardingCompleted = false;
   try {
     isOnboardingCompleted = ref.watch(onboardingCompletedProvider);
   } catch (e) {
-    // Hata durumunda varsayılan olarak false
+    // Hata durumunda varsayılan olarak false (onboarding göster)
     isOnboardingCompleted = false;
   }
 
   // Initial location belirleme
-  // Sadece auth state'e göre belirle - onboarding kontrolü redirect'te yapılacak
+  // İlk açılışta: authenticated değilse ve onboarding tamamlanmamışsa onboarding'e git
   String getInitialLocation() {
     if (isAuthenticated) {
       return AppRoutes.home;
     }
-    // Authenticated değilse - onboarding veya login'e git
-    // Redirect logic onboarding completed state'ine göre yönlendirecek
+    // Authenticated değilse - onboarding tamamlanmışsa login'e, değilse onboarding'e git
+    // İlk açılışta isOnboardingCompleted false olacak, bu yüzden onboarding'e gidecek
     if (isOnboardingCompleted) {
       return AppRoutes.login;
     }
+    // İlk açılış veya onboarding tamamlanmamış - onboarding göster
     return AppRoutes.onboarding;
   }
 
@@ -194,11 +194,15 @@ final routerProvider = Provider<GoRouter>((ref) {
             return AppRoutes.login;
           }
           // Onboarding tamamlanmadıysa ve auth sayfalarına gitmeye çalışıyorsa onboarding'e yönlendir
-          // NOT: Onboarding route'undan login'e otomatik redirect yapmıyoruz - kullanıcı skip/continue ile geçmeli
+          // İlk açılışta onboarding tamamlanmamış olacak, bu yüzden onboarding'e yönlendirilecek
           if (!currentIsOnboardingCompleted && isAuthRoute) {
             return AppRoutes.onboarding;
           }
           // Onboarding tamamlandıysa ve auth sayfalarına erişmeye çalışıyorsa izin ver (null döndür)
+          // Onboarding route'unda ise ve tamamlanmışsa login'e yönlendir
+          if (isOnboardingRoute && currentIsOnboardingCompleted) {
+            return AppRoutes.login;
+          }
         }
 
         return null; // Yönlendirme yok
