@@ -2212,6 +2212,66 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'You don\'t have any goals yet. You need to create a goal first.'**
   String get noGoalsYetCreateFirst;
+
+  /// Delete button text
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get delete;
+
+  /// Complete button text
+  ///
+  /// In en, this message translates to:
+  /// **'Complete'**
+  String get complete;
+
+  /// Delete subtask dialog title
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Subtask'**
+  String get deleteSubtask;
+
+  /// Delete subtask confirmation message
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to delete this subtask?'**
+  String get deleteSubtaskConfirmation;
+
+  /// Delete report dialog title
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Report'**
+  String get deleteReport;
+
+  /// Error message shown when a page is not found
+  ///
+  /// In en, this message translates to:
+  /// **'Page not found: {path}'**
+  String pageNotFound(String path);
+
+  /// Error message when AI optimization result is not found
+  ///
+  /// In en, this message translates to:
+  /// **'Optimization result not found'**
+  String get optimizationResultNotFound;
+
+  /// Instruction text for creating first report
+  ///
+  /// In en, this message translates to:
+  /// **'You can create your first report by clicking the \"Create Report\" button above.'**
+  String get createFirstReportInstruction;
+
+  /// Remove button text
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get remove;
+
+  /// Close button text
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get close;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

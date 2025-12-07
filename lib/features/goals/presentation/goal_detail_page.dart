@@ -2087,18 +2087,18 @@ class _SubtasksTabState extends ConsumerState<_SubtasksTab> {
       context: context,
       barrierColor: Colors.black.withOpacity(0.5),
       builder: (context) => AlertDialog(
-        title: const Text('Alt görevi sil'),
-        content: const Text('Bu alt görevi silmek istediğine emin misin?'),
+        title: Text(context.l10n.deleteSubtask),
+        content: Text(context.l10n.deleteSubtaskConfirmation),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('İptal'),
+            child: Text(context.l10n.cancel),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text(
-              'Sil',
-              style: TextStyle(color: AppColors.error),
+            child: Text(
+              context.l10n.delete,
+              style: const TextStyle(color: AppColors.error),
             ),
           ),
         ],
@@ -3088,7 +3088,7 @@ class _CompleteConfirmationDialog extends StatelessWidget {
                         borderRadius: AppRadius.borderRadiusMd,
                       ),
                     ),
-                    child: const Text('İptal'),
+                    child: Text(context.l10n.cancel),
                   ),
                 ),
                 const SizedBox(width: AppSpacing.md),
@@ -3104,7 +3104,7 @@ class _CompleteConfirmationDialog extends StatelessWidget {
                         borderRadius: AppRadius.borderRadiusMd,
                       ),
                     ),
-                    child: const Text('Tamamla'),
+                    child: Text(context.l10n.complete),
                   ),
                 ),
               ],

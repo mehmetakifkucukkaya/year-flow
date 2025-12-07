@@ -1144,4 +1144,36 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get noGoalsYetCreateFirst => 'Henüz hiç hedefin yok. Önce bir hedef oluşturmalısın.';
+
+  @override
+  String get delete => 'Sil';
+
+  @override
+  String get complete => 'Tamamla';
+
+  @override
+  String get deleteSubtask => 'Alt görevi sil';
+
+  @override
+  String get deleteSubtaskConfirmation => 'Bu alt görevi silmek istediğine emin misin?';
+
+  @override
+  String get deleteReport => 'Raporu sil';
+
+  @override
+  String pageNotFound(String path) {
+    return 'Sayfa bulunamadı: $path';
+  }
+
+  @override
+  String get optimizationResultNotFound => 'Optimizasyon sonucu bulunamadı';
+
+  @override
+  String get createFirstReportInstruction => 'Yukarıdaki \"Rapor Oluştur\" butonuna tıklayarak ilk raporunuzu oluşturabilirsiniz.';
+
+  @override
+  String get remove => 'Çıkar';
+
+  @override
+  String get close => 'Kapat';
 }

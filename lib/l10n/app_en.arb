@@ -1694,6 +1694,51 @@
   "doCheckIn": "Do Check-in",
   "@doCheckIn": {
     "description": "Do check-in button text"
+  },
+  "delete": "Delete",
+  "@delete": {
+    "description": "Delete button text"
+  },
+  "complete": "Complete",
+  "@complete": {
+    "description": "Complete button text"
+  },
+  "deleteSubtask": "Delete Subtask",
+  "@deleteSubtask": {
+    "description": "Delete subtask dialog title"
+  },
+  "deleteSubtaskConfirmation": "Are you sure you want to delete this subtask?",
+  "@deleteSubtaskConfirmation": {
+    "description": "Delete subtask confirmation message"
+  },
+  "deleteReport": "Delete Report",
+  "@deleteReport": {
+    "description": "Delete report dialog title"
+  },
+  "pageNotFound": "Page not found: {path}",
+  "@pageNotFound": {
+    "description": "Error message shown when a page is not found",
+    "placeholders": {
+      "path": {
+        "type": "String"
+      }
+    }
+  },
+  "optimizationResultNotFound": "Optimization result not found",
+  "@optimizationResultNotFound": {
+    "description": "Error message when AI optimization result is not found"
+  },
+  "createFirstReportInstruction": "You can create your first report by clicking the \"Create Report\" button above.",
+  "@createFirstReportInstruction": {
+    "description": "Instruction text for creating first report"
+  },
+  "remove": "Remove",
+  "@remove": {
+    "description": "Remove button text"
+  },
+  "close": "Close",
+  "@close": {
+    "description": "Close button text"
   }
 }
 

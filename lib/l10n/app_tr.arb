@@ -653,6 +653,23 @@
   "goalsLoading": "Hedefler yükleniyor...",
   "errorLoadingGoals": "Hedefler alınırken bir hata oluştu: {error}",
   "noGoalsYetCreateFirst": "Henüz hiç hedefin yok. Önce bir hedef oluşturmalısın.",
-  "doCheckIn": "Check-in Yap"
+  "doCheckIn": "Check-in Yap",
+  "delete": "Sil",
+  "complete": "Tamamla",
+  "deleteSubtask": "Alt görevi sil",
+  "deleteSubtaskConfirmation": "Bu alt görevi silmek istediğine emin misin?",
+  "deleteReport": "Raporu sil",
+  "pageNotFound": "Sayfa bulunamadı: {path}",
+  "@pageNotFound": {
+    "placeholders": {
+      "path": {
+        "type": "String"
+      }
+    }
+  },
+  "optimizationResultNotFound": "Optimizasyon sonucu bulunamadı",
+  "createFirstReportInstruction": "Yukarıdaki \"Rapor Oluştur\" butonuna tıklayarak ilk raporunuzu oluşturabilirsiniz.",
+  "remove": "Çıkar",
+  "close": "Kapat"
 }
 

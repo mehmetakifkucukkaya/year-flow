@@ -465,7 +465,7 @@ final routerProvider = Provider<GoRouter>((ref) {
     ],
     errorBuilder: (context, state) => Scaffold(
       body: Center(
-        child: Text('Sayfa bulunamadı: ${state.uri.path}'),
+        child: Text(context.l10n.pageNotFound(state.uri.path)),
       ),
     ),
   );

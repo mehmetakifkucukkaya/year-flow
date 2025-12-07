@@ -60,7 +60,7 @@ class _GoalsArchivePageState extends ConsumerState<GoalsArchivePage> {
                     onPressed: () {
                       ref.invalidate(archivedGoalsStreamProvider);
                     },
-                    child: const Text('Yeniden Dene'),
+                    child: Text(context.l10n.tryAgain),
                   ),
                 ],
               ),
@@ -534,7 +534,7 @@ class _UnarchiveConfirmationDialog extends StatelessWidget {
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-                    child: const Text('İptal'),
+                    child: Text(context.l10n.cancel),
                   ),
                 ),
                 const SizedBox(width: AppSpacing.md),
@@ -550,7 +550,7 @@ class _UnarchiveConfirmationDialog extends StatelessWidget {
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-                    child: const Text('Çıkar'),
+                    child: Text(context.l10n.remove),
                   ),
                 ),
               ],

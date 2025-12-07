@@ -5,6 +5,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_radius.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_text_styles.dart';
+import '../../../../core/utils/extensions.dart';
 import '../../../../core/widgets/index.dart';
 import '../../../../shared/models/goal.dart';
 import '../../../../shared/providers/ai_providers.dart';
@@ -288,7 +289,7 @@ class _ErrorSection extends StatelessWidget {
             onPressed: () {
               Navigator.of(context).pop();
             },
-            child: const Text('Kapat'),
+            child: Text(context.l10n.close),
           ),
         ],
       ),
@@ -301,10 +302,10 @@ class _EmptyStateSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Center(
+    return Center(
       child: Padding(
-        padding: EdgeInsets.all(AppSpacing.xl),
-        child: Text('Optimizasyon sonucu bulunamadı'),
+        padding: const EdgeInsets.all(AppSpacing.xl),
+        child: Text(context.l10n.optimizationResultNotFound),
       ),
     );
   }

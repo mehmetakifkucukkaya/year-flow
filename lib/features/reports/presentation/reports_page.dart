@@ -1930,7 +1930,7 @@ class _ReportsHistorySection extends ConsumerWidget {
                 ),
                 const SizedBox(height: AppSpacing.xs),
                 Text(
-                  'Yukarıdaki "Rapor Oluştur" butonuna tıklayarak ilk raporunuzu oluşturabilirsiniz.',
+                  context.l10n.createFirstReportInstruction,
                   textAlign: TextAlign.center,
                   style: AppTextStyles.bodySmall.copyWith(
                     color: AppColors.gray500,

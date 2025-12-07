@@ -1144,4 +1144,36 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get noGoalsYetCreateFirst => 'You don\'t have any goals yet. You need to create a goal first.';
+
+  @override
+  String get delete => 'Delete';
+
+  @override
+  String get complete => 'Complete';
+
+  @override
+  String get deleteSubtask => 'Delete Subtask';
+
+  @override
+  String get deleteSubtaskConfirmation => 'Are you sure you want to delete this subtask?';
+
+  @override
+  String get deleteReport => 'Delete Report';
+
+  @override
+  String pageNotFound(String path) {
+    return 'Page not found: $path';
+  }
+
+  @override
+  String get optimizationResultNotFound => 'Optimization result not found';
+
+  @override
+  String get createFirstReportInstruction => 'You can create your first report by clicking the \"Create Report\" button above.';
+
+  @override
+  String get remove => 'Remove';
+
+  @override
+  String get close => 'Close';
 }

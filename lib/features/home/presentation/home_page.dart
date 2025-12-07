@@ -83,7 +83,7 @@ class HomePage extends ConsumerWidget {
                     Expanded(
                       child: TextButton(
                         onPressed: () => Navigator.of(sheetContext).pop(),
-                        child: const Text('Daha sonra'),
+                        child: Text(context.l10n.later),
                       ),
                     ),
                     const SizedBox(width: AppSpacing.sm),
@@ -103,7 +103,7 @@ class HomePage extends ConsumerWidget {
                               Navigator.of(sheetContext).pop();
                               AppSnackbar.showSuccess(
                                 context,
-                                message: 'İsmin kaydedildi',
+                                message: context.l10n.nameSaved,
                               );
                             }
                           } catch (e) {
@@ -117,7 +117,7 @@ class HomePage extends ConsumerWidget {
                             }
                           }
                         },
-                        child: const Text('Kaydet'),
+                        child: Text(context.l10n.save),
                       ),
                     ),
                   ],

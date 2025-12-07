@@ -7,6 +7,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_radius.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_text_styles.dart';
+import '../../../core/utils/extensions.dart';
 import '../../../core/widgets/index.dart';
 import '../../../shared/models/yearly_report.dart';
 import '../../../shared/providers/goal_providers.dart';
@@ -89,21 +90,21 @@ class ReportDetailPage extends ConsumerWidget {
             shape: const RoundedRectangleBorder(
               borderRadius: AppRadius.borderRadiusLg,
             ),
-            title: const Text('Raporu sil'),
-            content: const Text(
+            title: Text(context.l10n.deleteReport),
+            content: Text(
               'Bu raporu silmek istediğinden emin misin? Bu işlem geri alınamaz.',
             ),
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(dialogContext).pop(false),
-                child: const Text('Vazgeç'),
+                child: Text(context.l10n.cancel),
               ),
               TextButton(
                 onPressed: () => Navigator.of(dialogContext).pop(true),
                 style: TextButton.styleFrom(
                   foregroundColor: AppColors.error,
                 ),
-                child: const Text('Sil'),
+                child: Text(context.l10n.delete),
               ),
             ],
           );
@@ -458,7 +459,7 @@ class _ReportHeader extends StatelessWidget {
               IconButton(
                 onPressed: onDeletePressed,
                 icon: const Icon(Icons.delete_outline_rounded),
-                tooltip: 'Sil',
+                tooltip: context.l10n.delete,
               ),
           ],
         ),
