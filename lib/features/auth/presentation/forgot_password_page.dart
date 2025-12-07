@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/app_colors.dart';
+import '../../../core/utils/extensions.dart';
 import '../../../core/widgets/index.dart';
 import '../providers/auth_providers.dart';
 
@@ -82,7 +83,7 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
                 const SizedBox(height: 32),
                 // Başlık
                 Text(
-                  'Şifreni mi unuttun?',
+                  context.l10n.forgotPasswordTitle,
                   style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                         color: AppColors.gray900,
                         fontWeight: FontWeight.bold,
@@ -92,7 +93,7 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
                 const SizedBox(height: 16),
                 // Açıklama
                 Text(
-                  'Şifrenizi sıfırlamak için kayıtlı e-posta adresinizi girin.',
+                  context.l10n.forgotPasswordDescription,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: AppColors.gray700,
                       ),
@@ -114,7 +115,7 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
                           ),
                           const SizedBox(height: 16),
                           Text(
-                            'E-posta gönderildi!',
+                            context.l10n.emailSent,
                             style: Theme.of(context)
                                 .textTheme
                                 .titleMedium
@@ -124,7 +125,7 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            'Şifre sıfırlama bağlantısı ${_emailController.text.trim()} adresine gönderildi.',
+                            context.l10n.resetLinkSent(_emailController.text.trim()),
                             textAlign: TextAlign.center,
                             style: Theme.of(context).textTheme.bodyMedium,
                           ),
@@ -138,24 +139,24 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'E-posta Adresi',
+                        context.l10n.emailAddress,
                         style: Theme.of(context).textTheme.titleSmall?.copyWith(
                               color: AppColors.gray900,
                             ),
                       ),
                       const SizedBox(height: 8),
                       AppTextField(
-                        hint: 'E-posta Adresiniz',
+                        hint: context.l10n.emailAddressHint,
                         controller: _emailController,
                         keyboardType: TextInputType.emailAddress,
                         textInputAction: TextInputAction.done,
                         prefixIcon: const Icon(Icons.email_outlined),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
-                            return 'E-posta adresi gereklidir';
+                            return context.l10n.emailRequired;
                           }
                           if (!value.contains('@')) {
-                            return 'Geçerli bir e-posta adresi girin';
+                            return context.l10n.emailInvalid;
                           }
                           return null;
                         },
@@ -168,7 +169,7 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
                   AppButton(
                     onPressed: authState.isLoading ? null : _handleResetPassword,
                     isLoading: authState.isLoading,
-                    child: const Text('Şifre Sıfırla'),
+                    child: Text(context.l10n.resetPassword),
                   ),
               ],
             ),

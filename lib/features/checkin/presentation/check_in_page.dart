@@ -7,6 +7,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_radius.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_text_styles.dart';
+import '../../../core/utils/extensions.dart';
 import '../../../core/widgets/index.dart';
 import '../../../shared/models/check_in.dart';
 import '../../../shared/providers/goal_providers.dart';
@@ -45,7 +46,7 @@ class _CheckInPageState extends ConsumerState<CheckInPage> {
     if (userId == null) {
       if (mounted) {
         AppSnackbar.showError(context,
-            message: 'Giriş yapmanız gerekiyor');
+            message: context.l10n.loginRequired);
       }
       return;
     }
@@ -60,13 +61,14 @@ class _CheckInPageState extends ConsumerState<CheckInPage> {
       final progressDelta = ((_score - 5) * 2).round().clamp(-5, 10);
 
       // Note: progress ve challenge text'lerini birleştir
+      final l10n = context.l10n;
       final note = [
         if (_progressController.text.trim().isNotEmpty)
-          'Yapılanlar: ${_progressController.text.trim()}',
+          '${l10n.completed} ${_progressController.text.trim()}',
         if (_challengeController.text.trim().isNotEmpty)
-          'Zorluklar ve çözümler: ${_challengeController.text.trim()}',
+          '${l10n.challengesAndSolutions} ${_challengeController.text.trim()}',
         if (_noteController.text.trim().isNotEmpty)
-          'Not: ${_noteController.text.trim()}',
+          '${l10n.note} ${_noteController.text.trim()}',
       ].join('\n\n');
 
       final checkIn = CheckIn(
@@ -84,7 +86,7 @@ class _CheckInPageState extends ConsumerState<CheckInPage> {
       if (mounted) {
         AppSnackbar.showSuccess(
           context,
-          message: 'Check-in kaydedildi! ✅',
+          message: context.l10n.checkInSaved,
         );
         context.pop();
       }
@@ -92,8 +94,7 @@ class _CheckInPageState extends ConsumerState<CheckInPage> {
       if (mounted) {
         AppSnackbar.showError(
           context,
-          message:
-              'Check-in kaydedilirken bir hata oluştu: ${e.toString()}',
+          message: context.l10n.errorSavingCheckIn(e.toString()),
         );
       }
     }
@@ -141,32 +142,25 @@ class _CheckInPageState extends ConsumerState<CheckInPage> {
                     ),
                     const SizedBox(height: AppSpacing.xl),
                     _QuestionCard(
-                      title: 'Bu ay bu hedef için ne yaptın?',
-                      subtitle:
-                          'Küçük adımlar da sayılır. Kısa yazman yeterli.',
-                      hintText:
-                          'Örn: Haftada 3 kez çalıştım, iki bölüm okudum, kelime pratiği yaptım…',
+                      title: context.l10n.whatDidYouDoThisMonth,
+                      subtitle: context.l10n.smallStepsCount,
+                      hintText: context.l10n.progressExample,
                       controller: _progressController,
                       maxLines: 4,
                     ),
                     const SizedBox(height: AppSpacing.xl),
                     _QuestionCard(
-                      title:
-                          'Bu süreçte seni en çok ne zorladı? Bununla nasıl başa çıktın?',
-                      subtitle:
-                          'İstersen sadece zorlandığın kısmı da yazabilirsin.',
-                      hintText:
-                          'Örn: İş yükü rutinimi bozdu; tekrar toparlanmak için haftalık plan yapmaya başladım…',
+                      title: context.l10n.whatChallengedYouMost,
+                      subtitle: context.l10n.youCanWriteOnlyChallenges,
+                      hintText: context.l10n.challengeExample,
                       controller: _challengeController,
                       maxLines: 4,
                     ),
                     const SizedBox(height: AppSpacing.xl),
                     _QuestionCard(
-                      title:
-                          'Gelecekteki kendine küçük bir not bırakmak ister misin?',
+                      title: context.l10n.leaveNoteForFutureSelf,
                       subtitle: null,
-                      hintText:
-                          'Örn: Harika gidiyorsun. Tutarlı kal ve sürece güven.',
+                      hintText: context.l10n.noteExample,
                       controller: _noteController,
                       maxLines: 3,
                       optional: true,
@@ -203,7 +197,7 @@ class _CheckInPageState extends ConsumerState<CheckInPage> {
                             ),
                           ),
                           onPressed: _submit,
-                          child: const Text('Check-in’i Kaydet'),
+                          child: Text(context.l10n.saveCheckIn),
                         ),
                       ),
                     ),
@@ -260,7 +254,7 @@ class _CheckInAppBar extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Text(
-                'Aylık Check-in',
+                context.l10n.monthlyCheckIn,
                 style: AppTextStyles.headlineSmall.copyWith(
                   fontWeight: FontWeight.w800,
                   letterSpacing: -0.4,
@@ -277,7 +271,7 @@ class _CheckInAppBar extends StatelessWidget {
                   ),
                   const SizedBox(width: AppSpacing.xs),
                   Text(
-                    'Kısa bir yansıma molası ver',
+                    context.l10n.takeAMomentToReflect,
                     style: AppTextStyles.bodySmall.copyWith(
                       color: AppColors.gray600,
                     ),
@@ -329,14 +323,14 @@ class _ScoreCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Bu ayki ilerlemeni nasıl değerlendirirsin?',
+            context.l10n.howDoYouEvaluateThisMonth,
             style: AppTextStyles.titleMedium.copyWith(
               fontWeight: FontWeight.w700,
             ),
           ),
           const SizedBox(height: AppSpacing.sm),
           Text(
-            '1 çok düşük ilerleme, 10 mükemmel ilerleme anlamına gelir.',
+            context.l10n.scoreDescription,
             style: AppTextStyles.bodySmall.copyWith(
               color: AppColors.gray600,
             ),
@@ -372,7 +366,7 @@ class _ScoreCard extends StatelessWidget {
           Align(
             alignment: Alignment.center,
             child: Text(
-              'Skor: ${score.round()} / 10',
+              context.l10n.score(score.round()),
               style: AppTextStyles.bodyMedium.copyWith(
                 fontWeight: FontWeight.w600,
               ),
@@ -437,7 +431,7 @@ class _QuestionCard extends StatelessWidget {
                 ),
                 if (optional)
                   TextSpan(
-                    text: '  Opsiyonel',
+                    text: '  ${context.l10n.optional}',
                     style: AppTextStyles.bodySmall.copyWith(
                       color: AppColors.gray400,
                       fontSize: 11,

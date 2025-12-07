@@ -39,16 +39,16 @@ class GoalFormFields extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _FormField(
-                    label: 'Hedef Başlığı',
+                    label: context.l10n.goalTitle,
                     child: _PremiumTextField(
                       controller: titleController,
-                      hint: 'Yeni bir dil öğrenmek',
+                      hint: context.l10n.goalTitleHint,
                       validator: (value) {
                         if (value == null || value.trim().isEmpty) {
-                          return 'Lütfen hedef başlığı girin';
+                          return context.l10n.goalTitleRequired;
                         }
                         if (value.trim().length < 3) {
-                          return 'Hedef başlığı en az 3 karakter olmalıdır';
+                          return context.l10n.goalTitleMinLength;
                         }
                         return null;
                       },
@@ -56,13 +56,13 @@ class GoalFormFields extends StatelessWidget {
                   ),
                   const SizedBox(height: AppSpacing.lg),
                   _FormField(
-                    label: 'Kategori Seç',
+                    label: context.l10n.selectCategory,
                     child: _CategoryDropdown(
                       selectedCategory: selectedCategory,
                       onChanged: onCategoryChanged,
                       validator: (value) {
                         if (value == null) {
-                          return 'Lütfen bir kategori seçin';
+                          return context.l10n.categoryRequired;
                         }
                         return null;
                       },
@@ -70,14 +70,14 @@ class GoalFormFields extends StatelessWidget {
                   ),
                   const SizedBox(height: AppSpacing.lg),
                   _FormField(
-                    label: 'Bu hedefi neden istiyorsun?',
+                    label: context.l10n.whyThisGoal,
                     child: _PremiumTextArea(
                       controller: reasonController,
-                      hint: 'Motivasyonunu ve amacını yaz...',
+                      hint: context.l10n.motivationHint,
                       maxLength: 500,
                       validator: (value) {
                         if (value == null || value.trim().isEmpty) {
-                          return 'Lütfen bu hedefi neden istediğinizi açıklayın';
+                          return context.l10n.motivationRequired;
                         }
                         return null;
                       },
@@ -85,13 +85,13 @@ class GoalFormFields extends StatelessWidget {
                   ),
                   const SizedBox(height: AppSpacing.lg),
                   _FormField(
-                    label: 'Tamamlanma Tarihi',
+                    label: context.l10n.completionDate,
                     child: _DatePickerField(
                       selectedDate: completionDate,
                       onTap: onDateSelected,
                       validator: (value) {
                         if (value == null) {
-                          return 'Lütfen tamamlanma tarihi seçin';
+                          return context.l10n.dateRequired;
                         }
                         return null;
                       },
@@ -344,7 +344,7 @@ class _CategoryDropdown extends StatelessWidget {
               width: 2,
             ),
           ),
-          hintText: 'örn: Kariyer, Sağlık',
+          hintText: context.l10n.categoryExample,
           hintStyle: AppTextStyles.bodyMedium.copyWith(
             color: _placeholderColor,
           ),
@@ -372,7 +372,7 @@ class _CategoryDropdown extends StatelessWidget {
               children: [
                 Text(category.emoji),
                 const SizedBox(width: AppSpacing.sm),
-                Text(category.label),
+                Text(category.getLocalizedLabel(context)),
               ],
             ),
           );
@@ -425,8 +425,9 @@ class _DatePickerFieldWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final dateText =
-        selectedDate != null ? selectedDate!.formatted : 'Tarih seçin';
+    final dateText = selectedDate != null
+        ? selectedDate!.formatted
+        : context.l10n.selectDate;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

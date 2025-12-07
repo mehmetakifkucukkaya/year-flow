@@ -12,6 +12,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_radius.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_text_styles.dart';
+import '../../../core/utils/extensions.dart';
 import '../../../core/widgets/index.dart';
 import '../../../shared/models/check_in.dart';
 import '../../../shared/models/goal.dart';
@@ -60,7 +61,7 @@ class _GoalDetailPageState extends ConsumerState<GoalDetailPage>
       final createdDate =
           DateFormat('d MMMM', 'tr_TR').format(goal.createdAt);
       items.add(_TimelineItem(
-        title: 'Hedef Oluşturuldu',
+        title: context.l10n.goalCreated,
         date: createdDate,
         type: _TimelineItemType.created,
       ));
@@ -70,7 +71,7 @@ class _GoalDetailPageState extends ConsumerState<GoalDetailPage>
         final checkInDate =
             DateFormat('d MMMM', 'tr_TR').format(checkIn.createdAt);
         items.add(_TimelineItem(
-          title: 'Check-in Yapıldı: Skor ${checkIn.score}/10',
+          title: context.l10n.checkInCompleted(checkIn.score),
           date: checkInDate,
           type: _TimelineItemType.checkIn,
           note: checkIn.note,
@@ -81,16 +82,16 @@ class _GoalDetailPageState extends ConsumerState<GoalDetailPage>
     return items;
   }
 
-  String _formatNextCheckIn(Goal? goal) {
-    if (goal?.targetDate == null) return 'Belirtilmemiş';
+  String _formatNextCheckIn(BuildContext context, Goal? goal) {
+    if (goal?.targetDate == null) return context.l10n.notSpecified;
 
     final now = DateTime.now();
     final target = goal!.targetDate!;
     final daysLeft = target.difference(now).inDays;
 
-    if (daysLeft < 0) return 'Süresi doldu';
-    if (daysLeft == 0) return 'Bugün';
-    if (daysLeft == 1) return 'Yarın';
+    if (daysLeft < 0) return context.l10n.expired;
+    if (daysLeft == 0) return context.l10n.today;
+    if (daysLeft == 1) return context.l10n.tomorrow;
     if (daysLeft < 7) return '$daysLeft gün sonra';
 
     return DateFormat('d MMMM', 'tr_TR').format(target);
@@ -106,7 +107,7 @@ class _GoalDetailPageState extends ConsumerState<GoalDetailPage>
       body: goalAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, _) => Center(
-          child: Text('Hedef yüklenirken hata oluştu: $error'),
+          child: Text(context.l10n.errorLoadingGoal(error.toString())),
         ),
         data: (goal) {
           // Check-ins stream'ini düzgün handle et
@@ -124,9 +125,10 @@ class _GoalDetailPageState extends ConsumerState<GoalDetailPage>
                       ? _GoalDetail(
                           title: goal.title,
                           description: goal.description,
-                          category: goal.category.label,
+                          category:
+                              goal.category.getLocalizedLabel(context),
                           progress: goal.progress.toDouble(),
-                          nextCheckIn: _formatNextCheckIn(goal),
+                          nextCheckIn: _formatNextCheckIn(context, goal),
                           categoryColor: _getCategoryColor(goal.category),
                           categoryBackgroundColor:
                               _getCategoryColor(goal.category)
@@ -141,7 +143,7 @@ class _GoalDetailPageState extends ConsumerState<GoalDetailPage>
                           description: null,
                           category: '',
                           progress: 0,
-                          nextCheckIn: 'Belirtilmemiş',
+                          nextCheckIn: context.l10n.notSpecified,
                           categoryColor: AppColors.primary,
                           categoryBackgroundColor:
                               AppColors.primary.withOpacity(0.1),
@@ -169,9 +171,10 @@ class _GoalDetailPageState extends ConsumerState<GoalDetailPage>
                       ? _GoalDetail(
                           title: goal.title,
                           description: goal.description,
-                          category: goal.category.label,
+                          category:
+                              goal.category.getLocalizedLabel(context),
                           progress: goal.progress.toDouble(),
-                          nextCheckIn: _formatNextCheckIn(goal),
+                          nextCheckIn: _formatNextCheckIn(context, goal),
                           categoryColor: _getCategoryColor(goal.category),
                           categoryBackgroundColor:
                               _getCategoryColor(goal.category)
@@ -186,7 +189,7 @@ class _GoalDetailPageState extends ConsumerState<GoalDetailPage>
                           description: null,
                           category: '',
                           progress: 0,
-                          nextCheckIn: 'Belirtilmemiş',
+                          nextCheckIn: context.l10n.notSpecified,
                           categoryColor: AppColors.primary,
                           categoryBackgroundColor:
                               AppColors.primary.withOpacity(0.1),
@@ -198,7 +201,8 @@ class _GoalDetailPageState extends ConsumerState<GoalDetailPage>
                 ),
                 Expanded(
                   child: Center(
-                    child: Text('Check-in\'ler yüklenirken hata: $error'),
+                    child: Text(context.l10n
+                        .errorLoadingCheckIns(error.toString())),
                   ),
                 ),
               ],
@@ -212,7 +216,7 @@ class _GoalDetailPageState extends ConsumerState<GoalDetailPage>
                       description: goal.description,
                       category: goal.category.label,
                       progress: goal.progress.toDouble(),
-                      nextCheckIn: _formatNextCheckIn(goal),
+                      nextCheckIn: _formatNextCheckIn(context, goal),
                       categoryColor: _getCategoryColor(goal.category),
                       categoryBackgroundColor:
                           _getCategoryColor(goal.category)
@@ -345,7 +349,7 @@ class _GoalDetailPageState extends ConsumerState<GoalDetailPage>
     ref.invalidate(goalDetailProvider(widget.goalId));
     AppSnackbar.showSuccess(
       context,
-      message: 'Check-in kaydedildi! ✅',
+      message: context.l10n.checkInSaved,
     );
   }
 }
@@ -403,7 +407,7 @@ class _PremiumAppBar extends ConsumerWidget {
                         if (context.mounted) {
                           AppSnackbar.showError(
                             context,
-                            message: 'Hedef bulunamadı',
+                            message: context.l10n.goalNotFound,
                           );
                         }
                         return;
@@ -435,7 +439,7 @@ class _PremiumAppBar extends ConsumerWidget {
                             ref.invalidate(goalDetailProvider(goalId));
                             AppSnackbar.showSuccess(
                               context,
-                              message: 'Hedef tamamlandı! 🎉',
+                              message: context.l10n.goalCompleted,
                             );
                             context.pop();
                           }
@@ -443,8 +447,8 @@ class _PremiumAppBar extends ConsumerWidget {
                           if (context.mounted) {
                             AppSnackbar.showError(
                               context,
-                              message:
-                                  'Hedef tamamlanırken hata oluştu: $e',
+                              message: context.l10n
+                                  .errorCompletingGoal(e.toString()),
                             );
                           }
                         }
@@ -455,7 +459,7 @@ class _PremiumAppBar extends ConsumerWidget {
                       minWidth: 48,
                       minHeight: 48,
                     ),
-                    tooltip: 'Hedefi Tamamla',
+                    tooltip: context.l10n.completeGoal,
                   );
                 },
               ),
@@ -501,7 +505,7 @@ class _PremiumAppBar extends ConsumerWidget {
                           if (context.mounted) {
                             AppSnackbar.showError(
                               context,
-                              message: 'Hedef bulunamadı',
+                              message: context.l10n.goalNotFound,
                             );
                           }
                           return;
@@ -521,7 +525,7 @@ class _PremiumAppBar extends ConsumerWidget {
                           ref.invalidate(goalDetailProvider(goalId));
                           AppSnackbar.showSuccess(
                             context,
-                            message: 'Hedef başarıyla silindi',
+                            message: context.l10n.goalDeletedSuccess,
                           );
                           context.pop();
                         }
@@ -529,7 +533,8 @@ class _PremiumAppBar extends ConsumerWidget {
                         if (context.mounted) {
                           AppSnackbar.showError(
                             context,
-                            message: 'Hedef silinirken hata oluştu: $e',
+                            message: context.l10n
+                                .errorDeletingGoal(e.toString()),
                           );
                         }
                       }
@@ -537,15 +542,16 @@ class _PremiumAppBar extends ConsumerWidget {
                   }
                 },
                 itemBuilder: (context) => [
-                  const PopupMenuItem(
+                  PopupMenuItem(
                     value: 'delete',
                     child: Row(
                       children: [
-                        Icon(Icons.delete_outline, color: AppColors.error),
-                        SizedBox(width: AppSpacing.sm),
+                        const Icon(Icons.delete_outline,
+                            color: AppColors.error),
+                        const SizedBox(width: AppSpacing.sm),
                         Text(
-                          'Hedefi Sil',
-                          style: TextStyle(color: AppColors.error),
+                          context.l10n.deleteGoal,
+                          style: const TextStyle(color: AppColors.error),
                         ),
                       ],
                     ),
@@ -664,8 +670,8 @@ class _PremiumHeaderSection extends StatelessWidget {
           // Status Text - Daha küçük
           Text(
             goal.isCompleted
-                ? 'Hedef Tamamlandı 🎉'
-                : 'İlerleme Kaydedildi',
+                ? context.l10n.goalCompletedTitle
+                : context.l10n.progressRecorded,
             style: AppTextStyles.bodyMedium.copyWith(
               color: goal.isCompleted
                   ? AppColors.success
@@ -715,7 +721,7 @@ class _PremiumHeaderSection extends StatelessWidget {
                     const SizedBox(width: 4),
                     Flexible(
                       child: Text(
-                        'Sonraki Check-in: ${goal.nextCheckIn}',
+                        context.l10n.nextCheckIn(goal.nextCheckIn),
                         style: AppTextStyles.bodySmall.copyWith(
                           color: AppColors.gray700,
                           fontSize: isVerySmallScreen
@@ -950,10 +956,10 @@ class _PremiumTabBar extends StatelessWidget {
           ),
           isScrollable:
               isSmallScreen, // Küçük ekranlarda scroll edilebilir
-          tabs: const [
-            Tab(text: 'Timeline'),
-            Tab(text: 'Notlar'),
-            Tab(text: 'Alt Görevler'),
+          tabs: [
+            Tab(text: context.l10n.timeline),
+            Tab(text: context.l10n.notes),
+            Tab(text: context.l10n.subTasks),
           ],
         ),
       ),
@@ -988,17 +994,6 @@ class _GoalDetail {
   final String goalId;
   final List<_Subtask> subtasks;
   final bool isCompleted;
-}
-
-/// Note Model
-class _Note {
-  const _Note({
-    required this.content,
-    required this.date,
-  });
-
-  final String content;
-  final String date;
 }
 
 /// Subtask Model
@@ -1285,8 +1280,8 @@ class _NotesTab extends ConsumerWidget {
                 const SizedBox(height: AppSpacing.lg),
                 Text(
                   isIndexBuilding
-                      ? 'Index Oluşturuluyor'
-                      : 'Notlar Yüklenirken Hata',
+                      ? context.l10n.creatingIndex
+                      : context.l10n.errorLoadingNotes,
                   style: AppTextStyles.titleMedium.copyWith(
                     fontWeight: FontWeight.w700,
                     color: AppColors.gray900,
@@ -1296,8 +1291,8 @@ class _NotesTab extends ConsumerWidget {
                 const SizedBox(height: AppSpacing.md),
                 Text(
                   isIndexBuilding
-                      ? 'Firestore index\'i henüz hazır değil. Lütfen birkaç dakika bekleyin ve tekrar deneyin.'
-                      : 'Bir hata oluştu. Lütfen tekrar deneyin.',
+                      ? context.l10n.firestoreIndexNotReady
+                      : context.l10n.errorLoadingNotes,
                   style: AppTextStyles.bodyMedium.copyWith(
                     color: AppColors.gray700,
                   ),
@@ -1629,13 +1624,14 @@ class _NotesTab extends ConsumerWidget {
             .doc(note.id)
             .delete();
         if (context.mounted) {
-          AppSnackbar.showSuccess(context, message: 'Not silindi');
+          AppSnackbar.showSuccess(context,
+              message: context.l10n.noteDeleted);
         }
       } catch (e) {
         if (context.mounted) {
           AppSnackbar.showError(
             context,
-            message: 'Not silinirken hata oluştu: $e',
+            message: context.l10n.errorDeletingNote(e.toString()),
           );
         }
       }
@@ -2751,13 +2747,14 @@ class _AddNoteBottomSheetState extends ConsumerState<_AddNoteBottomSheet> {
 
     final content = _contentController.text.trim();
     if (content.isEmpty) {
-      AppSnackbar.showError(context, message: 'Lütfen not içeriği girin');
+      AppSnackbar.showError(context,
+          message: context.l10n.pleaseEnterNoteContent);
       return;
     }
 
     final userId = widget.ref.read(currentUserIdProvider);
     if (userId == null) {
-      AppSnackbar.showError(context, message: 'Giriş yapmanız gerekiyor');
+      AppSnackbar.showError(context, message: context.l10n.loginRequired);
       return;
     }
 
@@ -2784,14 +2781,14 @@ class _AddNoteBottomSheetState extends ConsumerState<_AddNoteBottomSheet> {
       await repository.addNote(note);
 
       if (mounted) {
-        AppSnackbar.showSuccess(context, message: 'Not eklendi');
+        AppSnackbar.showSuccess(context, message: context.l10n.noteAdded);
         Navigator.of(context).pop();
       }
     } catch (e) {
       if (mounted) {
         AppSnackbar.showError(
           context,
-          message: 'Not eklenirken hata oluştu: $e',
+          message: context.l10n.errorAddingNote(e.toString()),
         );
       }
     } finally {
@@ -2822,8 +2819,8 @@ class _AddNoteBottomSheetState extends ConsumerState<_AddNoteBottomSheet> {
             children: [
               Text(
                 widget.existingNote == null
-                    ? 'Yeni Not Ekle'
-                    : 'Notu Düzenle',
+                    ? context.l10n.addNote
+                    : context.l10n.editNote,
                 style: AppTextStyles.titleLarge.copyWith(
                   fontWeight: FontWeight.w700,
                 ),
@@ -2841,16 +2838,16 @@ class _AddNoteBottomSheetState extends ConsumerState<_AddNoteBottomSheet> {
             child: TextFormField(
               controller: _contentController,
               maxLines: 6,
-              decoration: const InputDecoration(
-                labelText: 'Not İçeriği',
-                hintText: 'Notunuzu buraya yazın...',
-                border: OutlineInputBorder(
+              decoration: InputDecoration(
+                labelText: context.l10n.noteContent,
+                hintText: context.l10n.noteContentHint,
+                border: const OutlineInputBorder(
                   borderRadius: AppRadius.borderRadiusLg,
                 ),
               ),
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {
-                  return 'Lütfen not içeriği girin';
+                  return context.l10n.pleaseEnterNoteContent;
                 }
                 return null;
               },
@@ -3009,7 +3006,7 @@ class _PremiumBottomButton extends StatelessWidget {
                 ),
                 const SizedBox(width: AppSpacing.sm),
                 Text(
-                  'Check-in Yap',
+                  context.l10n.doCheckIn,
                   style: AppTextStyles.bodyMedium.copyWith(
                     fontWeight: FontWeight.w700,
                     fontSize: 16,
@@ -3064,7 +3061,7 @@ class _CompleteConfirmationDialog extends StatelessWidget {
             ),
             const SizedBox(height: AppSpacing.lg),
             Text(
-              'Hedefi Tamamla',
+              context.l10n.completeGoal,
               style: AppTextStyles.titleLarge.copyWith(
                 fontWeight: FontWeight.w700,
               ),

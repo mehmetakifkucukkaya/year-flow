@@ -7,9 +7,11 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
+import 'core/providers/locale_provider.dart';
 import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
 import 'firebase_options.dart';
+import 'l10n/app_localizations.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -63,6 +65,7 @@ class YearFlowApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final router = ref.watch(routerProvider);
+    final locale = ref.watch(localeProvider);
 
     return MaterialApp.router(
       title: 'YearFlow',
@@ -72,15 +75,13 @@ class YearFlowApp extends ConsumerWidget {
       themeMode: ThemeMode.light,
       routerConfig: router,
       localizationsDelegates: const [
+        AppLocalizations.delegate,
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
-      supportedLocales: const [
-        Locale('tr', 'TR'),
-        Locale('en', 'US'),
-      ],
-      locale: const Locale('tr', 'TR'),
+      supportedLocales: AppLocalizations.supportedLocales,
+      locale: locale,
     );
   }
 }

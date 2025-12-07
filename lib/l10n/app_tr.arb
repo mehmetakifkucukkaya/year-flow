@@ -1,0 +1,647 @@
+{
+  "@@locale": "tr",
+  "appName": "YearFlow",
+  "welcomeBack": "Tekrar Hoş Geldin!",
+  "email": "E-posta",
+  "emailHint": "E-posta adresinizi girin",
+  "emailRequired": "E-posta adresi gereklidir",
+  "emailInvalid": "Geçerli bir e-posta adresi girin",
+  "password": "Şifre",
+  "passwordHint": "Şifrenizi girin",
+  "passwordRequired": "Şifre gereklidir",
+  "passwordMinLength": "Şifre en az 6 karakter olmalı",
+  "forgotPassword": "Şifreni mi unuttun?",
+  "signIn": "Giriş Yap",
+  "or": "veya",
+  "continueWithGoogle": "Google ile devam et",
+  "noAccount": "Hesabın yok mu? ",
+  "signUp": "Kayıt Ol",
+  "register": "Kayıt Ol",
+  "name": "İsim",
+  "nameHint": "Adınızı ve soyadınızı girin",
+  "nameRequired": "İsim gereklidir",
+  "nameMinLength": "İsim en az 2 karakter olmalıdır",
+  "createPassword": "Şifrenizi oluşturun",
+  "welcome": "Hoş geldiniz! 🎉",
+  "signInSuccess": "Giriş başarılı! Hoş geldiniz 👋",
+  "home": "Ana Sayfa",
+  "goals": "Hedefler",
+  "reports": "Raporlar",
+  "settings": "Ayarlar",
+  "settingsSubtitle": "Hesap ve uygulama ayarları",
+  "user": "Kullanıcı",
+  "skip": "Atla",
+  "continueButton": "Devam Et",
+  "getStarted": "Hemen Başla",
+  "later": "Daha sonra",
+  "save": "Kaydet",
+  "nameSaved": "İsmin kaydedildi",
+  "setYourName": "İsmini belirleyelim",
+  "setYourNameDescription": "Sana ekranda adınla hitap edelim. İstemezsen bu adımı her zaman profilinden değiştirebilirsin.",
+  "yearlyPerformanceSummary": "Yıllık performans özetin",
+  "downloadReport": "Raporu indir",
+  "yourYearlyReport2025": "2025 Yıllık Raporun",
+  "letsTakeOverview": "Yolculuğuna genel bir bakış atalım",
+  "openReport": "Raporu Aç",
+  "createReport": "Rapor Oluştur",
+  "greatYear": "Harika bir yıl geçirdin 🎉",
+  "goodProgress": "İyi bir ilerleme kaydettin! 💪",
+  "continueJourney": "Yolculuğuna devam et! 🌱",
+  "errorLoadingData": "Veriler yüklenirken hata oluştu: {error}",
+  "@errorLoadingData": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "overview": "Genel Bakış",
+  "totalGoals": "Toplam Hedef",
+  "completionRate": "Tamamlanma Oranı",
+  "checkIn": "Check-in",
+  "averageProgress": "Ortalama İlerleme",
+  "yearlyProgress": "Yıllık İlerleme",
+  "noCategoryData": "Henüz kategori bazlı veri yok",
+  "categoryBasedDevelopment": "Kategori Bazlı Gelişim",
+  "noAchievementData": "Henüz başarı hikayesi oluşturacak kadar veri yok. Hedefler ekleyip check-in yaptıkça burada gelişimini göreceksin.",
+  "language": "Dil",
+  "turkish": "Türkçe",
+  "english": "İngilizce",
+  "yourYearlyReport": "{year} Yıllık Raporun",
+  "@yourYearlyReport": {
+    "placeholders": {
+      "year": {
+        "type": "int"
+      }
+    }
+  },
+  "achievements": "Başarılar",
+  "thisYearWorkedOnGoals": "Bu yıl toplam {totalGoals} hedef üzerinde çalıştın ve {completedGoals} hedefi tamamladın (tamamlanma oranı yaklaşık %{completionRate}).",
+  "@thisYearWorkedOnGoals": {
+    "placeholders": {
+      "totalGoals": {
+        "type": "int"
+      },
+      "completedGoals": {
+        "type": "int"
+      },
+      "completionRate": {
+        "type": "int"
+      }
+    }
+  },
+  "averageProgressLevel": "Tüm hedefler arasında ortalama ilerleme düzeyin %{progress} civarında; bu, yıl boyunca istikrarlı bir şekilde adım attığını gösteriyor.",
+  "@averageProgressLevel": {
+    "placeholders": {
+      "progress": {
+        "type": "int"
+      }
+    }
+  },
+  "strongestProgressInCategory": "\"{category}\" kategorisinde yaklaşık %{value} ile en güçlü ilerlemeyi gösterdin",
+  "@strongestProgressInCategory": {
+    "placeholders": {
+      "category": {
+        "type": "String"
+      },
+      "value": {
+        "type": "int"
+      }
+    }
+  },
+  "reachedLevelInCategory": ", \"{category}\" kategorisinde ise yaklaşık %{value} seviyesine ulaştın.",
+  "@reachedLevelInCategory": {
+    "placeholders": {
+      "value": {
+        "type": "int"
+      },
+      "category": {
+        "type": "String"
+      }
+    }
+  },
+  "aiSuggestions": "AI Önerileri",
+  "aiSuggestionExample": "Kişisel gelişim hedeflerindeki ilerlemen harika! Gelecek yıl, büyük kariyer hedeflerini daha küçük, yönetilebilir adımlara bölerek tamamlanma oranını artırabilirsin. Ayrıca, finansal okuryazarlık üzerine bir hedef eklemek genel başarını destekleyebilir.",
+  "loginRequired": "Giriş yapmanız gerekiyor",
+  "reportExportedSuccessfully": "Rapor başarıyla export edildi",
+  "exportReport": "Raporu Dışa Aktar",
+  "selectFormat": "Format seçin:",
+  "json": "JSON",
+  "csv": "CSV",
+  "atLeastOneGoalRequired": "Rapor oluşturmak için en az bir hedef gerekli",
+  "errorCreatingReport": "Rapor oluşturulurken hata: {error}",
+  "@errorCreatingReport": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "selectReportType": "Rapor türünü seçin:",
+  "thisWeekSummary": "Bu haftanın özeti",
+  "thisMonthSummary": "Bu ayın özeti",
+  "thisYearSummary": "Bu yılın özeti",
+  "challengesAndSolutions": "Zorluklar & Çözümler",
+  "challengeLowProgress": "Zorluk: \"{category}\" kategorisinde ilerleme görece düşük (yaklaşık %{value}).",
+  "@challengeLowProgress": {
+    "placeholders": {
+      "category": {
+        "type": "String"
+      },
+      "value": {
+        "type": "int"
+      }
+    }
+  },
+  "solutionAddActions": "Çözüm: Bu alanda haftaya 1–2 küçük, net aksiyon ekleyip check-in sıklığını artırmayı deneyebilirsin.",
+  "challengeFocusDifficulty": "Zorluk: \"{category}\" hedeflerine odaklanmakta zorlanıyor olabilirsin (yaklaşık %{value}).",
+  "@challengeFocusDifficulty": {
+    "placeholders": {
+      "category": {
+        "type": "String"
+      },
+      "value": {
+        "type": "int"
+      }
+    }
+  },
+  "solutionBreakDownGoals": "Çözüm: Bu hedefleri daha küçük adımlara bölmek ve haftalık olarak gözden geçirmek odaklanmayı artırabilir.",
+  "generalStatusHealthy": "Genel durum: Tüm kategorilerde sağlıklı bir ilerleme var.",
+  "solutionReviewPriorities": "Çözüm: Yine de, motivasyonunu korumak için haftalık olarak önceliklerini gözden geçirmek iyi bir fikir olabilir.",
+  "goalAndCheckInDataNeeded": "Hedef ve check-in verilerin oluştukça, zorlandığın alanlar ve iyileştirme önerileri burada görünecek.",
+  "january": "Ocak",
+  "february": "Şubat",
+  "march": "Mart",
+  "april": "Nisan",
+  "may": "Mayıs",
+  "june": "Haziran",
+  "july": "Temmuz",
+  "august": "Ağustos",
+  "september": "Eylül",
+  "october": "Ekim",
+  "november": "Kasım",
+  "december": "Aralık",
+  "active": "Aktif",
+  "completed": "Tamamlanan",
+  "myGoals": "Hedeflerim",
+  "yourSuccessJourney": "Başarı yolculuğun",
+  "sort": "Sırala",
+  "filter": "Filtrele",
+  "newest": "En Yeni",
+  "oldest": "En Eski",
+  "progressHigh": "İlerleme (Yüksek)",
+  "progressLow": "İlerleme (Düşük)",
+  "titleAsc": "Başlık (A-Z)",
+  "titleDesc": "Başlık (Z-A)",
+  "all": "Tümü",
+  "health": "Sağlık",
+  "mentalHealth": "Ruh Sağlığı",
+  "finance": "Finans",
+  "career": "Kariyer",
+  "relationships": "İlişkiler",
+  "learning": "Öğrenme",
+  "creativity": "Yaratıcılık",
+  "hobby": "Hobi",
+  "personalGrowth": "Kişisel Gelişim",
+  "noCompletedGoals": "Henüz tamamlanan hedef yok",
+  "completedGoalsWillAppear": "Hedeflerini tamamladıkça burada gözükecekler",
+  "goalsLoadingError": "Hedefler yüklenirken bir hata oluştu.",
+  "tryAgain": "Yeniden Dene",
+  "reactivateGoal": "Hedefi tekrar aktifleştir",
+  "reactivateGoalDescription": "\"{goalTitle}\" hedefini tamamlananlardan çıkarıp tekrar aktif hedefler listesine almak istiyor musun?",
+  "@reactivateGoalDescription": {
+    "placeholders": {
+      "goalTitle": {
+        "type": "String"
+      }
+    }
+  },
+  "moveToActive": "Aktiflere Taşı",
+  "cancel": "İptal",
+  "moveToActiveTooltip": "Aktif hedeflere geri al",
+  "mustSignInToPerformAction": "Bu işlemi yapmak için giriş yapmalısın.",
+  "notificationsComingSoon": "Bildirimler yakında eklenecek",
+  "yourGoals": "Hedeflerin",
+  "goodMorning": "Günaydın",
+  "hello": "Merhaba",
+  "goodEvening": "İyi akşamlar",
+  "weeklySummary": "Haftalık özet",
+  "thisWeekCheckIns": "Bu hafta toplam {checkInCount} check-in ile {goalsWithProgress} farklı hedefte ilerleme kaydettin.",
+  "@thisWeekCheckIns": {
+    "placeholders": {
+      "checkInCount": {
+        "type": "int"
+      },
+      "goalsWithProgress": {
+        "type": "int"
+      }
+    }
+  },
+  "weeklySummaryError": "Bu haftanın özeti şu an yüklenemedi. Birazdan tekrar dene.",
+  "howIsTodayGoing": "Bugün nasıl geçiyor?",
+  "targetDateNotSpecified": "Hedef tarihi belirtilmemiş",
+  "daysOverdue": "{days} gün gecikti",
+  "@daysOverdue": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "oneDayOverdue": "1 gün gecikti",
+  "today": "Bugün",
+  "oneDayLeft": "1 gün kaldı",
+  "daysLeft": "{days} gün kaldı",
+  "@daysLeft": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "reportsLoadingError": "Raporlar yüklenirken hata oluştu: {error}",
+  "@reportsLoadingError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "noReportsYet": "Henüz rapor oluşturulmamış",
+  "createFirstReport": "Yukarıdaki \"Rapor Oluştur\" butonuna tıklayarak ilk raporunuzu oluşturabilirsiniz.",
+  "pastReports": "Geçmiş Raporlar",
+  "goalMovedToActive": "Hedef tekrar aktifler listesine taşındı.",
+  "errorUpdatingGoal": "Hedef güncellenirken hata oluştu: {error}",
+  "@errorUpdatingGoal": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "noCheckInYet": "Henüz Check-in yok",
+  "yesterday": "Dün",
+  "daysAgo": "{days} gün önce",
+  "@daysAgo": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "weeksAgo": "{weeks} hafta önce",
+  "@weeksAgo": {
+    "placeholders": {
+      "weeks": {
+        "type": "int"
+      }
+    }
+  },
+  "loading": "Yükleniyor...",
+  "lastCheckIn": "Son Check-in: {date}",
+  "@lastCheckIn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "noGoalsYet": "Henüz hedef eklemedin",
+  "startJourneyWithGoal": "Yeni bir hedef ekleyerek başarı yolculuğuna başla",
+  "addNewGoal": "Yeni Hedef Ekle",
+  "noGoalCreatedYet": "Henüz hedef oluşturmadın",
+  "createFirstGoal": "İlk hedefini oluştur ve yılını daha planlı, odaklı ve anlamlı hale getir.",
+  "createGoal": "Hedef Oluştur",
+  "doCheckIn": "Check-in yap",
+  "tasksRemaining": "{count} görev kaldı",
+  "@tasksRemaining": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "checkInCount": "{count} check-in",
+  "@checkInCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "reportTypeLabel": "{type} Rapor - {period}",
+  "@reportTypeLabel": {
+    "placeholders": {
+      "type": {
+        "type": "String"
+      },
+      "period": {
+        "type": "String"
+      }
+    }
+  },
+  "onboardingSlide1Title": "Bu yıl hedeflerini somutlaştır.",
+  "onboardingSlide1Description": "YearFlow ile hayallerini gerçeğe dönüştür. Ulaşılabilir adımlarla büyük hedeflerine doğru ilerle.",
+  "onboardingSlide2Title": "Düzenli ilerlemelerle yolculuğunu takip et.",
+  "onboardingSlide2Description": "Aylık check-in'lerle hedeflerindeki ilerlemeyi kaydet, motivasyonunu koru ve başarılarını kutla.",
+  "onboardingSlide3Title": "Yıl sonunda kişisel gelişim raporunu al.",
+  "onboardingSlide3Description": "AI destekli raporlarla yıl boyunca kaydettiğin ilerlemeyi gör, somut verilerle gelişimini anla ve yeni hedefler için ilham al.",
+  "alreadyHaveAccount": "Zaten bir hesabın var mı? ",
+  "continueWithGoogleRegister": "Google ile kayıt ol / devam et",
+  "forgotPasswordTitle": "Şifreni mi unuttun?",
+  "forgotPasswordDescription": "Şifrenizi sıfırlamak için kayıtlı e-posta adresinizi girin.",
+  "emailAddress": "E-posta Adresi",
+  "emailAddressHint": "E-posta Adresiniz",
+  "resetPassword": "Şifre Sıfırla",
+  "emailSent": "E-posta gönderildi!",
+  "resetLinkSent": "Şifre sıfırlama bağlantısı {email} adresine gönderildi.",
+  "@resetLinkSent": {
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "newGoal": "Yeni Hedef Ekle",
+  "editGoal": "Hedefi Düzenle",
+  "goalCreatedSuccess": "Hedef başarıyla oluşturuldu! 🎉",
+  "goalUpdatedSuccess": "Hedef güncellendi! ✅",
+  "goalOptimizedSuccess": "Hedef optimize edildi! ✨",
+  "optimizeWithAI": "AI ile Optimize Et",
+  "update": "Güncelle",
+  "goalNotFound": "Hedef bulunamadı",
+  "errorCreatingGoal": "Hedef oluşturulurken bir hata oluştu: {error}",
+  "@errorCreatingGoal": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "errorUpdatingGoal": "Hedef güncellenirken bir hata oluştu: {error}",
+  "@errorUpdatingGoal": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "pleaseFillAllFields": "Lütfen formdaki tüm alanları doldurun",
+  "pleaseSelectCategory": "Lütfen bir kategori seçin",
+  "pleaseSelectCompletionDate": "Lütfen tamamlanma tarihi seçin",
+  "pleaseExplainWhy": "Lütfen bu hedefi neden istediğinizi açıklayın",
+  "goalCreated": "Hedef Oluşturuldu",
+  "checkInCompleted": "Check-in Yapıldı: Skor {score}/10",
+  "@checkInCompleted": {
+    "placeholders": {
+      "score": {
+        "type": "int"
+      }
+    }
+  },
+  "notSpecified": "Belirtilmemiş",
+  "expired": "Süresi doldu",
+  "tomorrow": "Yarın",
+  "errorLoadingGoal": "Hedef yüklenirken hata oluştu: {error}",
+  "@errorLoadingGoal": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "errorLoadingCheckIns": "Check-in'ler yüklenirken hata: {error}",
+  "@errorLoadingCheckIns": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "checkInSaved": "Check-in kaydedildi! ✅",
+  "goalCompleted": "Hedef tamamlandı! 🎉",
+  "errorCompletingGoal": "Hedef tamamlanırken hata oluştu: {error}",
+  "@errorCompletingGoal": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "completeGoal": "Hedefi Tamamla",
+  "goalDeletedSuccess": "Hedef başarıyla silindi",
+  "errorDeletingGoal": "Hedef silinirken hata oluştu: {error}",
+  "@errorDeletingGoal": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "deleteGoal": "Hedefi Sil",
+  "goalCompletedTitle": "Hedef Tamamlandı 🎉",
+  "progressRecorded": "İlerleme Kaydedildi",
+  "nextCheckIn": "Sonraki Check-in: {date}",
+  "@nextCheckIn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "timeline": "Timeline",
+  "notes": "Notlar",
+  "subTasks": "Alt Görevler",
+  "creatingIndex": "Index Oluşturuluyor",
+  "errorLoadingNotes": "Notlar Yüklenirken Hata",
+  "firestoreIndexNotReady": "Firestore index'i henüz hazır değil. Lütfen birkaç dakika bekleyin ve tekrar deneyin.",
+  "tasksLeft": "{count} görev kaldı",
+  "@tasksLeft": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "todayCheckIn": "Bugün",
+  "yesterdayCheckIn": "Dün",
+  "daysAgoCheckIn": "{days} gün önce",
+  "@daysAgoCheckIn": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "weeksAgoCheckIn": "{weeks} hafta önce",
+  "@weeksAgoCheckIn": {
+    "placeholders": {
+      "weeks": {
+        "type": "int"
+      }
+    }
+  },
+  "reportSummaryThisWeek": "Bu haftanın özeti",
+  "reportSummaryThisMonth": "Bu ayın özeti",
+  "reportSummaryThisYear": "Bu yılın özeti",
+  "reportErrorLoading": "Raporlar yüklenirken hata oluştu: {error}",
+  "@reportErrorLoading": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "createYourFirstReport": "Yukarıdaki \"Rapor Oluştur\" butonuna tıklayarak ilk raporunuzu oluşturabilirsiniz.",
+  "reportTypeWeekly": "Haftalık Rapor",
+  "reportTypeMonthly": "Aylık Rapor",
+  "reportTypeYearly": "Yıllık Rapor",
+  "challengeLowProgress": "Zorluk: \"{category}\" kategorisinde ilerleme görece düşük (yaklaşık %{value}).",
+  "@challengeLowProgress": {
+    "placeholders": {
+      "category": {
+        "type": "String"
+      },
+      "value": {
+        "type": "int"
+      }
+    }
+  },
+  "solutionIncreaseCheckIns": "Çözüm: Bu alanda haftaya 1–2 küçük, net aksiyon ekleyip check-in sıklığını artırmayı deneyebilirsin.",
+  "challengeDifficultyFocusing": "Zorluk: \"{category}\" hedeflerine odaklanmakta zorlanıyor olabilirsin (yaklaşık %{value}).",
+  "@challengeDifficultyFocusing": {
+    "placeholders": {
+      "category": {
+        "type": "String"
+      },
+      "value": {
+        "type": "int"
+      }
+    }
+  },
+  "generalStatusHealthyProgress": "Genel durum: Tüm kategorilerde sağlıklı bir ilerleme var.",
+  "reportTitle": "{reportType} Rapor - {period}",
+  "@reportTitle": {
+    "placeholders": {
+      "reportType": {
+        "type": "String"
+      },
+      "period": {
+        "type": "String"
+      }
+    }
+  },
+  "applicationSettings": "Uygulama Ayarları",
+  "notifications": "Bildirimler",
+  "upcomingCheckIns": "Yaklaşan Check-in'ler",
+  "noUpcomingCheckIns": "Bu hafta için yaklaşan check-in yok.",
+  "allGoalsCompleted": "Tüm hedefler tamamlandı! 🎉",
+  "allGoalsCompletedDescription": "Bu hafta için tüm hedeflerini tamamladın. Yeni hedefler belirleme veya ilerlemenin tadını çıkarma zamanı!",
+  "viewAllGoals": "Tüm Hedefleri Görüntüle",
+  "weeklySummaryTitle": "Haftalık Özet",
+  "weeklySummaryDescription": "Bu haftaki ilerlemen",
+  "weeklySummaryNoData": "Bu hafta için henüz veri yok. İlerlemeni görmek için hedefler eklemeye ve check-in yapmaya başla!",
+  "namePromptTitle": "İsmini belirleyelim",
+  "namePromptDescription": "Sana ekranda adınla hitap edelim. İstemezsen bu adımı her zaman profilinden değiştirebilirsin.",
+  "namePromptSave": "Kaydet",
+  "namePromptLater": "Daha sonra",
+  "namePromptNameSaved": "İsmin kaydedildi",
+  "profile": "Profil",
+  "totalGoals": "Toplam Hedef",
+  "annualReport": "Yıllık Rapor",
+  "accountInformation": "Hesap Bilgileri",
+  "edit": "Düzenle",
+  "fullName": "Ad Soyad",
+  "upcomingCheckInsDescription": "7 günden az kalmış hedeflerin check-in'lerini yap",
+  "questionOfTheDay": "GÜNÜN SORUSU",
+  "questionOfTheDayText": "Bugün hedeflerine ulaşmak için seni motive eden en büyük şey neydi?",
+  "writeYourAnswer": "Yanıtını Yaz",
+  "sort": "Sırala",
+  "overview": "Genel Bakış",
+  "monthly": "Aylık",
+  "weekly": "Haftalık",
+  "yearly": "Yıllık",
+  "data": "Veriler",
+  "downloadAllMyData": "Tüm verilerimi indir",
+  "restoreFromBackup": "Yedekten geri yükle",
+  "securityAndSupport": "Güvenlik ve Destek",
+  "privacyAndSecurity": "Gizlilik & Güvenlik",
+  "logOut": "Çıkış Yap",
+  "logOutTitle": "Çıkış Yap",
+  "logOutConfirmation": "Hesabınızdan çıkış yapmak istediğinize emin misiniz?",
+  "restoreFromBackupTitle": "Yedekten Geri Yükle",
+  "restoreFromBackupWarning": "Seçtiğin yedek dosyası, şu anki tüm hedef ve rapor verilerini silecek ve yerlerine yedekteki verileri koyacaktır.\n\nBu işlem geri alınamaz. Devam etmek istediğine emin misin?",
+  "yesContinue": "Evet, devam et",
+  "changePassword": "Şifreyi Değiştir",
+  "currentPassword": "Mevcut Şifre",
+  "newPassword": "Yeni Şifre",
+  "newPasswordRepeat": "Yeni Şifre (Tekrar)",
+  "passwordsDoNotMatch": "Yeni şifreler eşleşmiyor",
+  "passwordChangedSuccess": "Şifre başarıyla değiştirildi",
+  "exportAllData": "Tüm Verileri Dışa Aktar",
+  "exportDataFormatQuestion": "Verilerini hangi formatta kaydetmek istersin?",
+  "tableCsv": "Tablo (CSV)",
+  "advancedJson": "Gelişmiş (JSON)",
+  "enterCurrentPassword": "Mevcut şifrenizi girin",
+  "enterNewPassword": "Yeni şifrenizi girin",
+  "reEnterNewPassword": "Yeni şifrenizi tekrar girin",
+  "passwordsMismatch": "Şifreler eşleşmiyor",
+  "backupImportedSuccess": "Yedek başarıyla içe aktarıldı. Hedefler ekranını yenileyerek kontrol edebilirsin.",
+  "exportCompleted": "Yedekleme tamamlandı. Dosyalar > İndirilenler klasöründen ulaşabilirsin.",
+  "editProfile": "Profili Düzenle",
+  "emailCannotBeChanged": "E-posta adresi değiştirilemez",
+  "profileUpdatedSuccess": "Profil bilgileri güncellendi",
+  "deleteAccount": "Hesabı Sil",
+  "deleteAccountConfirmation": "Hesabınızı silmek istediğinize emin misiniz? Bu işlem geri alınamaz ve tüm verileriniz kalıcı olarak silinecektir.",
+  "accountDeletedSuccess": "Hesabınız başarıyla silindi",
+  "errorDeletingAccount": "Hesap silinirken hata oluştu",
+  "goalTitle": "Hedef Başlığı",
+  "goalTitleHint": "Yeni bir dil öğrenmek",
+  "goalTitleRequired": "Lütfen hedef başlığı girin",
+  "goalTitleMinLength": "Hedef başlığı en az 3 karakter olmalıdır",
+  "selectCategory": "Kategori Seç",
+  "categoryRequired": "Lütfen bir kategori seçin",
+  "whyThisGoal": "Bu hedefi neden istiyorsun?",
+  "motivationHint": "Motivasyonunu ve amacını yaz...",
+  "motivationRequired": "Lütfen bu hedefi neden istediğinizi açıklayın",
+  "completionDate": "Tamamlanma Tarihi",
+  "selectDate": "Tarih seçin",
+  "dateRequired": "Lütfen tamamlanma tarihi seçin",
+  "categoryExample": "örn: Kariyer, Sağlık",
+  "noteDeleted": "Not silindi",
+  "noteAdded": "Not eklendi",
+  "pleaseEnterNoteContent": "Lütfen not içeriği girin",
+  "errorDeletingNote": "Not silinirken hata oluştu: {error}",
+  "errorAddingNote": "Not eklenirken hata oluştu: {error}",
+  "addNote": "Yeni Not Ekle",
+  "editNote": "Notu Düzenle",
+  "noteContent": "Not İçeriği",
+  "noteContentHint": "Notunuzu buraya yazın...",
+  "monthlyCheckIn": "Aylık Check-in",
+  "takeAMomentToReflect": "Kısa bir yansıma molası ver",
+  "howDoYouEvaluateThisMonth": "Bu ayki ilerlemeni nasıl değerlendirirsin?",
+  "scoreDescription": "1 çok düşük ilerleme, 10 mükemmel ilerleme anlamına gelir.",
+  "score": "Skor: {score} / 10",
+  "saveCheckIn": "Check-in'i Kaydet",
+  "checkInSaved": "Check-in kaydedildi! ✅",
+  "errorSavingCheckIn": "Check-in kaydedilirken bir hata oluştu: {error}",
+  "whatDidYouDoThisMonth": "Bu ay bu hedef için ne yaptın?",
+  "smallStepsCount": "Küçük adımlar da sayılır. Kısa yazman yeterli.",
+  "progressExample": "Örn: Haftada 3 kez çalıştım, iki bölüm okudum, kelime pratiği yaptım…",
+  "whatChallengedYouMost": "Bu süreçte seni en çok ne zorladı? Bununla nasıl başa çıktın?",
+  "youCanWriteOnlyChallenges": "İstersen sadece zorlandığın kısmı da yazabilirsin.",
+  "challengeExample": "Örn: İş yükü rutinimi bozdu; tekrar toparlanmak için haftalık plan yapmaya başladım…",
+  "leaveNoteForFutureSelf": "Gelecekteki kendine küçük bir not bırakmak ister misin?",
+  "noteExample": "Örn: Harika gidiyorsun. Tutarlı kal ve sürece güven.",
+  "optional": "Opsiyonel",
+  "completed": "Yapılanlar:",
+  "challengesAndSolutions": "Zorluklar ve çözümler:",
+  "note": "Not:",
+  "whichGoalForCheckIn": "Hangi hedef için check-in yapmak istersin?",
+  "selectGoalFromBelow": "Aşağıdan bir hedef seç; seni doğrudan check-in ekranına götürelim.",
+  "goalsLoading": "Hedefler yükleniyor...",
+  "errorLoadingGoals": "Hedefler alınırken bir hata oluştu: {error}",
+  "noGoalsYetCreateFirst": "Henüz hiç hedefin yok. Önce bir hedef oluşturmalısın.",
+  "doCheckIn": "Check-in Yap"
+}
+

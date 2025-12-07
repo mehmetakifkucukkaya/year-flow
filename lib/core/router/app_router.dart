@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/utils/extensions.dart';
 import '../../features/auth/presentation/forgot_password_page.dart';
 import '../../features/auth/presentation/login_page.dart';
 import '../../features/auth/presentation/register_page.dart';
@@ -16,10 +17,10 @@ import '../../features/home/presentation/home_page.dart';
 import '../../features/onboarding/presentation/onboarding_page.dart';
 import '../../features/reports/presentation/report_detail_page.dart';
 import '../../features/reports/presentation/reports_page.dart';
-import '../../shared/models/yearly_report.dart';
 import '../../features/settings/presentation/privacy_security_page.dart';
 import '../../features/settings/presentation/profile_page.dart';
 import '../../features/settings/presentation/settings_page.dart';
+import '../../shared/models/yearly_report.dart';
 import 'app_routes.dart';
 
 /// Smooth fade transition for bottom navigation pages
@@ -118,7 +119,7 @@ final routerProvider = Provider<GoRouter>((ref) {
 
   return GoRouter(
     initialLocation:
-        isAuthenticated ? AppRoutes.home : AppRoutes.login,
+        isAuthenticated ? AppRoutes.home : AppRoutes.onboarding,
     debugLogDiagnostics: false,
     redirect: (context, state) {
       final isAuthRoute = state.uri.path == AppRoutes.login ||
@@ -370,7 +371,7 @@ final routerProvider = Provider<GoRouter>((ref) {
 });
 
 /// Main Shell - Bottom Navigation içeren ana wrapper
-class _MainShell extends StatelessWidget {
+class _MainShell extends ConsumerWidget {
   const _MainShell({
     required this.location,
     required this.child,
@@ -396,7 +397,7 @@ class _MainShell extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final selectedIndex = _getSelectedIndex();
 
     return Scaffold(
@@ -422,26 +423,27 @@ class _MainShell extends StatelessWidget {
           }
         },
         labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
-        destinations: const [
+        destinations: [
           NavigationDestination(
-            icon: Icon(Icons.home_outlined, size: 22), // Smaller icons
-            selectedIcon: Icon(Icons.home, size: 22),
-            label: 'Anasayfa',
+            icon:
+                const Icon(Icons.home_outlined, size: 22), // Smaller icons
+            selectedIcon: const Icon(Icons.home, size: 22),
+            label: context.l10n.home,
           ),
           NavigationDestination(
-            icon: Icon(Icons.flag_outlined, size: 22),
-            selectedIcon: Icon(Icons.flag, size: 22),
-            label: 'Hedefler',
+            icon: const Icon(Icons.flag_outlined, size: 22),
+            selectedIcon: const Icon(Icons.flag, size: 22),
+            label: context.l10n.goals,
           ),
           NavigationDestination(
-            icon: Icon(Icons.analytics_outlined, size: 22),
-            selectedIcon: Icon(Icons.analytics, size: 22),
-            label: 'Raporlar',
+            icon: const Icon(Icons.analytics_outlined, size: 22),
+            selectedIcon: const Icon(Icons.analytics, size: 22),
+            label: context.l10n.reports,
           ),
           NavigationDestination(
-            icon: Icon(Icons.settings_outlined, size: 22),
-            selectedIcon: Icon(Icons.settings, size: 22),
-            label: 'Ayarlar',
+            icon: const Icon(Icons.settings_outlined, size: 22),
+            selectedIcon: const Icon(Icons.settings, size: 22),
+            label: context.l10n.settings,
           ),
         ],
         indicatorColor: Theme.of(context)

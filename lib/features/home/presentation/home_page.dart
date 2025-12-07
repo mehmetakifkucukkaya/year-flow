@@ -7,6 +7,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_radius.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_text_styles.dart';
+import '../../../core/utils/extensions.dart';
 import '../../../core/widgets/index.dart';
 import '../../../shared/models/goal.dart';
 import '../../../shared/providers/goal_providers.dart';
@@ -173,8 +174,8 @@ class HomePage extends ConsumerWidget {
                 top: AppSpacing.xl,
                 bottom: AppSpacing.md,
               ),
-              child: Text(
-                'Hedeflerin',
+              child:               Text(
+                context.l10n.yourGoals,
                 style: AppTextStyles.headlineMedium.copyWith(
                   fontWeight: FontWeight.bold,
                   fontSize: MediaQuery.of(context).size.width < 360 ? 22 : null,
@@ -205,7 +206,7 @@ class HomePage extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Hedefler yüklenirken bir hata oluştu',
+                      context.l10n.goalsLoadingError,
                       style: AppTextStyles.bodyLarge.copyWith(
                         fontWeight: FontWeight.w600,
                       ),
@@ -322,7 +323,7 @@ class _WeeklySummaryCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Haftalık özet',
+                  context.l10n.weeklySummary,
                   style: AppTextStyles.bodyMedium.copyWith(
                     fontWeight: FontWeight.w700,
                     letterSpacing: -0.1,
@@ -330,8 +331,10 @@ class _WeeklySummaryCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'Bu hafta toplam ${summary.checkInCount} check-in ile '
-                  '${summary.goalsWithProgress} farklı hedefte ilerleme kaydettin.',
+                  context.l10n.thisWeekCheckIns(
+                    summary.checkInCount,
+                    summary.goalsWithProgress,
+                  ),
                   style: AppTextStyles.bodySmall.copyWith(
                     color: AppColors.gray700,
                   ),
@@ -419,7 +422,7 @@ class _WeeklySummaryErrorCard extends StatelessWidget {
           const SizedBox(width: AppSpacing.sm),
           Expanded(
             child: Text(
-              'Bu haftanın özeti şu an yüklenemedi. Birazdan tekrar dene.',
+              context.l10n.weeklySummaryError,
               style: AppTextStyles.bodySmall.copyWith(
                 color: AppColors.gray600,
               ),
@@ -435,22 +438,23 @@ class _WeeklySummaryErrorCard extends StatelessWidget {
 class _TopAppBar extends ConsumerWidget {
   const _TopAppBar();
 
-  String _buildGreeting(String? displayName) {
+  String _buildGreeting(BuildContext context, String? displayName) {
     final now = DateTime.now();
     final hour = now.hour;
 
+    final l10n = context.l10n;
     String timeGreeting;
     if (hour < 12) {
-      timeGreeting = 'Günaydın';
+      timeGreeting = l10n.goodMorning;
     } else if (hour < 18) {
-      timeGreeting = 'Merhaba';
+      timeGreeting = l10n.hello;
     } else {
-      timeGreeting = 'İyi akşamlar';
+      timeGreeting = l10n.goodEvening;
     }
 
     final name = (displayName?.trim().isNotEmpty ?? false)
         ? displayName!.trim()
-        : 'KUllanıcı';
+        : l10n.user;
 
     return '$timeGreeting, $name';
   }
@@ -474,7 +478,7 @@ class _TopAppBar extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final authState = ref.watch(authStateProvider);
     final user = authState.currentUser;
-    final greeting = _buildGreeting(user?.displayName);
+    final greeting = _buildGreeting(context, user?.displayName);
     final screenWidth = MediaQuery.of(context).size.width;
     final isSmallScreen = screenWidth < 360;
 
@@ -505,7 +509,7 @@ class _TopAppBar extends ConsumerWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  'Bugün nasıl geçiyor?',
+                  context.l10n.howIsTodayGoing,
                   style: AppTextStyles.bodyMedium.copyWith(
                     color: AppColors.gray600,
                     fontWeight: FontWeight.w500,
@@ -577,8 +581,9 @@ class _GoalCard extends ConsumerWidget {
 
   int get _clampedProgress => goal.progress.clamp(0, 100);
 
-  String _formatTargetDate(DateTime? targetDate) {
-    if (targetDate == null) return 'Hedef tarihi belirtilmemiş';
+  String _formatTargetDate(BuildContext context, DateTime? targetDate) {
+    final l10n = context.l10n;
+    if (targetDate == null) return l10n.targetDateNotSpecified;
 
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
@@ -587,27 +592,27 @@ class _GoalCard extends ConsumerWidget {
     final diff = targetDay.difference(today).inDays;
 
     if (diff < 0) {
-      if (diff == -1) return '1 gün gecikti';
-      return '${-diff} gün gecikti';
+      if (diff == -1) return l10n.oneDayOverdue;
+      return l10n.daysOverdue(-diff);
     }
-    if (diff == 0) return 'Bugün';
-    if (diff == 1) return '1 gün kaldı';
-    if (diff < 7) return '$diff gün kaldı';
+    if (diff == 0) return l10n.today;
+    if (diff == 1) return l10n.oneDayLeft;
+    if (diff < 7) return l10n.daysLeft(diff);
 
     // Tarih formatı
     final months = [
-      'Ocak',
-      'Şubat',
-      'Mart',
-      'Nisan',
-      'Mayıs',
-      'Haziran',
-      'Temmuz',
-      'Ağustos',
-      'Eylül',
-      'Ekim',
-      'Kasım',
-      'Aralık'
+      l10n.january,
+      l10n.february,
+      l10n.march,
+      l10n.april,
+      l10n.may,
+      l10n.june,
+      l10n.july,
+      l10n.august,
+      l10n.september,
+      l10n.october,
+      l10n.november,
+      l10n.december,
     ];
     return '${targetDate.day} ${months[targetDate.month - 1]} ${targetDate.year}';
   }
@@ -675,7 +680,7 @@ class _GoalCard extends ConsumerWidget {
                                 ),
                                 const SizedBox(width: 6),
                                 Text(
-                                  goal.category.label,
+                                  goal.category.getLocalizedLabel(context),
                                   style:
                                       AppTextStyles.labelMedium.copyWith(
                                     color: _categoryColor,
@@ -758,7 +763,7 @@ class _GoalCard extends ConsumerWidget {
                       Expanded(
                         child: _DetailItem(
                           icon: Icons.checklist_rounded,
-                          text: '${_getRemainingTasksCount()} görev kaldı',
+                          text: context.l10n.tasksRemaining(_getRemainingTasksCount()),
                           color: AppColors.gray700,
                         ),
                       ),
@@ -771,7 +776,7 @@ class _GoalCard extends ConsumerWidget {
                       data: (checkIns) => Expanded(
                         child: _DetailItem(
                           icon: Icons.track_changes_rounded,
-                          text: '${checkIns.length} check-in',
+                          text: context.l10n.checkInCount(checkIns.length),
                           color: AppColors.gray700,
                         ),
                       ),
@@ -783,7 +788,7 @@ class _GoalCard extends ConsumerWidget {
                 if (goal.targetDate != null)
                   _DetailItem(
                     icon: Icons.calendar_today_rounded,
-                    text: _formatTargetDate(goal.targetDate),
+                    text: _formatTargetDate(context, goal.targetDate),
                     color: goal.targetDate!.isBefore(DateTime.now())
                         ? AppColors.error
                         : AppColors.gray700,
@@ -858,14 +863,14 @@ class _EmptyGoalsCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Henüz hedef oluşturmadın',
+            context.l10n.noGoalCreatedYet,
             style: AppTextStyles.titleMedium.copyWith(
               fontWeight: FontWeight.w700,
             ),
           ),
           const SizedBox(height: AppSpacing.sm),
           Text(
-            'İlk hedefini oluştur ve yılını daha planlı, odaklı ve anlamlı hale getir.',
+            context.l10n.createFirstGoal,
             style: AppTextStyles.bodyMedium.copyWith(
               color: AppColors.gray600,
             ),
@@ -884,7 +889,7 @@ class _EmptyGoalsCard extends StatelessWidget {
                 ),
               ),
               child: Text(
-                'Hedef Oluştur',
+                context.l10n.createGoal,
                 style: AppTextStyles.bodyLarge.copyWith(
                   fontWeight: FontWeight.w600,
                 ),
@@ -939,9 +944,10 @@ class _UpcomingCheckInsSection extends ConsumerWidget {
     return upcoming.take(3).toList();
   }
 
-  String _formatRemaining(DateTime? targetDate) {
+  String _formatRemaining(BuildContext context, DateTime? targetDate) {
+    final l10n = context.l10n;
     if (targetDate == null) {
-      return 'Check-in yap';
+      return l10n.doCheckIn;
     }
 
     final now = DateTime.now();
@@ -981,7 +987,7 @@ class _UpcomingCheckInsSection extends ConsumerWidget {
                 bottom: AppSpacing.md,
               ),
               child: Text(
-                'Yaklaşan Check-in\'lerin',
+                context.l10n.upcomingCheckIns,
                 style: AppTextStyles.headlineMedium.copyWith(
                   fontWeight: FontWeight.bold,
                   fontSize: MediaQuery.of(context).size.width < 360 ? 22 : null,
@@ -1107,7 +1113,7 @@ class _UpcomingCheckInsSection extends ConsumerWidget {
                                         ),
                                         const SizedBox(height: 2),
                                         Text(
-                                          '7 günden az kalmış hedeflerin check-in\'lerini yap',
+                                          context.l10n.upcomingCheckInsDescription,
                                           style: AppTextStyles.bodySmall
                                               .copyWith(
                                             color: AppColors.gray600,
@@ -1186,7 +1192,7 @@ class _UpcomingCheckInsSection extends ConsumerWidget {
                                                       height: 2),
                                                   Text(
                                                     _formatRemaining(
-                                                        goal.targetDate),
+                                                        context, goal.targetDate),
                                                     style: AppTextStyles
                                                         .bodySmall
                                                         .copyWith(
@@ -1213,7 +1219,7 @@ class _UpcomingCheckInsSection extends ConsumerWidget {
                                                         999),
                                               ),
                                               child: Text(
-                                                'Check-in Yap',
+                                                context.l10n.doCheckIn,
                                                 style: AppTextStyles
                                                     .labelSmall
                                                     .copyWith(
@@ -1279,7 +1285,7 @@ class _DailyQuestionCard extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'GÜNÜN SORUSU',
+              context.l10n.questionOfTheDay,
               style: AppTextStyles.labelMedium.copyWith(
                 fontWeight: FontWeight.w600,
                 color: AppColors.gray600,
@@ -1287,7 +1293,7 @@ class _DailyQuestionCard extends ConsumerWidget {
             ),
             const SizedBox(height: AppSpacing.sm),
             Text(
-              'Bugün hedeflerine ulaşmak için seni motive eden en büyük şey neydi?',
+              context.l10n.questionOfTheDayText,
               style: AppTextStyles.bodyLarge,
             ),
             const SizedBox(height: AppSpacing.lg),
@@ -1301,8 +1307,8 @@ class _DailyQuestionCard extends ConsumerWidget {
                   goalsAsync.when(
                     loading: () {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Hedefler yükleniyor...'),
+                        SnackBar(
+                          content: Text(context.l10n.goalsLoading),
                         ),
                       );
                     },
@@ -1310,7 +1316,7 @@ class _DailyQuestionCard extends ConsumerWidget {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
                           content: Text(
-                            'Hedefler alınırken bir hata oluştu: $error',
+                            context.l10n.errorLoadingGoals(error.toString()),
                           ),
                         ),
                       );
@@ -1318,9 +1324,9 @@ class _DailyQuestionCard extends ConsumerWidget {
                     data: (goals) {
                       if (goals.isEmpty) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
+                          SnackBar(
                             content: Text(
-                              'Henüz hiç hedefin yok. Önce bir hedef oluşturmalısın.',
+                              context.l10n.noGoalsYetCreateFirst,
                             ),
                           ),
                         );
@@ -1345,7 +1351,7 @@ class _DailyQuestionCard extends ConsumerWidget {
                                     CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    'Hangi hedef için check-in yapmak istersin?',
+                                    context.l10n.whichGoalForCheckIn,
                                     style:
                                         AppTextStyles.titleMedium.copyWith(
                                       fontWeight: FontWeight.w700,
@@ -1353,7 +1359,7 @@ class _DailyQuestionCard extends ConsumerWidget {
                                   ),
                                   const SizedBox(height: AppSpacing.sm),
                                   Text(
-                                    'Aşağıdan bir hedef seç; seni doğrudan check-in ekranına götürelim.',
+                                    context.l10n.selectGoalFromBelow,
                                     style:
                                         AppTextStyles.bodySmall.copyWith(
                                       color: AppColors.gray600,
@@ -1383,7 +1389,7 @@ class _DailyQuestionCard extends ConsumerWidget {
                                             ),
                                           ),
                                           subtitle: Text(
-                                            goal.category.label,
+                                            goal.category.getLocalizedLabel(context),
                                             style: AppTextStyles.bodySmall
                                                 .copyWith(
                                               color: AppColors.gray600,
@@ -1430,7 +1436,7 @@ class _DailyQuestionCard extends ConsumerWidget {
                   ),
                 ),
                 child: Text(
-                  'Yanıtını Yaz',
+                  context.l10n.writeYourAnswer,
                   style: AppTextStyles.bodyLarge.copyWith(
                     fontWeight: FontWeight.w600,
                   ),

@@ -8,6 +8,7 @@ import '../../../core/router/app_routes.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_text_styles.dart';
+import '../../../core/utils/extensions.dart';
 import '../../../core/widgets/index.dart';
 import '../../../shared/models/goal.dart';
 import '../../../shared/providers/goal_providers.dart';
@@ -276,7 +277,7 @@ class _ArchivedGoalCard extends ConsumerWidget {
                           ),
                           const SizedBox(width: 6),
                           Text(
-                            goal.category.label,
+                            goal.category.getLocalizedLabel(context),
                             style: AppTextStyles.labelSmall.copyWith(
                               color: categoryColor,
                               fontWeight: FontWeight.w600,

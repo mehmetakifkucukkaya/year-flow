@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/router/app_routes.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/utils/extensions.dart';
 import '../../../core/widgets/index.dart';
 import '../providers/auth_providers.dart';
 
@@ -62,13 +63,13 @@ class _LoginPageState extends ConsumerState<LoginPage> {
         if (user.isNewUser) {
           AppSnackbar.showSuccess(
             context,
-            message: 'Hoş geldiniz! 🎉',
+            message: context.l10n.welcome,
             duration: const Duration(seconds: 2),
           );
         } else {
           AppSnackbar.showInfo(
             context,
-            message: 'Giriş başarılı! Hoş geldiniz 👋',
+            message: context.l10n.signInSuccess,
             duration: const Duration(seconds: 2),
           );
         }
@@ -132,7 +133,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       ),
                       const SizedBox(height: 16),
                       Text(
-                        'YearFlow',
+                        context.l10n.appName,
                         style: Theme.of(context)
                             .textTheme
                             .headlineLarge
@@ -147,7 +148,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                 const SizedBox(height: 48),
                 // Başlık
                 Text(
-                  'Tekrar Hoş Geldin!',
+                  context.l10n.welcomeBack,
                   style:
                       Theme.of(context).textTheme.headlineMedium?.copyWith(
                             color: AppColors.gray900,
@@ -158,18 +159,18 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                 const SizedBox(height: 32),
                 // Email field
                 AppTextField(
-                  label: 'E-posta',
-                  hint: 'E-posta adresinizi girin',
+                  label: context.l10n.email,
+                  hint: context.l10n.emailHint,
                   controller: _emailController,
                   keyboardType: TextInputType.emailAddress,
                   textInputAction: TextInputAction.next,
                   prefixIcon: const Icon(Icons.email_outlined),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'E-posta adresi gereklidir';
+                      return context.l10n.emailRequired;
                     }
                     if (!value.contains('@')) {
-                      return 'Geçerli bir e-posta adresi girin';
+                      return context.l10n.emailInvalid;
                     }
                     return null;
                   },
@@ -177,8 +178,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                 AppSpacers.md,
                 // Password field
                 AppTextField(
-                  label: 'Şifre',
-                  hint: 'Şifrenizi girin',
+                  label: context.l10n.password,
+                  hint: context.l10n.passwordHint,
                   controller: _passwordController,
                   obscureText: _obscurePassword,
                   textInputAction: TextInputAction.done,
@@ -197,10 +198,10 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Şifre gereklidir';
+                      return context.l10n.passwordRequired;
                     }
                     if (value.length < 6) {
-                      return 'Şifre en az 6 karakter olmalı';
+                      return context.l10n.passwordMinLength;
                     }
                     return null;
                   },
@@ -213,7 +214,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     onPressed: () {
                       context.push(AppRoutes.forgotPassword);
                     },
-                    child: const Text('Şifreni mi unuttun?'),
+                    child: Text(context.l10n.forgotPassword),
                   ),
                 ),
                 AppSpacers.lg,
@@ -223,7 +224,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       ? null
                       : _handleLogin,
                   isLoading: isEmailLoading,
-                  child: const Text('Giriş Yap'),
+                  child: Text(context.l10n.signIn),
                 ),
                 AppSpacers.lg,
                 // Separator
@@ -236,7 +237,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      'veya',
+                      context.l10n.or,
                       style:
                           Theme.of(context).textTheme.bodySmall?.copyWith(
                                 color: AppColors.gray500,
@@ -258,15 +259,15 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       : _handleGoogleSignIn,
                   variant: AppButtonVariant.outlined,
                   isLoading: isGoogleLoading,
-                  child: const Row(
+                  child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       // Google Icon
-                      _GoogleIcon(),
-                      SizedBox(width: 8),
+                      const _GoogleIcon(),
+                      const SizedBox(width: 8),
                       Text(
-                        'Google ile devam et',
+                        context.l10n.continueWithGoogle,
                       ),
                     ],
                   ),
@@ -276,12 +277,12 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text('Hesabın yok mu? '),
+                    Text('${context.l10n.noAccount}'),
                     TextButton(
                       onPressed: () {
                         context.push(AppRoutes.register);
                       },
-                      child: const Text('Kayıt Ol'),
+                      child: Text(context.l10n.signUp),
                     ),
                   ],
                 ),

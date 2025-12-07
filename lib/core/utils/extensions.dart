@@ -1,8 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+import '../../core/constants/app_constants.dart';
+import '../../l10n/app_localizations.dart';
+import '../../shared/models/yearly_report.dart';
+
 /// BuildContext extension'ları
 extension ContextExtensions on BuildContext {
+  /// AppLocalizations erişimi
+  AppLocalizations get l10n => AppLocalizations.of(this)!;
   /// Theme erişimi
   ThemeData get theme => Theme.of(this);
 
@@ -90,5 +96,47 @@ extension StringExtensions on String {
 extension IntExtensions on int {
   /// Yüzde formatı
   String get asPercent => '$this%';
+}
+
+/// GoalCategory extension for localized labels
+extension GoalCategoryLocalized on GoalCategory {
+  String getLocalizedLabel(BuildContext context) {
+    final l10n = context.l10n;
+    switch (this) {
+      case GoalCategory.health:
+        return l10n.health;
+      case GoalCategory.mentalHealth:
+        return l10n.mentalHealth;
+      case GoalCategory.finance:
+        return l10n.finance;
+      case GoalCategory.career:
+        return l10n.career;
+      case GoalCategory.relationships:
+        return l10n.relationships;
+      case GoalCategory.learning:
+        return l10n.learning;
+      case GoalCategory.creativity:
+        return l10n.creativity;
+      case GoalCategory.hobby:
+        return l10n.hobby;
+      case GoalCategory.personalGrowth:
+        return l10n.personalGrowth;
+    }
+  }
+}
+
+/// ReportType extension for localized labels
+extension ReportTypeLocalized on ReportType {
+  String getLocalizedLabel(BuildContext context) {
+    final l10n = context.l10n;
+    switch (this) {
+      case ReportType.weekly:
+        return l10n.weekly;
+      case ReportType.monthly:
+        return l10n.monthly;
+      case ReportType.yearly:
+        return l10n.yearly;
+    }
+  }
 }
 

@@ -5,6 +5,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_radius.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_text_styles.dart';
+import '../../../core/utils/extensions.dart';
 import '../../../core/widgets/index.dart';
 import '../../../shared/models/check_in.dart';
 import '../../../shared/models/goal.dart';
@@ -100,7 +101,7 @@ class _ReportsTopAppBar extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Raporlar',
+                context.l10n.reports,
                 style: AppTextStyles.headlineLarge.copyWith(
                   fontWeight: FontWeight.w800,
                   letterSpacing: -0.8,
@@ -109,7 +110,7 @@ class _ReportsTopAppBar extends ConsumerWidget {
               ),
               const SizedBox(height: 2),
               Text(
-                'Yıllık performans özetin',
+                context.l10n.yearlyPerformanceSummary,
                 style: AppTextStyles.bodySmall.copyWith(
                   color: AppColors.gray600,
                   fontWeight: FontWeight.w500,
@@ -137,7 +138,7 @@ class _ReportsTopAppBar extends ConsumerWidget {
               iconSize: 22,
               color: AppColors.gray700,
               padding: const EdgeInsets.all(12),
-              tooltip: 'Raporu indir',
+              tooltip: context.l10n.downloadReport,
             ),
           ),
         ],
@@ -201,7 +202,7 @@ class _HeaderHero extends ConsumerWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(
-            '2025 Yıllık Raporun',
+            context.l10n.yourYearlyReport(DateTime.now().year),
             style: AppTextStyles.headlineMedium.copyWith(
               fontWeight: FontWeight.w800,
               letterSpacing: -0.5,
@@ -213,7 +214,7 @@ class _HeaderHero extends ConsumerWidget {
           ),
           const SizedBox(height: AppSpacing.xs),
           Text(
-            'Yolculuğuna genel bir bakış atalım',
+            context.l10n.letsTakeOverview,
             style: AppTextStyles.bodyMedium.copyWith(
               color: AppColors.gray700,
               fontSize:
@@ -229,8 +230,9 @@ class _HeaderHero extends ConsumerWidget {
               builder: (context) {
                 final screenWidth = MediaQuery.of(context).size.width;
                 final isSmallScreen = screenWidth < 380;
-                final buttonText =
-                    hasCurrentYearReport ? 'Raporu Aç' : 'Rapor Oluştur';
+                final buttonText = hasCurrentYearReport
+                    ? context.l10n.openReport
+                    : context.l10n.createReport;
 
                 // Küçük ekranlarda sadece icon butonu
                 if (isSmallScreen && screenWidth < 340) {
@@ -345,11 +347,12 @@ class _HeaderHero extends ConsumerWidget {
                   ? ((stats.completedGoals / stats.totalGoals) * 100)
                       .round()
                   : 0;
+              final l10n = context.l10n;
               final message = completionRate >= 75
-                  ? 'Harika bir yıl geçirdin 🎉'
+                  ? l10n.greatYear
                   : completionRate >= 50
-                      ? 'İyi bir ilerleme kaydettin! 💪'
-                      : 'Yolculuğuna devam et! 🌱';
+                      ? l10n.goodProgress
+                      : l10n.continueJourney;
               return Text(
                 message,
                 style: AppTextStyles.bodySmall.copyWith(
@@ -386,7 +389,7 @@ class _OverviewSection extends ConsumerWidget {
           color: Colors.white,
           borderRadius: AppRadius.borderRadiusXl,
         ),
-        child: Text('Veriler yüklenirken hata oluştu: $error'),
+        child: Text(context.l10n.errorLoadingData(error.toString())),
       ),
       data: (stats) {
         final completionRate = stats.totalGoals > 0
@@ -418,7 +421,7 @@ class _OverviewSection extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Genel Bakış',
+                context.l10n.overview,
                 style: AppTextStyles.titleMedium.copyWith(
                   fontWeight: FontWeight.w700,
                 ),
@@ -428,7 +431,7 @@ class _OverviewSection extends ConsumerWidget {
                 children: [
                   Expanded(
                     child: _StatCard(
-                      label: 'Toplam Hedef',
+                      label: context.l10n.totalGoals,
                       value: '${stats.totalGoals}',
                       color: colorScheme.primary,
                     ),
@@ -436,7 +439,7 @@ class _OverviewSection extends ConsumerWidget {
                   const SizedBox(width: AppSpacing.md),
                   Expanded(
                     child: _StatCard(
-                      label: 'Tamamlanma Oranı',
+                      label: context.l10n.completionRate,
                       value: '$completionRate%',
                       color: AppColors.success,
                     ),
@@ -448,7 +451,7 @@ class _OverviewSection extends ConsumerWidget {
                 children: [
                   Expanded(
                     child: _StatCard(
-                      label: 'Check-in',
+                      label: context.l10n.checkIn,
                       value: '${stats.totalCheckIns}',
                       color: AppColors.primary,
                     ),
@@ -456,7 +459,7 @@ class _OverviewSection extends ConsumerWidget {
                   const SizedBox(width: AppSpacing.md),
                   Expanded(
                     child: _StatCard(
-                      label: 'Ortalama İlerleme',
+                      label: context.l10n.averageProgress,
                       value: '${stats.averageProgress.round()}%',
                       color: AppColors.success,
                     ),
@@ -465,7 +468,7 @@ class _OverviewSection extends ConsumerWidget {
               ),
               const SizedBox(height: AppSpacing.lg),
               Text(
-                'Yıllık İlerleme',
+                context.l10n.yearlyProgress,
                 style: AppTextStyles.bodyMedium.copyWith(
                   color: AppColors.gray600,
                   fontWeight: FontWeight.w600,
@@ -579,7 +582,7 @@ class _CategoryProgressSection extends ConsumerWidget {
           color: AppColors.white,
           borderRadius: AppRadius.borderRadiusXl,
         ),
-        child: Text('Veriler yüklenirken hata oluştu: $error'),
+        child: Text(context.l10n.errorLoadingData(error.toString())),
       ),
       data: (stats) {
         final categories = stats.categoryProgress.entries.map((entry) {
@@ -597,7 +600,7 @@ class _CategoryProgressSection extends ConsumerWidget {
               borderRadius: AppRadius.borderRadiusXl,
             ),
             child: Text(
-              'Henüz kategori bazlı veri yok',
+              context.l10n.noCategoryData,
               style: AppTextStyles.bodyMedium.copyWith(
                 color: AppColors.gray600,
               ),
@@ -616,7 +619,7 @@ class _CategoryProgressSection extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Kategori Bazlı Gelişim',
+                context.l10n.categoryBasedDevelopment,
                 style: AppTextStyles.titleMedium.copyWith(
                   fontWeight: FontWeight.w700,
                 ),
@@ -747,7 +750,7 @@ class _AchievementsSection extends ConsumerWidget {
           color: AppColors.white,
           borderRadius: AppRadius.borderRadiusXl,
         ),
-        child: Text('Veriler yüklenirken hata oluştu: $error'),
+        child: Text(context.l10n.errorLoadingData(error.toString())),
       ),
       data: (stats) {
         if (stats.totalGoals == 0) {
@@ -758,8 +761,7 @@ class _AchievementsSection extends ConsumerWidget {
               borderRadius: AppRadius.borderRadiusXl,
             ),
             child: Text(
-              'Henüz başarı hikayesi oluşturacak kadar veri yok. '
-              'Hedefler ekleyip check-in yaptıkça burada gelişimini göreceksin.',
+              context.l10n.noAchievementData,
               style: AppTextStyles.bodyMedium.copyWith(
                 color: AppColors.gray600,
               ),
@@ -779,32 +781,35 @@ class _AchievementsSection extends ConsumerWidget {
 
         final achievements = <String>[];
 
+        final l10n = context.l10n;
         achievements.add(
-          'Bu yıl toplam ${stats.totalGoals} hedef üzerinde çalıştın ve '
-          '${stats.completedGoals} hedefi tamamladın '
-          '(tamamlanma oranı yaklaşık %$completionRate).',
+          l10n.thisYearWorkedOnGoals(
+            stats.totalGoals,
+            stats.completedGoals,
+            completionRate,
+          ),
         );
 
         achievements.add(
-          'Tüm hedefler arasında ortalama ilerleme düzeyin %'
-          '${stats.averageProgress.round()} civarında; bu, yıl boyunca '
-          'istikrarlı bir şekilde adım attığını gösteriyor.',
+          l10n.averageProgressLevel(stats.averageProgress.round()),
         );
 
         if (leadingCategories.isNotEmpty) {
           final primary = leadingCategories.first;
           final primaryValue = primary.value.round();
 
-          var text =
-              '"${primary.key.label}" kategorisinde yaklaşık %$primaryValue '
-              'ile en güçlü ilerlemeyi gösterdin';
+          var text = l10n.strongestProgressInCategory(
+            primary.key.label,
+            primaryValue,
+          );
 
           if (leadingCategories.length > 1) {
             final secondary = leadingCategories[1];
             final secondaryValue = secondary.value.round();
-            text +=
-                ', "${secondary.key.label}" kategorisinde ise yaklaşık '
-                '%$secondaryValue seviyesine ulaştın.';
+            text += l10n.reachedLevelInCategory(
+              secondaryValue,
+              secondary.key.label,
+            );
           } else {
             text += '.';
           }
@@ -823,7 +828,7 @@ class _AchievementsSection extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Başarılar',
+                context.l10n.achievements,
                 style: AppTextStyles.titleMedium.copyWith(
                   fontWeight: FontWeight.w700,
                 ),
@@ -937,7 +942,7 @@ class _ChallengesSection extends ConsumerWidget {
           color: AppColors.white,
           borderRadius: AppRadius.borderRadiusXl,
         ),
-        child: Text('Veriler yüklenirken hata oluştu: $error'),
+        child: Text(context.l10n.errorLoadingData(error.toString())),
       ),
       data: (stats) {
         if (stats.totalGoals == 0) {
@@ -948,8 +953,7 @@ class _ChallengesSection extends ConsumerWidget {
               borderRadius: AppRadius.borderRadiusXl,
             ),
             child: Text(
-              'Hedef ve check-in verilerin oluştukça, zorlandığın alanlar ve '
-              'iyileştirme önerileri burada görünecek.',
+              context.l10n.goalAndCheckInDataNeeded,
               style: AppTextStyles.bodyMedium.copyWith(
                 color: AppColors.gray600,
               ),
@@ -963,6 +967,7 @@ class _ChallengesSection extends ConsumerWidget {
 
         final lowCategories = entries.where((e) => e.value < 50).toList();
 
+        final l10n = context.l10n;
         final items = <_ChallengeData>[];
 
         if (lowCategories.isNotEmpty) {
@@ -970,11 +975,8 @@ class _ChallengesSection extends ConsumerWidget {
           final value = first.value.round();
           items.add(
             _ChallengeData(
-              title:
-                  'Zorluk: "${first.key.label}" kategorisinde ilerleme görece düşük (yaklaşık %$value).',
-              solution:
-                  'Çözüm: Bu alanda haftaya 1–2 küçük, net aksiyon ekleyip '
-                  'check-in sıklığını artırmayı deneyebilirsin.',
+              title: l10n.challengeLowProgress(first.key.label, value),
+              solution: l10n.solutionAddActions,
             ),
           );
         }
@@ -985,22 +987,17 @@ class _ChallengesSection extends ConsumerWidget {
           items.add(
             _ChallengeData(
               title:
-                  'Zorluk: "${second.key.label}" hedeflerine odaklanmakta zorlanıyor olabilirsin (yaklaşık %$value).',
-              solution:
-                  'Çözüm: Bu hedefleri daha küçük adımlara bölmek ve '
-                  'haftalık olarak gözden geçirmek odaklanmayı artırabilir.',
+                  l10n.challengeFocusDifficulty(second.key.label, value),
+              solution: l10n.solutionBreakDownGoals,
             ),
           );
         }
 
         if (items.isEmpty) {
           items.add(
-            const _ChallengeData(
-              title:
-                  'Genel durum: Tüm kategorilerde sağlıklı bir ilerleme var.',
-              solution:
-                  'Çözüm: Yine de, motivasyonunu korumak için haftalık olarak '
-                  'önceliklerini gözden geçirmek iyi bir fikir olabilir.',
+            _ChallengeData(
+              title: l10n.generalStatusHealthy,
+              solution: l10n.solutionReviewPriorities,
             ),
           );
         }
@@ -1016,7 +1013,7 @@ class _ChallengesSection extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Zorluklar & Çözümler',
+                context.l10n.challengesAndSolutions,
                 style: AppTextStyles.titleMedium.copyWith(
                   fontWeight: FontWeight.w700,
                 ),
@@ -1216,7 +1213,7 @@ class _AiSuggestionsSection extends StatelessWidget {
               ),
               const SizedBox(width: AppSpacing.sm),
               Text(
-                'AI Önerileri',
+                context.l10n.aiSuggestions,
                 style: AppTextStyles.titleMedium.copyWith(
                   fontWeight: FontWeight.w700,
                   color: colorScheme.primary,
@@ -1226,10 +1223,7 @@ class _AiSuggestionsSection extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.md),
           Text(
-            'Kişisel gelişim hedeflerindeki ilerlemen harika! Gelecek yıl, büyük '
-            'kariyer hedeflerini daha küçük, yönetilebilir adımlara bölerek '
-            'tamamlanma oranını artırabilirsin. Ayrıca, finansal okuryazarlık '
-            'üzerine bir hedef eklemek genel başarını destekleyebilir.',
+            context.l10n.aiSuggestionExample,
             style: AppTextStyles.bodyMedium.copyWith(
               color: AppColors.gray800,
             ),
@@ -1256,7 +1250,7 @@ class _ReportsExportBottomSheetState
   Future<void> _handleExport(String format) async {
     final userId = ref.read(currentUserIdProvider);
     if (userId == null) {
-      AppSnackbar.showError(context, message: 'Giriş yapmanız gerekiyor');
+      AppSnackbar.showError(context, message: context.l10n.loginRequired);
       return;
     }
 
@@ -1274,7 +1268,7 @@ class _ReportsExportBottomSheetState
       if (mounted) {
         AppSnackbar.showSuccess(
           context,
-          message: 'Rapor başarıyla export edildi',
+          message: context.l10n.reportExportedSuccessfully,
         );
         Navigator.of(context).pop();
       }
@@ -1307,7 +1301,7 @@ class _ReportsExportBottomSheetState
           Row(
             children: [
               Text(
-                'Raporu Dışa Aktar',
+                context.l10n.exportReport,
                 style: AppTextStyles.titleLarge.copyWith(
                   fontWeight: FontWeight.w700,
                 ),
@@ -1321,7 +1315,7 @@ class _ReportsExportBottomSheetState
           ),
           const SizedBox(height: AppSpacing.lg),
           Text(
-            'Format seçin:',
+            context.l10n.selectFormat,
             style: AppTextStyles.bodyMedium.copyWith(
               color: AppColors.gray700,
             ),
@@ -1334,7 +1328,7 @@ class _ReportsExportBottomSheetState
                   onPressed:
                       _isLoading ? null : () => _handleExport('json'),
                   icon: const Icon(Icons.code_rounded),
-                  label: const Text('JSON'),
+                  label: Text(context.l10n.json),
                   style: OutlinedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     side: const BorderSide(
@@ -1353,7 +1347,7 @@ class _ReportsExportBottomSheetState
                   onPressed:
                       _isLoading ? null : () => _handleExport('csv'),
                   icon: const Icon(Icons.table_chart_rounded),
-                  label: const Text('CSV'),
+                  label: Text(context.l10n.csv),
                   style: OutlinedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     side: const BorderSide(
@@ -1458,7 +1452,7 @@ class _CreateReportBottomSheetState
       final userId = ref.read(currentUserIdProvider);
       if (userId == null) {
         AppSnackbar.showError(context,
-            message: 'Giriş yapmanız gerekiyor');
+            message: context.l10n.loginRequired);
         return;
       }
 
@@ -1472,7 +1466,7 @@ class _CreateReportBottomSheetState
       if (goals.isEmpty) {
         AppSnackbar.showError(
           context,
-          message: 'Rapor oluşturmak için en az bir hedef gerekli',
+          message: context.l10n.atLeastOneGoalRequired,
         );
         return;
       }
@@ -1651,7 +1645,7 @@ class _CreateReportBottomSheetState
       if (mounted) {
         AppSnackbar.showError(
           context,
-          message: 'Rapor oluşturulurken hata: ${e.toString()}',
+          message: context.l10n.errorCreatingReport(e.toString()),
         );
       }
     } finally {
@@ -1695,7 +1689,7 @@ class _CreateReportBottomSheetState
           ),
           const SizedBox(height: AppSpacing.lg),
           Text(
-            'Rapor türünü seçin:',
+            context.l10n.selectReportType,
             style: AppTextStyles.bodyMedium.copyWith(
               color: AppColors.gray700,
             ),
@@ -1741,7 +1735,7 @@ class _CreateReportBottomSheetState
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              type.label,
+                              type.getLocalizedLabel(context),
                               style: AppTextStyles.bodyLarge.copyWith(
                                 fontWeight: FontWeight.w600,
                                 color: _selectedType == type
@@ -1752,10 +1746,10 @@ class _CreateReportBottomSheetState
                             const SizedBox(height: 2),
                             Text(
                               type == ReportType.weekly
-                                  ? 'Bu haftanın özeti'
+                                  ? context.l10n.thisWeekSummary
                                   : type == ReportType.monthly
-                                      ? 'Bu ayın özeti'
-                                      : 'Bu yılın özeti',
+                                      ? context.l10n.thisMonthSummary
+                                      : context.l10n.thisYearSummary,
                               style: AppTextStyles.bodySmall.copyWith(
                                 color: AppColors.gray600,
                               ),
@@ -1814,44 +1808,46 @@ class _CreateReportBottomSheetState
 class _ReportsHistorySection extends ConsumerWidget {
   const _ReportsHistorySection();
 
-  String _formatDate(DateTime date) {
+  String _formatDate(BuildContext context, DateTime date) {
+    final l10n = context.l10n;
     final day = date.day;
     final month = date.month;
     final year = date.year;
     final monthNames = [
-      'Ocak',
-      'Şubat',
-      'Mart',
-      'Nisan',
-      'Mayıs',
-      'Haziran',
-      'Temmuz',
-      'Ağustos',
-      'Eylül',
-      'Ekim',
-      'Kasım',
-      'Aralık',
+      l10n.january,
+      l10n.february,
+      l10n.march,
+      l10n.april,
+      l10n.may,
+      l10n.june,
+      l10n.july,
+      l10n.august,
+      l10n.september,
+      l10n.october,
+      l10n.november,
+      l10n.december,
     ];
     return '$day ${monthNames[month - 1]} $year';
   }
 
-  String _formatPeriod(Report report) {
+  String _formatPeriod(BuildContext context, Report report) {
+    final l10n = context.l10n;
     if (report.reportType == ReportType.weekly) {
       return '${report.periodStart.day}.${report.periodStart.month}.${report.periodStart.year} - ${report.periodEnd.day}.${report.periodEnd.month}.${report.periodEnd.year}';
     } else if (report.reportType == ReportType.monthly) {
       final monthNames = [
-        'Ocak',
-        'Şubat',
-        'Mart',
-        'Nisan',
-        'Mayıs',
-        'Haziran',
-        'Temmuz',
-        'Ağustos',
-        'Eylül',
-        'Ekim',
-        'Kasım',
-        'Aralık',
+        l10n.january,
+        l10n.february,
+        l10n.march,
+        l10n.april,
+        l10n.may,
+        l10n.june,
+        l10n.july,
+        l10n.august,
+        l10n.september,
+        l10n.october,
+        l10n.november,
+        l10n.december,
       ];
       return '${monthNames[report.periodStart.month - 1]} ${report.periodStart.year}';
     } else {
@@ -1859,8 +1855,12 @@ class _ReportsHistorySection extends ConsumerWidget {
     }
   }
 
-  String _getReportTitle(Report report) {
-    return '${report.reportType.label} Rapor - ${_formatPeriod(report)}';
+  String _getReportTitle(BuildContext context, Report report) {
+    final l10n = context.l10n;
+    return l10n.reportTypeLabel(
+      report.reportType.getLocalizedLabel(context),
+      _formatPeriod(context, report),
+    );
   }
 
   IconData _getReportIcon(ReportType type) {
@@ -1899,7 +1899,7 @@ class _ReportsHistorySection extends ConsumerWidget {
           border: Border.all(color: AppColors.gray200),
         ),
         child: Text(
-          'Raporlar yüklenirken hata oluştu: $error',
+          context.l10n.reportsLoadingError(error.toString()),
           style: AppTextStyles.bodyMedium.copyWith(
             color: AppColors.gray600,
           ),
@@ -1960,7 +1960,7 @@ class _ReportsHistorySection extends ConsumerWidget {
                   ),
                   const SizedBox(width: AppSpacing.sm),
                   Text(
-                    'Geçmiş Raporlar',
+                    context.l10n.pastReports,
                     style: AppTextStyles.titleMedium.copyWith(
                       fontWeight: FontWeight.w700,
                     ),
@@ -1971,8 +1971,8 @@ class _ReportsHistorySection extends ConsumerWidget {
               ...reports.map((report) {
                 return _ReportHistoryItem(
                   report: report,
-                  title: _getReportTitle(report),
-                  date: _formatDate(report.generatedAt),
+                  title: _getReportTitle(context, report),
+                  date: _formatDate(context, report.generatedAt),
                   icon: _getReportIcon(report.reportType),
                   onTap: () {
                     ReportDetailPage.navigate(

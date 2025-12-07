@@ -45,6 +45,7 @@ dependencies:
   path_provider: ^2.1.5
   http: ^1.2.0
   file_picker: ^8.0.6
+  shared_preferences: ^2.3.2
 
 dev_dependencies:
   flutter_test:
@@ -59,6 +60,7 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  generate: true
 
   assets:
     - assets/images/

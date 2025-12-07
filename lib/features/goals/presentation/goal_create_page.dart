@@ -8,6 +8,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_radius.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_text_styles.dart';
+import '../../../core/utils/extensions.dart';
 import '../../../core/widgets/index.dart';
 import '../../../shared/models/goal.dart';
 import '../../../shared/providers/goal_providers.dart';
@@ -76,7 +77,7 @@ class _GoalCreatePageState extends ConsumerState<GoalCreatePage> {
 
     final userId = ref.read(currentUserIdProvider);
     if (userId == null) {
-      AppSnackbar.showError(context, message: 'Giriş yapmanız gerekiyor');
+      AppSnackbar.showError(context, message: context.l10n.loginRequired);
       return;
     }
 
@@ -108,14 +109,14 @@ class _GoalCreatePageState extends ConsumerState<GoalCreatePage> {
         ref.invalidate(goalsStreamProvider);
 
         AppSnackbar.showSuccess(context,
-            message: 'Hedef başarıyla oluşturuldu! 🎉');
+            message: context.l10n.goalCreatedSuccess);
         context.pop();
       }
     } catch (e) {
       if (mounted) {
         AppSnackbar.showError(
           context,
-          message: 'Hedef oluşturulurken bir hata oluştu: ${e.toString()}',
+          message: context.l10n.errorCreatingGoal(e.toString()),
         );
       }
     }
@@ -127,26 +128,26 @@ class _GoalCreatePageState extends ConsumerState<GoalCreatePage> {
       _scrollToFirstError();
       AppSnackbar.showError(
         context,
-        message: 'Lütfen formdaki tüm alanları doldurun',
+        message: context.l10n.pleaseFillAllFields,
       );
       return;
     }
 
     if (_selectedCategory == null) {
-      AppSnackbar.showError(context, message: 'Lütfen bir kategori seçin');
+      AppSnackbar.showError(context, message: context.l10n.pleaseSelectCategory);
       return;
     }
 
     if (_completionDate == null) {
       AppSnackbar.showError(context,
-          message: 'Lütfen tamamlanma tarihi seçin');
+          message: context.l10n.pleaseSelectCompletionDate);
       return;
     }
 
     if (_reasonController.text.trim().isEmpty) {
       AppSnackbar.showError(
         context,
-        message: 'Lütfen bu hedefi neden istediğinizi açıklayın',
+        message: context.l10n.pleaseExplainWhy,
       );
       return;
     }
@@ -178,7 +179,7 @@ class _GoalCreatePageState extends ConsumerState<GoalCreatePage> {
 
           AppSnackbar.showSuccess(
             context,
-            message: 'Hedef optimize edildi! ✨',
+            message: context.l10n.goalOptimizedSuccess,
           );
         },
       ),
@@ -201,7 +202,7 @@ class _GoalCreatePageState extends ConsumerState<GoalCreatePage> {
           ),
         ),
         title: Text(
-          'Yeni Hedef Ekle',
+          context.l10n.newGoal,
           style: AppTextStyles.titleLarge.copyWith(
             fontWeight: FontWeight.w600, // Semi-bold
           ),
@@ -283,7 +284,7 @@ class _GoalCreatePageState extends ConsumerState<GoalCreatePage> {
                           const SizedBox(
                               width: AppSpacing.sm), // Better icon spacing
                           Text(
-                            'AI ile Optimize Et',
+                            context.l10n.optimizeWithAI,
                             style: AppTextStyles.bodyMedium.copyWith(
                               fontWeight: FontWeight.w600,
                               color: AppColors.primary,
@@ -302,7 +303,7 @@ class _GoalCreatePageState extends ConsumerState<GoalCreatePage> {
                   onPressed: _handleSave,
                   minHeight: 60, // Increased height to match AI button
                   child: Text(
-                    'Kaydet',
+                    context.l10n.save,
                     style: AppTextStyles.bodyMedium.copyWith(
                       fontWeight:
                           FontWeight.w700, // Stronger than AI button

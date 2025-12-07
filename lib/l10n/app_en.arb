@@ -1,0 +1,1655 @@
+{
+  "@@locale": "en",
+  "appName": "YearFlow",
+  "@appName": {
+    "description": "Application name"
+  },
+  "welcomeBack": "Welcome Back!",
+  "@welcomeBack": {
+    "description": "Login page title"
+  },
+  "email": "Email",
+  "@email": {
+    "description": "Email field label"
+  },
+  "emailHint": "Enter your email address",
+  "@emailHint": {
+    "description": "Email field hint"
+  },
+  "emailRequired": "Email address is required",
+  "@emailRequired": {
+    "description": "Email validation error"
+  },
+  "emailInvalid": "Please enter a valid email address",
+  "@emailInvalid": {
+    "description": "Email format validation error"
+  },
+  "password": "Password",
+  "@password": {
+    "description": "Password field label"
+  },
+  "passwordHint": "Enter your password",
+  "@passwordHint": {
+    "description": "Password field hint"
+  },
+  "passwordRequired": "Password is required",
+  "@passwordRequired": {
+    "description": "Password validation error"
+  },
+  "passwordMinLength": "Password must be at least 6 characters",
+  "@passwordMinLength": {
+    "description": "Password minimum length validation error"
+  },
+  "forgotPassword": "Forgot your password?",
+  "@forgotPassword": {
+    "description": "Forgot password link text"
+  },
+  "signIn": "Sign In",
+  "@signIn": {
+    "description": "Sign in button text"
+  },
+  "or": "or",
+  "@or": {
+    "description": "Separator text between sign in options"
+  },
+  "continueWithGoogle": "Continue with Google",
+  "@continueWithGoogle": {
+    "description": "Google sign in button text"
+  },
+  "noAccount": "Don't have an account? ",
+  "@noAccount": {
+    "description": "Register link prefix text"
+  },
+  "signUp": "Sign Up",
+  "@signUp": {
+    "description": "Sign up button and link text"
+  },
+  "register": "Register",
+  "@register": {
+    "description": "Register page title"
+  },
+  "name": "Name",
+  "@name": {
+    "description": "Name field label"
+  },
+  "nameHint": "Enter your first and last name",
+  "@nameHint": {
+    "description": "Name field hint"
+  },
+  "nameRequired": "Name is required",
+  "@nameRequired": {
+    "description": "Name validation error"
+  },
+  "nameMinLength": "Name must be at least 2 characters",
+  "@nameMinLength": {
+    "description": "Name minimum length validation error"
+  },
+  "createPassword": "Create your password",
+  "@createPassword": {
+    "description": "Password field hint for registration"
+  },
+  "welcome": "Welcome! 🎉",
+  "@welcome": {
+    "description": "Welcome message for new users"
+  },
+  "signInSuccess": "Sign in successful! Welcome 👋",
+  "@signInSuccess": {
+    "description": "Sign in success message"
+  },
+  "home": "Home",
+  "@home": {
+    "description": "Home page title"
+  },
+  "goals": "Goals",
+  "@goals": {
+    "description": "Goals page title"
+  },
+  "reports": "Reports",
+  "@reports": {
+    "description": "Reports page title"
+  },
+  "settings": "Settings",
+  "@settings": {
+    "description": "Settings page title"
+  },
+  "settingsSubtitle": "Account and app settings",
+  "@settingsSubtitle": {
+    "description": "Settings page subtitle"
+  },
+  "user": "User",
+  "@user": {
+    "description": "Default user name"
+  },
+  "skip": "Skip",
+  "@skip": {
+    "description": "Skip button text"
+  },
+  "continueButton": "Continue",
+  "@continueButton": {
+    "description": "Continue button text"
+  },
+  "getStarted": "Get Started",
+  "@getStarted": {
+    "description": "Get started button text"
+  },
+  "later": "Later",
+  "@later": {
+    "description": "Later button text"
+  },
+  "save": "Save",
+  "@save": {
+    "description": "Save button text"
+  },
+  "nameSaved": "Name saved",
+  "@nameSaved": {
+    "description": "Name saved success message"
+  },
+  "setYourName": "Let's set your name",
+  "@setYourName": {
+    "description": "Name prompt dialog title"
+  },
+  "setYourNameDescription": "We'll address you by your name on screen. You can always change this from your profile if you don't want to.",
+  "@setYourNameDescription": {
+    "description": "Name prompt dialog description"
+  },
+  "yearlyPerformanceSummary": "Your yearly performance summary",
+  "@yearlyPerformanceSummary": {
+    "description": "Reports page subtitle"
+  },
+  "downloadReport": "Download report",
+  "@downloadReport": {
+    "description": "Download report tooltip"
+  },
+  "yourYearlyReport2025": "Your 2025 Yearly Report",
+  "@yourYearlyReport2025": {
+    "description": "Yearly report title"
+  },
+  "letsTakeOverview": "Let's take an overview of your journey",
+  "@letsTakeOverview": {
+    "description": "Yearly report subtitle"
+  },
+  "openReport": "Open Report",
+  "@openReport": {
+    "description": "Open report button text"
+  },
+  "createReport": "Create Report",
+  "@createReport": {
+    "description": "Create report button text"
+  },
+  "greatYear": "You had a great year 🎉",
+  "@greatYear": {
+    "description": "Great year message"
+  },
+  "goodProgress": "You made good progress! 💪",
+  "@goodProgress": {
+    "description": "Good progress message"
+  },
+  "continueJourney": "Continue your journey! 🌱",
+  "@continueJourney": {
+    "description": "Continue journey message"
+  },
+  "errorLoadingData": "An error occurred while loading data: {error}",
+  "@errorLoadingData": {
+    "description": "Error loading data message",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "overview": "Overview",
+  "@overview": {
+    "description": "Overview section title"
+  },
+  "totalGoals": "Total Goals",
+  "@totalGoals": {
+    "description": "Total goals label"
+  },
+  "completionRate": "Completion Rate",
+  "@completionRate": {
+    "description": "Completion rate label"
+  },
+  "checkIn": "Check-in",
+  "@checkIn": {
+    "description": "Check-in label"
+  },
+  "averageProgress": "Average Progress",
+  "@averageProgress": {
+    "description": "Average progress label"
+  },
+  "yearlyProgress": "Yearly Progress",
+  "@yearlyProgress": {
+    "description": "Yearly progress section title"
+  },
+  "noCategoryData": "No category-based data yet",
+  "@noCategoryData": {
+    "description": "No category data message"
+  },
+  "categoryBasedDevelopment": "Category-Based Development",
+  "@categoryBasedDevelopment": {
+    "description": "Category based development section title"
+  },
+  "noAchievementData": "Not enough data to create achievement stories yet. You'll see your progress here as you add goals and check in.",
+  "@noAchievementData": {
+    "description": "No achievement data message"
+  },
+  "language": "Language",
+  "@language": {
+    "description": "Language setting label"
+  },
+  "turkish": "Turkish",
+  "@turkish": {
+    "description": "Turkish language option"
+  },
+  "english": "English",
+  "@english": {
+    "description": "English language option"
+  },
+  "yourYearlyReport": "Your {year} Yearly Report",
+  "@yourYearlyReport": {
+    "description": "Yearly report title with year",
+    "placeholders": {
+      "year": {
+        "type": "int"
+      }
+    }
+  },
+  "achievements": "Achievements",
+  "@achievements": {
+    "description": "Achievements section title"
+  },
+  "thisYearWorkedOnGoals": "This year you worked on a total of {totalGoals} goals and completed {completedGoals} goals (completion rate approximately {completionRate}%).",
+  "@thisYearWorkedOnGoals": {
+    "description": "Achievement text about goals worked on",
+    "placeholders": {
+      "totalGoals": {
+        "type": "int"
+      },
+      "completedGoals": {
+        "type": "int"
+      },
+      "completionRate": {
+        "type": "int"
+      }
+    }
+  },
+  "averageProgressLevel": "Your average progress level across all goals is around {progress}%; this shows that you took steps consistently throughout the year.",
+  "@averageProgressLevel": {
+    "description": "Achievement text about average progress",
+    "placeholders": {
+      "progress": {
+        "type": "int"
+      }
+    }
+  },
+  "strongestProgressInCategory": "You showed the strongest progress in the \"{category}\" category with approximately {value}%",
+  "@strongestProgressInCategory": {
+    "description": "Achievement text about category progress",
+    "placeholders": {
+      "category": {
+        "type": "String"
+      },
+      "value": {
+        "type": "int"
+      }
+    }
+  },
+  "reachedLevelInCategory": ", and reached approximately {value}% level in the \"{category}\" category.",
+  "@reachedLevelInCategory": {
+    "description": "Achievement text about secondary category",
+    "placeholders": {
+      "value": {
+        "type": "int"
+      },
+      "category": {
+        "type": "String"
+      }
+    }
+  },
+  "aiSuggestions": "AI Suggestions",
+  "@aiSuggestions": {
+    "description": "AI suggestions section title"
+  },
+  "aiSuggestionExample": "Your progress in personal development goals is great! Next year, you can increase the completion rate by breaking down large career goals into smaller, manageable steps. Also, adding a goal on financial literacy can support your overall success.",
+  "@aiSuggestionExample": {
+    "description": "Example AI suggestion text"
+  },
+  "loginRequired": "You need to sign in",
+  "@loginRequired": {
+    "description": "Error message when login is required"
+  },
+  "reportExportedSuccessfully": "Report exported successfully",
+  "@reportExportedSuccessfully": {
+    "description": "Success message when report is exported"
+  },
+  "exportReport": "Export Report",
+  "@exportReport": {
+    "description": "Export report dialog title"
+  },
+  "selectFormat": "Select format:",
+  "@selectFormat": {
+    "description": "Format selection label"
+  },
+  "json": "JSON",
+  "@json": {
+    "description": "JSON format label"
+  },
+  "csv": "CSV",
+  "@csv": {
+    "description": "CSV format label"
+  },
+  "atLeastOneGoalRequired": "At least one goal is required to create a report",
+  "@atLeastOneGoalRequired": {
+    "description": "Error message when no goals exist"
+  },
+  "errorCreatingReport": "Error creating report: {error}",
+  "@errorCreatingReport": {
+    "description": "Error message when report creation fails",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "selectReportType": "Select report type:",
+  "@selectReportType": {
+    "description": "Report type selection label"
+  },
+  "thisWeekSummary": "This week's summary",
+  "@thisWeekSummary": {
+    "description": "Weekly report type label"
+  },
+  "thisMonthSummary": "This month's summary",
+  "@thisMonthSummary": {
+    "description": "Monthly report type label"
+  },
+  "thisYearSummary": "This year's summary",
+  "@thisYearSummary": {
+    "description": "Yearly report type label"
+  },
+  "challengesAndSolutions": "Challenges & Solutions",
+  "@challengesAndSolutions": {
+    "description": "Challenges section title"
+  },
+  "challengeLowProgress": "Challenge: Progress in the \"{category}\" category is relatively low (approximately {value}%).",
+  "@challengeLowProgress": {
+    "description": "Challenge text about low progress",
+    "placeholders": {
+      "category": {
+        "type": "String"
+      },
+      "value": {
+        "type": "int"
+      }
+    }
+  },
+  "solutionAddActions": "Solution: You could try adding 1-2 small, clear actions in this area next week and increasing the frequency of check-ins.",
+  "@solutionAddActions": {
+    "description": "Solution text for low progress"
+  },
+  "challengeFocusDifficulty": "Challenge: You may be having difficulty focusing on \"{category}\" goals (approximately {value}%).",
+  "@challengeFocusDifficulty": {
+    "description": "Challenge text about focus difficulty",
+    "placeholders": {
+      "category": {
+        "type": "String"
+      },
+      "value": {
+        "type": "int"
+      }
+    }
+  },
+  "solutionBreakDownGoals": "Solution: Breaking these goals into smaller steps and reviewing them weekly can increase focus.",
+  "@solutionBreakDownGoals": {
+    "description": "Solution text for focus difficulty"
+  },
+  "generalStatusHealthy": "General status: There is healthy progress in all categories.",
+  "@generalStatusHealthy": {
+    "description": "General status text when all is good"
+  },
+  "solutionReviewPriorities": "Solution: Still, reviewing your priorities weekly can be a good idea to maintain your motivation.",
+  "@solutionReviewPriorities": {
+    "description": "Solution text for general status"
+  },
+  "goalAndCheckInDataNeeded": "As your goal and check-in data grows, areas where you struggle and improvement suggestions will appear here.",
+  "@goalAndCheckInDataNeeded": {
+    "description": "Message when not enough data for challenges"
+  },
+  "january": "January",
+  "@january": {
+    "description": "January month name"
+  },
+  "february": "February",
+  "@february": {
+    "description": "February month name"
+  },
+  "march": "March",
+  "@march": {
+    "description": "March month name"
+  },
+  "april": "April",
+  "@april": {
+    "description": "April month name"
+  },
+  "may": "May",
+  "@may": {
+    "description": "May month name"
+  },
+  "june": "June",
+  "@june": {
+    "description": "June month name"
+  },
+  "july": "July",
+  "@july": {
+    "description": "July month name"
+  },
+  "august": "August",
+  "@august": {
+    "description": "August month name"
+  },
+  "september": "September",
+  "@september": {
+    "description": "September month name"
+  },
+  "october": "October",
+  "@october": {
+    "description": "October month name"
+  },
+  "november": "November",
+  "@november": {
+    "description": "November month name"
+  },
+  "december": "December",
+  "@december": {
+    "description": "December month name"
+  },
+  "active": "Active",
+  "@active": {
+    "description": "Active goals tab label"
+  },
+  "completed": "Completed",
+  "@completed": {
+    "description": "Completed goals tab label"
+  },
+  "myGoals": "My Goals",
+  "@myGoals": {
+    "description": "My goals section title"
+  },
+  "yourSuccessJourney": "Your success journey",
+  "@yourSuccessJourney": {
+    "description": "Goals page subtitle"
+  },
+  "sort": "Sort",
+  "@sort": {
+    "description": "Sort button label"
+  },
+  "filter": "Filter",
+  "@filter": {
+    "description": "Filter button label"
+  },
+  "newest": "Newest",
+  "@newest": {
+    "description": "Sort option: newest"
+  },
+  "oldest": "Oldest",
+  "@oldest": {
+    "description": "Sort option: oldest"
+  },
+  "progressHigh": "Progress (High)",
+  "@progressHigh": {
+    "description": "Sort option: progress high"
+  },
+  "progressLow": "Progress (Low)",
+  "@progressLow": {
+    "description": "Sort option: progress low"
+  },
+  "titleAsc": "Title (A-Z)",
+  "@titleAsc": {
+    "description": "Sort option: title ascending"
+  },
+  "titleDesc": "Title (Z-A)",
+  "@titleDesc": {
+    "description": "Sort option: title descending"
+  },
+  "all": "All",
+  "@all": {
+    "description": "Filter option: all"
+  },
+  "health": "Health",
+  "@health": {
+    "description": "Category: health"
+  },
+  "mentalHealth": "Mental Health",
+  "@mentalHealth": {
+    "description": "Category: mental health"
+  },
+  "finance": "Finance",
+  "@finance": {
+    "description": "Category: finance"
+  },
+  "career": "Career",
+  "@career": {
+    "description": "Category: career"
+  },
+  "relationships": "Relationships",
+  "@relationships": {
+    "description": "Category: relationships"
+  },
+  "learning": "Learning",
+  "@learning": {
+    "description": "Category: learning"
+  },
+  "creativity": "Creativity",
+  "@creativity": {
+    "description": "Category: creativity"
+  },
+  "hobby": "Hobby",
+  "@hobby": {
+    "description": "Category: hobby"
+  },
+  "personalGrowth": "Personal Growth",
+  "@personalGrowth": {
+    "description": "Category: personal growth"
+  },
+  "noCompletedGoals": "No completed goals yet",
+  "@noCompletedGoals": {
+    "description": "Empty state for completed goals"
+  },
+  "completedGoalsWillAppear": "Your completed goals will appear here as you complete them",
+  "@completedGoalsWillAppear": {
+    "description": "Empty state description for completed goals"
+  },
+  "goalsLoadingError": "An error occurred while loading goals.",
+  "@goalsLoadingError": {
+    "description": "Error message when goals fail to load"
+  },
+  "tryAgain": "Try Again",
+  "@tryAgain": {
+    "description": "Try again button text"
+  },
+  "reactivateGoal": "Reactivate Goal",
+  "@reactivateGoal": {
+    "description": "Reactivate goal dialog title"
+  },
+  "reactivateGoalDescription": "Do you want to remove the \"{goalTitle}\" goal from completed goals and add it back to the active goals list?",
+  "@reactivateGoalDescription": {
+    "description": "Reactivate goal dialog description",
+    "placeholders": {
+      "goalTitle": {
+        "type": "String"
+      }
+    }
+  },
+  "moveToActive": "Move to Active",
+  "@moveToActive": {
+    "description": "Move to active button text"
+  },
+  "cancel": "Cancel",
+  "@cancel": {
+    "description": "Cancel button text"
+  },
+  "moveToActiveTooltip": "Move back to active goals",
+  "@moveToActiveTooltip": {
+    "description": "Tooltip for move to active button"
+  },
+  "mustSignInToPerformAction": "You must sign in to perform this action.",
+  "@mustSignInToPerformAction": {
+    "description": "Error message when action requires sign in"
+  },
+  "notificationsComingSoon": "Notifications coming soon",
+  "@notificationsComingSoon": {
+    "description": "Notifications feature coming soon message"
+  },
+  "yourGoals": "Your Goals",
+  "@yourGoals": {
+    "description": "Your goals section title"
+  },
+  "goodMorning": "Good Morning",
+  "@goodMorning": {
+    "description": "Morning greeting"
+  },
+  "hello": "Hello",
+  "@hello": {
+    "description": "Afternoon greeting"
+  },
+  "goodEvening": "Good Evening",
+  "@goodEvening": {
+    "description": "Evening greeting"
+  },
+  "weeklySummary": "Weekly Summary",
+  "@weeklySummary": {
+    "description": "Weekly summary card title"
+  },
+  "thisWeekCheckIns": "This week you made a total of {checkInCount} check-ins and made progress on {goalsWithProgress} different goals.",
+  "@thisWeekCheckIns": {
+    "description": "Weekly summary text",
+    "placeholders": {
+      "checkInCount": {
+        "type": "int"
+      },
+      "goalsWithProgress": {
+        "type": "int"
+      }
+    }
+  },
+  "weeklySummaryError": "This week's summary could not be loaded right now. Try again later.",
+  "@weeklySummaryError": {
+    "description": "Error message when weekly summary fails to load"
+  },
+  "howIsTodayGoing": "How is today going?",
+  "@howIsTodayGoing": {
+    "description": "Check-in prompt text"
+  },
+  "targetDateNotSpecified": "Target date not specified",
+  "@targetDateNotSpecified": {
+    "description": "Message when goal has no target date"
+  },
+  "daysOverdue": "{days} days overdue",
+  "@daysOverdue": {
+    "description": "Days overdue text",
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "oneDayOverdue": "1 day overdue",
+  "@oneDayOverdue": {
+    "description": "One day overdue text"
+  },
+  "today": "Today",
+  "@today": {
+    "description": "Today text"
+  },
+  "oneDayLeft": "1 day left",
+  "@oneDayLeft": {
+    "description": "One day left text"
+  },
+  "daysLeft": "{days} days left",
+  "@daysLeft": {
+    "description": "Days left text",
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "reportsLoadingError": "An error occurred while loading reports: {error}",
+  "@reportsLoadingError": {
+    "description": "Error message when reports fail to load",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "noReportsYet": "No reports created yet",
+  "@noReportsYet": {
+    "description": "Empty state when no reports exist"
+  },
+  "createFirstReport": "You can create your first report by clicking the \"Create Report\" button above.",
+  "@createFirstReport": {
+    "description": "Message to create first report"
+  },
+  "pastReports": "Past Reports",
+  "@pastReports": {
+    "description": "Past reports section title"
+  },
+  "goalMovedToActive": "Goal moved back to active list.",
+  "@goalMovedToActive": {
+    "description": "Success message when goal is reactivated"
+  },
+  "errorUpdatingGoal": "Error updating goal: {error}",
+  "@errorUpdatingGoal": {
+    "description": "Error message when goal update fails",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "completed": "Completed",
+  "@completed": {
+    "description": "Completed status label"
+  },
+  "noCheckInYet": "No check-in yet",
+  "@noCheckInYet": {
+    "description": "Message when no check-in exists"
+  },
+  "yesterday": "Yesterday",
+  "@yesterday": {
+    "description": "Yesterday text"
+  },
+  "daysAgo": "{days} days ago",
+  "@daysAgo": {
+    "description": "Days ago text",
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "weeksAgo": "{weeks} weeks ago",
+  "@weeksAgo": {
+    "description": "Weeks ago text",
+    "placeholders": {
+      "weeks": {
+        "type": "int"
+      }
+    }
+  },
+  "loading": "Loading...",
+  "@loading": {
+    "description": "Loading text"
+  },
+  "lastCheckIn": "Last Check-in: {date}",
+  "@lastCheckIn": {
+    "description": "Last check-in text",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "noGoalsYet": "You haven't added any goals yet",
+  "@noGoalsYet": {
+    "description": "Empty state when no goals exist"
+  },
+  "startJourneyWithGoal": "Start your success journey by adding a new goal",
+  "@startJourneyWithGoal": {
+    "description": "Message to encourage adding first goal"
+  },
+  "addNewGoal": "Add New Goal",
+  "@addNewGoal": {
+    "description": "Add new goal button text"
+  },
+  "noGoalCreatedYet": "You haven't created any goals yet",
+  "@noGoalCreatedYet": {
+    "description": "Empty state message for goals"
+  },
+  "createFirstGoal": "Create your first goal and make your year more planned, focused and meaningful.",
+  "@createFirstGoal": {
+    "description": "Message to create first goal"
+  },
+  "createGoal": "Create Goal",
+  "@createGoal": {
+    "description": "Create goal button text"
+  },
+  "doCheckIn": "Do Check-in",
+  "@doCheckIn": {
+    "description": "Do check-in button text"
+  },
+  "tasksRemaining": "{count} tasks remaining",
+  "@tasksRemaining": {
+    "description": "Tasks remaining text",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "checkInCount": "{count} check-in",
+  "@checkInCount": {
+    "description": "Check-in count text",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "reportTypeLabel": "{type} Report - {period}",
+  "@reportTypeLabel": {
+    "description": "Report type label with period",
+    "placeholders": {
+      "type": {
+        "type": "String"
+      },
+      "period": {
+        "type": "String"
+      }
+    }
+  },
+  "onboardingSlide1Title": "Make your goals concrete this year.",
+  "@onboardingSlide1Title": {
+    "description": "Onboarding slide 1 title"
+  },
+  "onboardingSlide1Description": "Turn your dreams into reality with YearFlow. Progress towards your big goals with achievable steps.",
+  "@onboardingSlide1Description": {
+    "description": "Onboarding slide 1 description"
+  },
+  "onboardingSlide2Title": "Track your journey with regular progress.",
+  "@onboardingSlide2Title": {
+    "description": "Onboarding slide 2 title"
+  },
+  "onboardingSlide2Description": "Record your progress on goals with monthly check-ins, maintain your motivation and celebrate your achievements.",
+  "@onboardingSlide2Description": {
+    "description": "Onboarding slide 2 description"
+  },
+  "onboardingSlide3Title": "Get your personal development report at the end of the year.",
+  "@onboardingSlide3Title": {
+    "description": "Onboarding slide 3 title"
+  },
+  "onboardingSlide3Description": "See the progress you've made throughout the year with AI-powered reports, understand your development with concrete data and get inspired for new goals.",
+  "@onboardingSlide3Description": {
+    "description": "Onboarding slide 3 description"
+  },
+  "alreadyHaveAccount": "Already have an account? ",
+  "@alreadyHaveAccount": {
+    "description": "Login link prefix text"
+  },
+  "continueWithGoogleRegister": "Sign up with Google",
+  "@continueWithGoogleRegister": {
+    "description": "Google sign up button text"
+  },
+  "forgotPasswordTitle": "Forgot your password?",
+  "@forgotPasswordTitle": {
+    "description": "Forgot password page title"
+  },
+  "forgotPasswordDescription": "Enter your registered email address to reset your password.",
+  "@forgotPasswordDescription": {
+    "description": "Forgot password page description"
+  },
+  "emailAddress": "Email Address",
+  "@emailAddress": {
+    "description": "Email address label"
+  },
+  "emailAddressHint": "Your Email Address",
+  "@emailAddressHint": {
+    "description": "Email address field hint"
+  },
+  "resetPassword": "Reset Password",
+  "@resetPassword": {
+    "description": "Reset password button text"
+  },
+  "emailSent": "Email sent!",
+  "@emailSent": {
+    "description": "Email sent success message"
+  },
+  "resetLinkSent": "Password reset link has been sent to {email}.",
+  "@resetLinkSent": {
+    "description": "Reset link sent message",
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "newGoal": "New Goal",
+  "@newGoal": {
+    "description": "New goal page title"
+  },
+  "editGoal": "Edit Goal",
+  "@editGoal": {
+    "description": "Edit goal page title"
+  },
+  "goalCreatedSuccess": "Goal created successfully! 🎉",
+  "@goalCreatedSuccess": {
+    "description": "Goal created success message"
+  },
+  "goalUpdatedSuccess": "Goal updated! ✅",
+  "@goalUpdatedSuccess": {
+    "description": "Goal updated success message"
+  },
+  "goalOptimizedSuccess": "Goal optimized! ✨",
+  "@goalOptimizedSuccess": {
+    "description": "Goal optimized success message"
+  },
+  "optimizeWithAI": "Optimize with AI",
+  "@optimizeWithAI": {
+    "description": "AI optimize button text"
+  },
+  "update": "Update",
+  "@update": {
+    "description": "Update button text"
+  },
+  "goalNotFound": "Goal not found",
+  "@goalNotFound": {
+    "description": "Goal not found error message"
+  },
+  "errorCreatingGoal": "An error occurred while creating goal: {error}",
+  "@errorCreatingGoal": {
+    "description": "Error creating goal message",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "errorUpdatingGoal": "An error occurred while updating goal: {error}",
+  "@errorUpdatingGoal": {
+    "description": "Error updating goal message",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "pleaseFillAllFields": "Please fill in all fields in the form",
+  "@pleaseFillAllFields": {
+    "description": "Form validation error message"
+  },
+  "pleaseSelectCategory": "Please select a category",
+  "@pleaseSelectCategory": {
+    "description": "Category selection error message"
+  },
+  "pleaseSelectCompletionDate": "Please select completion date",
+  "@pleaseSelectCompletionDate": {
+    "description": "Date selection error message"
+  },
+  "pleaseExplainWhy": "Please explain why you want this goal",
+  "@pleaseExplainWhy": {
+    "description": "Reason field validation error"
+  },
+  "goalCreated": "Goal Created",
+  "@goalCreated": {
+    "description": "Goal created notification title"
+  },
+  "checkInCompleted": "Check-in Completed: Score {score}/10",
+  "@checkInCompleted": {
+    "description": "Check-in completed notification",
+    "placeholders": {
+      "score": {
+        "type": "int"
+      }
+    }
+  },
+  "notSpecified": "Not specified",
+  "@notSpecified": {
+    "description": "Not specified text"
+  },
+  "expired": "Expired",
+  "@expired": {
+    "description": "Expired text"
+  },
+  "tomorrow": "Tomorrow",
+  "@tomorrow": {
+    "description": "Tomorrow text"
+  },
+  "errorLoadingGoal": "Error loading goal: {error}",
+  "@errorLoadingGoal": {
+    "description": "Error loading goal message",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "errorLoadingCheckIns": "Error loading check-ins: {error}",
+  "@errorLoadingCheckIns": {
+    "description": "Error loading check-ins message",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "checkInSaved": "Check-in saved! ✅",
+  "@checkInSaved": {
+    "description": "Check-in saved success message"
+  },
+  "goalCompleted": "Goal completed! 🎉",
+  "@goalCompleted": {
+    "description": "Goal completed success message"
+  },
+  "errorCompletingGoal": "An error occurred while completing goal: {error}",
+  "@errorCompletingGoal": {
+    "description": "Error completing goal message",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "completeGoal": "Complete Goal",
+  "@completeGoal": {
+    "description": "Complete goal button tooltip"
+  },
+  "goalDeletedSuccess": "Goal deleted successfully",
+  "@goalDeletedSuccess": {
+    "description": "Goal deleted success message"
+  },
+  "errorDeletingGoal": "An error occurred while deleting goal: {error}",
+  "@errorDeletingGoal": {
+    "description": "Error deleting goal message",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "deleteGoal": "Delete Goal",
+  "@deleteGoal": {
+    "description": "Delete goal button text"
+  },
+  "goalCompletedTitle": "Goal Completed 🎉",
+  "@goalCompletedTitle": {
+    "description": "Goal completed title"
+  },
+  "progressRecorded": "Progress Recorded",
+  "@progressRecorded": {
+    "description": "Progress recorded title"
+  },
+  "nextCheckIn": "Next Check-in: {date}",
+  "@nextCheckIn": {
+    "description": "Next check-in text",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "timeline": "Timeline",
+  "@timeline": {
+    "description": "Timeline tab text"
+  },
+  "notes": "Notes",
+  "@notes": {
+    "description": "Notes tab text"
+  },
+  "subTasks": "Sub Tasks",
+  "@subTasks": {
+    "description": "Sub tasks tab text"
+  },
+  "creatingIndex": "Creating Index",
+  "@creatingIndex": {
+    "description": "Creating index message"
+  },
+  "errorLoadingNotes": "Error Loading Notes",
+  "@errorLoadingNotes": {
+    "description": "Error loading notes message"
+  },
+  "firestoreIndexNotReady": "Firestore index is not ready yet. Please wait a few minutes and try again.",
+  "@firestoreIndexNotReady": {
+    "description": "Firestore index not ready message"
+  },
+  "tasksLeft": "{count} tasks left",
+  "@tasksLeft": {
+    "description": "Tasks left text",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "todayCheckIn": "Today",
+  "@todayCheckIn": {
+    "description": "Today check-in text"
+  },
+  "yesterdayCheckIn": "Yesterday",
+  "@yesterdayCheckIn": {
+    "description": "Yesterday check-in text"
+  },
+  "daysAgoCheckIn": "{days} days ago",
+  "@daysAgoCheckIn": {
+    "description": "Days ago check-in text",
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "weeksAgoCheckIn": "{weeks} weeks ago",
+  "@weeksAgoCheckIn": {
+    "description": "Weeks ago check-in text",
+    "placeholders": {
+      "weeks": {
+        "type": "int"
+      }
+    }
+  },
+  "reportSummaryThisWeek": "Summary for this week",
+  "@reportSummaryThisWeek": {
+    "description": "Weekly report summary text"
+  },
+  "reportSummaryThisMonth": "Summary for this month",
+  "@reportSummaryThisMonth": {
+    "description": "Monthly report summary text"
+  },
+  "reportSummaryThisYear": "Summary for this year",
+  "@reportSummaryThisYear": {
+    "description": "Yearly report summary text"
+  },
+  "reportErrorLoading": "Error loading reports: {error}",
+  "@reportErrorLoading": {
+    "description": "Error loading reports message",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "createYourFirstReport": "You can create your first report by clicking the \"Create Report\" button above.",
+  "@createYourFirstReport": {
+    "description": "Create first report message"
+  },
+  "reportTypeWeekly": "Weekly Report",
+  "@reportTypeWeekly": {
+    "description": "Weekly report type"
+  },
+  "reportTypeMonthly": "Monthly Report",
+  "@reportTypeMonthly": {
+    "description": "Monthly report type"
+  },
+  "reportTypeYearly": "Yearly Report",
+  "@reportTypeYearly": {
+    "description": "Yearly report type"
+  },
+  "challengeLowProgress": "Challenge: Progress in \"{category}\" category is relatively low (approx. {value}%).",
+  "@challengeLowProgress": {
+    "description": "Challenge low progress text",
+    "placeholders": {
+      "category": {
+        "type": "String"
+      },
+      "value": {
+        "type": "int"
+      }
+    }
+  },
+  "solutionIncreaseCheckIns": "Solution: Try adding 1-2 small, clear actions in this area next week and increase check-in frequency.",
+  "@solutionIncreaseCheckIns": {
+    "description": "Solution increase check-ins text"
+  },
+  "challengeDifficultyFocusing": "Challenge: You might be struggling to focus on \"{category}\" goals (approx. {value}%).",
+  "@challengeDifficultyFocusing": {
+    "description": "Challenge difficulty focusing text",
+    "placeholders": {
+      "category": {
+        "type": "String"
+      },
+      "value": {
+        "type": "int"
+      }
+    }
+  },
+  "generalStatusHealthyProgress": "General status: Healthy progress in all categories.",
+  "@generalStatusHealthyProgress": {
+    "description": "General status healthy progress text"
+  },
+  "reportTitle": "{reportType} Report - {period}",
+  "@reportTitle": {
+    "description": "Report title with type and period",
+    "placeholders": {
+      "reportType": {
+        "type": "String"
+      },
+      "period": {
+        "type": "String"
+      }
+    }
+  },
+  "applicationSettings": "Application Settings",
+  "@applicationSettings": {
+    "description": "Application settings section title"
+  },
+  "notifications": "Notifications",
+  "@notifications": {
+    "description": "Notifications setting label"
+  },
+  "upcomingCheckIns": "Upcoming Check-ins",
+  "@upcomingCheckIns": {
+    "description": "Upcoming check-ins section title"
+  },
+  "noUpcomingCheckIns": "No upcoming check-ins for this week.",
+  "@noUpcomingCheckIns": {
+    "description": "No upcoming check-ins message"
+  },
+  "allGoalsCompleted": "All goals completed! 🎉",
+  "@allGoalsCompleted": {
+    "description": "All goals completed message"
+  },
+  "allGoalsCompletedDescription": "You've completed all your goals for this week. Time to set new ones or enjoy your progress!",
+  "@allGoalsCompletedDescription": {
+    "description": "All goals completed description"
+  },
+  "viewAllGoals": "View All Goals",
+  "@viewAllGoals": {
+    "description": "View all goals button text"
+  },
+  "weeklySummaryTitle": "Weekly Summary",
+  "@weeklySummaryTitle": {
+    "description": "Weekly summary title"
+  },
+  "weeklySummaryDescription": "Your progress for this week",
+  "@weeklySummaryDescription": {
+    "description": "Weekly summary description"
+  },
+  "weeklySummaryNoData": "No data for this week yet. Start adding goals and checking in to see your progress!",
+  "@weeklySummaryNoData": {
+    "description": "Weekly summary no data message"
+  },
+  "namePromptTitle": "Let's set your name",
+  "@namePromptTitle": {
+    "description": "Name prompt title"
+  },
+  "namePromptDescription": "We'll address you by your name on screen. You can always change this from your profile if you don't want to.",
+  "@namePromptDescription": {
+    "description": "Name prompt description"
+  },
+  "namePromptSave": "Save",
+  "@namePromptSave": {
+    "description": "Name prompt save button"
+  },
+  "namePromptLater": "Later",
+  "@namePromptLater": {
+    "description": "Name prompt later button"
+  },
+  "namePromptNameSaved": "Name saved",
+  "@namePromptNameSaved": {
+    "description": "Name prompt name saved message"
+  },
+  "profile": "Profile",
+  "@profile": {
+    "description": "Profile page title"
+  },
+  "totalGoals": "Total Goals",
+  "@totalGoals": {
+    "description": "Total goals label"
+  },
+  "annualReport": "Annual Report",
+  "@annualReport": {
+    "description": "Annual report label"
+  },
+  "accountInformation": "Account Information",
+  "@accountInformation": {
+    "description": "Account information section title"
+  },
+  "edit": "Edit",
+  "@edit": {
+    "description": "Edit button text"
+  },
+  "fullName": "Full Name",
+  "@fullName": {
+    "description": "Full name field label"
+  },
+  "upcomingCheckInsDescription": "Do check-ins for goals with less than 7 days remaining",
+  "@upcomingCheckInsDescription": {
+    "description": "Upcoming check-ins description text"
+  },
+  "questionOfTheDay": "QUESTION OF THE DAY",
+  "@questionOfTheDay": {
+    "description": "Question of the day title"
+  },
+  "questionOfTheDayText": "What was the biggest thing that motivated you to reach your goals today?",
+  "@questionOfTheDayText": {
+    "description": "Question of the day text"
+  },
+  "writeYourAnswer": "Write Your Answer",
+  "@writeYourAnswer": {
+    "description": "Write your answer button text"
+  },
+  "sort": "Sort",
+  "@sort": {
+    "description": "Sort button text"
+  },
+  "overview": "Overview",
+  "@overview": {
+    "description": "Overview section title"
+  },
+  "monthly": "Monthly",
+  "@monthly": {
+    "description": "Monthly report type label"
+  },
+  "weekly": "Weekly",
+  "@weekly": {
+    "description": "Weekly report type label"
+  },
+  "yearly": "Yearly",
+  "@yearly": {
+    "description": "Yearly report type label"
+  },
+  "data": "Data",
+  "@data": {
+    "description": "Data section title"
+  },
+  "downloadAllMyData": "Download all my data",
+  "@downloadAllMyData": {
+    "description": "Download all data option"
+  },
+  "restoreFromBackup": "Restore from backup",
+  "@restoreFromBackup": {
+    "description": "Restore from backup option"
+  },
+  "securityAndSupport": "Security and Support",
+  "@securityAndSupport": {
+    "description": "Security and support section title"
+  },
+  "privacyAndSecurity": "Privacy & Security",
+  "@privacyAndSecurity": {
+    "description": "Privacy and security option"
+  },
+  "logOut": "Log Out",
+  "@logOut": {
+    "description": "Log out button text"
+  },
+  "logOutTitle": "Log Out",
+  "@logOutTitle": {
+    "description": "Log out dialog title"
+  },
+  "logOutConfirmation": "Are you sure you want to log out of your account?",
+  "@logOutConfirmation": {
+    "description": "Log out confirmation message"
+  },
+  "restoreFromBackupTitle": "Restore from Backup",
+  "@restoreFromBackupTitle": {
+    "description": "Restore from backup dialog title"
+  },
+  "restoreFromBackupWarning": "The backup file you selected will delete all current goal and report data and replace them with the backup data.\n\nThis action cannot be undone. Are you sure you want to continue?",
+  "@restoreFromBackupWarning": {
+    "description": "Restore from backup warning message"
+  },
+  "yesContinue": "Yes, continue",
+  "@yesContinue": {
+    "description": "Yes continue button text"
+  },
+  "changePassword": "Change Password",
+  "@changePassword": {
+    "description": "Change password button and dialog title"
+  },
+  "currentPassword": "Current Password",
+  "@currentPassword": {
+    "description": "Current password field label"
+  },
+  "newPassword": "New Password",
+  "@newPassword": {
+    "description": "New password field label"
+  },
+  "newPasswordRepeat": "New Password (Repeat)",
+  "@newPasswordRepeat": {
+    "description": "New password repeat field label"
+  },
+  "passwordsDoNotMatch": "New passwords do not match",
+  "@passwordsDoNotMatch": {
+    "description": "Password mismatch error"
+  },
+  "passwordChangedSuccess": "Password changed successfully",
+  "@passwordChangedSuccess": {
+    "description": "Password changed success message"
+  },
+  "exportAllData": "Export All Data",
+  "@exportAllData": {
+    "description": "Export all data dialog title"
+  },
+  "exportDataFormatQuestion": "In which format would you like to save your data?",
+  "@exportDataFormatQuestion": {
+    "description": "Export data format question"
+  },
+  "tableCsv": "Table (CSV)",
+  "@tableCsv": {
+    "description": "CSV format option"
+  },
+  "advancedJson": "Advanced (JSON)",
+  "@advancedJson": {
+    "description": "JSON format option"
+  },
+  "enterCurrentPassword": "Enter your current password",
+  "@enterCurrentPassword": {
+    "description": "Current password validation error"
+  },
+  "enterNewPassword": "Enter your new password",
+  "@enterNewPassword": {
+    "description": "New password validation error"
+  },
+  "reEnterNewPassword": "Re-enter your new password",
+  "@reEnterNewPassword": {
+    "description": "New password repeat validation error"
+  },
+  "passwordsMismatch": "Passwords do not match",
+  "@passwordsMismatch": {
+    "description": "Password mismatch validation error"
+  },
+  "backupImportedSuccess": "Backup imported successfully. You can check by refreshing the Goals screen.",
+  "@backupImportedSuccess": {
+    "description": "Backup imported success message"
+  },
+  "exportCompleted": "Export completed. You can access the files from the Downloads folder.",
+  "@exportCompleted": {
+    "description": "Export completed message"
+  },
+  "editProfile": "Edit Profile",
+  "@editProfile": {
+    "description": "Edit profile dialog title"
+  },
+  "emailCannotBeChanged": "Email address cannot be changed",
+  "@emailCannotBeChanged": {
+    "description": "Email field helper text"
+  },
+  "profileUpdatedSuccess": "Profile information updated",
+  "@profileUpdatedSuccess": {
+    "description": "Profile updated success message"
+  },
+  "deleteAccount": "Delete Account",
+  "@deleteAccount": {
+    "description": "Delete account button and dialog title"
+  },
+  "deleteAccountConfirmation": "Are you sure you want to delete your account? This action cannot be undone and all your data will be permanently deleted.",
+  "@deleteAccountConfirmation": {
+    "description": "Delete account confirmation message"
+  },
+  "accountDeletedSuccess": "Your account has been successfully deleted",
+  "@accountDeletedSuccess": {
+    "description": "Account deleted success message"
+  },
+  "errorDeletingAccount": "An error occurred while deleting account",
+  "@errorDeletingAccount": {
+    "description": "Error deleting account message"
+  },
+  "goalTitle": "Goal Title",
+  "@goalTitle": {
+    "description": "Goal title field label"
+  },
+  "goalTitleHint": "e.g., Learn a new language",
+  "@goalTitleHint": {
+    "description": "Goal title field hint"
+  },
+  "goalTitleRequired": "Please enter a goal title",
+  "@goalTitleRequired": {
+    "description": "Goal title validation error"
+  },
+  "goalTitleMinLength": "Goal title must be at least 3 characters",
+  "@goalTitleMinLength": {
+    "description": "Goal title minimum length validation error"
+  },
+  "selectCategory": "Select Category",
+  "@selectCategory": {
+    "description": "Category selection field label"
+  },
+  "categoryRequired": "Please select a category",
+  "@categoryRequired": {
+    "description": "Category validation error"
+  },
+  "whyThisGoal": "Why do you want this goal?",
+  "@whyThisGoal": {
+    "description": "Motivation field label"
+  },
+  "motivationHint": "Write your motivation and purpose...",
+  "@motivationHint": {
+    "description": "Motivation field hint"
+  },
+  "motivationRequired": "Please explain why you want this goal",
+  "@motivationRequired": {
+    "description": "Motivation validation error"
+  },
+  "completionDate": "Completion Date",
+  "@completionDate": {
+    "description": "Completion date field label"
+  },
+  "selectDate": "Select Date",
+  "@selectDate": {
+    "description": "Date picker placeholder"
+  },
+  "dateRequired": "Please select a completion date",
+  "@dateRequired": {
+    "description": "Date validation error"
+  },
+  "categoryExample": "e.g., Career, Health",
+  "@categoryExample": {
+    "description": "Category dropdown hint"
+  },
+  "noteDeleted": "Note deleted",
+  "@noteDeleted": {
+    "description": "Note deleted success message"
+  },
+  "noteAdded": "Note added",
+  "@noteAdded": {
+    "description": "Note added success message"
+  },
+  "pleaseEnterNoteContent": "Please enter note content",
+  "@pleaseEnterNoteContent": {
+    "description": "Note content validation error"
+  },
+  "errorDeletingNote": "An error occurred while deleting note: {error}",
+  "@errorDeletingNote": {
+    "description": "Error deleting note message",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "errorAddingNote": "An error occurred while adding note: {error}",
+  "@errorAddingNote": {
+    "description": "Error adding note message",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "addNote": "Add Note",
+  "@addNote": {
+    "description": "Add note dialog title"
+  },
+  "editNote": "Edit Note",
+  "@editNote": {
+    "description": "Edit note dialog title"
+  },
+  "noteContent": "Note Content",
+  "@noteContent": {
+    "description": "Note content field label"
+  },
+  "noteContentHint": "Write your note here...",
+  "@noteContentHint": {
+    "description": "Note content field hint"
+  },
+  "monthlyCheckIn": "Monthly Check-in",
+  "@monthlyCheckIn": {
+    "description": "Monthly check-in page title"
+  },
+  "takeAMomentToReflect": "Take a moment to reflect",
+  "@takeAMomentToReflect": {
+    "description": "Check-in page subtitle"
+  },
+  "howDoYouEvaluateThisMonth": "How do you evaluate your progress this month?",
+  "@howDoYouEvaluateThisMonth": {
+    "description": "Progress evaluation question"
+  },
+  "scoreDescription": "1 means very low progress, 10 means excellent progress.",
+  "@scoreDescription": {
+    "description": "Score slider description"
+  },
+  "score": "Score: {score} / 10",
+  "@score": {
+    "description": "Score display",
+    "placeholders": {
+      "score": {
+        "type": "int"
+      }
+    }
+  },
+  "saveCheckIn": "Save Check-in",
+  "@saveCheckIn": {
+    "description": "Save check-in button text"
+  },
+  "checkInSaved": "Check-in saved! ✅",
+  "@checkInSaved": {
+    "description": "Check-in saved success message"
+  },
+  "errorSavingCheckIn": "An error occurred while saving check-in: {error}",
+  "@errorSavingCheckIn": {
+    "description": "Error saving check-in message",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "whatDidYouDoThisMonth": "What did you do for this goal this month?",
+  "@whatDidYouDoThisMonth": {
+    "description": "Progress question title"
+  },
+  "smallStepsCount": "Small steps count too. A short answer is enough.",
+  "@smallStepsCount": {
+    "description": "Progress question subtitle"
+  },
+  "progressExample": "e.g., I worked out 3 times a week, read two chapters, practiced vocabulary…",
+  "@progressExample": {
+    "description": "Progress question hint"
+  },
+  "whatChallengedYouMost": "What challenged you most during this process? How did you deal with it?",
+  "@whatChallengedYouMost": {
+    "description": "Challenge question title"
+  },
+  "youCanWriteOnlyChallenges": "You can also write only the part that challenged you.",
+  "@youCanWriteOnlyChallenges": {
+    "description": "Challenge question subtitle"
+  },
+  "challengeExample": "e.g., Workload disrupted my routine; I started making weekly plans to get back on track…",
+  "@challengeExample": {
+    "description": "Challenge question hint"
+  },
+  "leaveNoteForFutureSelf": "Would you like to leave a small note for your future self?",
+  "@leaveNoteForFutureSelf": {
+    "description": "Note question title"
+  },
+  "noteExample": "e.g., You're doing great. Stay consistent and trust the process.",
+  "@noteExample": {
+    "description": "Note question hint"
+  },
+  "optional": "Optional",
+  "@optional": {
+    "description": "Optional field label"
+  },
+  "completed": "Completed:",
+  "@completed": {
+    "description": "Completed items label in note"
+  },
+  "challengesAndSolutions": "Challenges and solutions:",
+  "@challengesAndSolutions": {
+    "description": "Challenges label in note"
+  },
+  "note": "Note:",
+  "@note": {
+    "description": "Note label in note"
+  },
+  "whichGoalForCheckIn": "Which goal would you like to check in for?",
+  "@whichGoalForCheckIn": {
+    "description": "Check-in goal selection dialog title"
+  },
+  "selectGoalFromBelow": "Select a goal from below; we'll take you directly to the check-in screen.",
+  "@selectGoalFromBelow": {
+    "description": "Check-in goal selection dialog description"
+  },
+  "goalsLoading": "Loading goals...",
+  "@goalsLoading": {
+    "description": "Goals loading message"
+  },
+  "errorLoadingGoals": "An error occurred while loading goals: {error}",
+  "@errorLoadingGoals": {
+    "description": "Error loading goals message",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "noGoalsYetCreateFirst": "You don't have any goals yet. You need to create a goal first.",
+  "@noGoalsYetCreateFirst": {
+    "description": "No goals message when trying to check in"
+  },
+  "doCheckIn": "Do Check-in",
+  "@doCheckIn": {
+    "description": "Do check-in button text"
+  }
+}
+

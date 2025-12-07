@@ -3,11 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/providers/locale_provider.dart';
 import '../../../core/router/app_routes.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_radius.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_text_styles.dart';
+import '../../../core/utils/extensions.dart';
 import '../../../core/widgets/index.dart';
 import '../../../shared/providers/goal_providers.dart';
 import '../../auth/providers/auth_providers.dart';
@@ -60,9 +62,10 @@ class SettingsPage extends ConsumerWidget {
   }
 }
 
-class _SettingsAppBar extends StatelessWidget {
+class _SettingsAppBar extends ConsumerWidget {
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: AppSpacing.lg,
@@ -76,7 +79,7 @@ class _SettingsAppBar extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Ayarlar',
+                l10n.settings,
                 style: AppTextStyles.headlineLarge.copyWith(
                   fontWeight: FontWeight.w800,
                   letterSpacing: -0.8,
@@ -85,7 +88,7 @@ class _SettingsAppBar extends StatelessWidget {
               ),
               const SizedBox(height: 2),
               Text(
-                'Hesap ve uygulama ayarları',
+                l10n.settingsSubtitle,
                 style: AppTextStyles.bodySmall.copyWith(
                   color: AppColors.gray600,
                   fontWeight: FontWeight.w500,
@@ -105,74 +108,73 @@ class _ProfileSection extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
     final authState = ref.watch(authStateProvider);
     final user = authState.currentUser;
-    final displayName = user?.displayName ?? 'Kullanıcı';
+    final displayName = user?.displayName ?? l10n.user;
     final email = user?.email ?? '';
 
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.lg),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Color(0xFFEEF2FF),
-            Color(0xFFE0F2FE),
-          ],
-        ),
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
         borderRadius: AppRadius.borderRadiusXl,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.06),
-            blurRadius: 24,
-            offset: const Offset(0, 14),
-          ),
-        ],
-        border: Border.all(
-          color: Colors.white.withOpacity(0.7),
-        ),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 60,
-            height: 60,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: const LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  Color(0xFF4F46E5),
-                  Color(0xFF2B8CEE),
-                ],
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: const Color(0xFF2B8CEE).withOpacity(0.45),
-                  blurRadius: 18,
-                  offset: const Offset(0, 8),
-                ),
+        onTap: () {
+          context.push(AppRoutes.profile);
+        },
+        child: Container(
+          padding: const EdgeInsets.all(AppSpacing.lg),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Color(0xFFEEF2FF),
+                Color(0xFFE0F2FE),
               ],
             ),
-            child: const Icon(
-              Icons.person,
-              color: Colors.white,
-              size: 30,
+            borderRadius: AppRadius.borderRadiusXl,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.06),
+                blurRadius: 24,
+                offset: const Offset(0, 14),
+              ),
+            ],
+            border: Border.all(
+              color: Colors.white.withOpacity(0.7),
             ),
           ),
-          const SizedBox(width: AppSpacing.lg),
-          Expanded(
-            child: InkWell(
-              borderRadius: AppRadius.borderRadiusLg,
-              onTap: () {
-                context.push(AppRoutes.profile);
-              },
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  vertical: AppSpacing.xs,
+          child: Row(
+            children: [
+              Container(
+                width: 60,
+                height: 60,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: const LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      Color(0xFF4F46E5),
+                      Color(0xFF2B8CEE),
+                    ],
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF2B8CEE).withOpacity(0.45),
+                      blurRadius: 18,
+                      offset: const Offset(0, 8),
+                    ),
+                  ],
                 ),
+                child: const Icon(
+                  Icons.person,
+                  color: Colors.white,
+                  size: 30,
+                ),
+              ),
+              const SizedBox(width: AppSpacing.lg),
+              Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -195,24 +197,24 @@ class _ProfileSection extends ConsumerWidget {
                   ],
                 ),
               ),
-            ),
+              const SizedBox(width: AppSpacing.sm),
+              const Icon(
+                Icons.chevron_right_rounded,
+                color: AppColors.gray400,
+              ),
+            ],
           ),
-          const SizedBox(width: AppSpacing.sm),
-          const Icon(
-            Icons.chevron_right_rounded,
-            color: AppColors.gray400,
-          ),
-        ],
+        ),
       ),
     );
   }
 }
 
-class _AppSettingsSection extends StatelessWidget {
+class _AppSettingsSection extends ConsumerWidget {
   const _AppSettingsSection();
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -222,7 +224,7 @@ class _AppSettingsSection extends StatelessWidget {
             vertical: AppSpacing.sm,
           ),
           child: Text(
-            'Uygulama Ayarları',
+            context.l10n.applicationSettings,
             style: AppTextStyles.labelSmall.copyWith(
               fontWeight: FontWeight.w700,
               color: AppColors.gray500,
@@ -255,35 +257,54 @@ class _AppSettingsSection extends StatelessWidget {
   }
 }
 
-class _SettingsTile extends StatelessWidget {
+class _SettingsTile extends ConsumerWidget {
   const _SettingsTile._({
     required this.icon,
     required this.title,
     this.trailing,
     this.onTap,
+    this.isLanguage = false,
   });
 
   const _SettingsTile.notification()
       : icon = Icons.notifications_rounded,
-        title = 'Bildirimler',
+        title = '', // Will be set in build method
         trailing = const _NotificationSwitch(),
-        onTap = null;
+        onTap = null,
+        isLanguage = false;
 
   const _SettingsTile.language()
       : icon = Icons.language_rounded,
         title = 'Dil',
-        trailing = const _ChevronWithLabel(label: 'Türkçe'),
-        onTap = null;
+        trailing = null,
+        onTap = null,
+        isLanguage = true;
 
   final IconData icon;
   final String title;
   final Widget? trailing;
   final VoidCallback? onTap;
+  final bool isLanguage;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
+    final currentLocale = isLanguage ? ref.watch(localeProvider) : null;
+    final currentLanguageLabel = currentLocale != null
+        ? (currentLocale.languageCode == 'tr'
+            ? l10n.turkish
+            : l10n.english)
+        : null;
+    final displayTitle = isLanguage
+        ? l10n.language
+        : (title.isEmpty ? l10n.notifications : title);
+
     return InkWell(
-      onTap: trailing is _NotificationSwitch ? null : onTap,
+      onTap: trailing is _NotificationSwitch
+          ? null
+          : isLanguage
+              ? () => _showLanguageDialog(context, ref)
+              : onTap,
       child: Padding(
         padding: const EdgeInsets.symmetric(
           horizontal: AppSpacing.md,
@@ -307,13 +328,55 @@ class _SettingsTile extends StatelessWidget {
             const SizedBox(width: AppSpacing.md),
             Expanded(
               child: Text(
-                title,
+                displayTitle,
                 style: AppTextStyles.bodyMedium.copyWith(
                   color: AppColors.gray900,
                 ),
               ),
             ),
-            if (trailing != null) trailing!,
+            if (trailing != null)
+              trailing!
+            else if (currentLanguageLabel != null)
+              _ChevronWithLabel(label: currentLanguageLabel),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showLanguageDialog(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
+    final currentLocale = ref.read(localeProvider);
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l10n.language),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            RadioListTile<Locale>(
+              title: Text(l10n.turkish),
+              value: const Locale('tr', 'TR'),
+              groupValue: currentLocale,
+              onChanged: (value) {
+                if (value != null) {
+                  ref.read(localeProvider.notifier).setLocale(value);
+                  Navigator.of(dialogContext).pop();
+                }
+              },
+            ),
+            RadioListTile<Locale>(
+              title: Text(l10n.english),
+              value: const Locale('en', 'US'),
+              groupValue: currentLocale,
+              onChanged: (value) {
+                if (value != null) {
+                  ref.read(localeProvider.notifier).setLocale(value);
+                  Navigator.of(dialogContext).pop();
+                }
+              },
+            ),
           ],
         ),
       ),
@@ -398,7 +461,7 @@ class _SecuritySection extends StatelessWidget {
             vertical: AppSpacing.sm,
           ),
           child: Text(
-            'Güvenlik ve Destek',
+            context.l10n.securityAndSupport,
             style: AppTextStyles.labelSmall.copyWith(
               fontWeight: FontWeight.w700,
               color: AppColors.gray500,
@@ -420,7 +483,7 @@ class _SecuritySection extends StatelessWidget {
           ),
           child: _SettingsTile._(
             icon: Icons.shield_rounded,
-            title: 'Gizlilik & Güvenlik',
+            title: context.l10n.privacyAndSecurity,
             trailing: const _ChevronWithLabel(label: ''),
             onTap: () {
               context.push(AppRoutes.privacySecurity);
@@ -452,7 +515,8 @@ class _DataAndPrivacySection extends ConsumerWidget {
       builder: (dialogContext) {
         return Dialog(
           backgroundColor: Colors.transparent,
-          insetPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+          insetPadding:
+              const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
           child: Container(
             padding: const EdgeInsets.all(AppSpacing.xl),
             decoration: BoxDecoration(
@@ -464,7 +528,7 @@ class _DataAndPrivacySection extends ConsumerWidget {
                   blurRadius: 30,
                   offset: const Offset(0, 16),
                 ),
-              ], 
+              ],
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -498,7 +562,7 @@ class _DataAndPrivacySection extends ConsumerWidget {
                 ),
                 const SizedBox(height: AppSpacing.lg),
                 Text(
-                  'Yedekten Geri Yükle',
+                  context.l10n.restoreFromBackupTitle,
                   style: AppTextStyles.titleLarge.copyWith(
                     fontWeight: FontWeight.w700,
                     color: AppColors.gray900,
@@ -507,9 +571,7 @@ class _DataAndPrivacySection extends ConsumerWidget {
                 ),
                 const SizedBox(height: AppSpacing.sm),
                 Text(
-                  'Seçtiğin yedek dosyası, şu anki tüm hedef ve rapor verilerini silecek '
-                  've yerlerine yedekteki verileri koyacaktır.\n\n'
-                  'Bu işlem geri alınamaz. Devam etmek istediğine emin misin?',
+                  context.l10n.restoreFromBackupWarning,
                   style: AppTextStyles.bodyMedium.copyWith(
                     color: AppColors.gray700,
                     height: 1.5,
@@ -535,7 +597,7 @@ class _DataAndPrivacySection extends ConsumerWidget {
                           ),
                         ),
                         child: Text(
-                          'Vazgeç',
+                          context.l10n.cancel,
                           style: AppTextStyles.bodyMedium.copyWith(
                             fontWeight: FontWeight.w600,
                             color: AppColors.gray800,
@@ -557,7 +619,7 @@ class _DataAndPrivacySection extends ConsumerWidget {
                           elevation: 0,
                         ),
                         child: Text(
-                          'Evet, devam et',
+                          context.l10n.yesContinue,
                           style: AppTextStyles.bodyMedium.copyWith(
                             fontWeight: FontWeight.w700,
                             color: Colors.white,
@@ -580,7 +642,7 @@ class _DataAndPrivacySection extends ConsumerWidget {
 
     final userId = ref.read(currentUserIdProvider);
     if (userId == null) {
-      AppSnackbar.showError(context, message: 'Giriş yapmanız gerekiyor');
+      AppSnackbar.showError(context, message: context.l10n.loginRequired);
       return;
     }
 
@@ -605,8 +667,7 @@ class _DataAndPrivacySection extends ConsumerWidget {
       if (context.mounted) {
         AppSnackbar.showSuccess(
           context,
-          message:
-              'Yedek başarıyla içe aktarıldı. Hedefler ekranını yenileyerek kontrol edebilirsin.',
+          message: context.l10n.backupImportedSuccess,
         );
       }
     } catch (e) {
@@ -630,7 +691,7 @@ class _DataAndPrivacySection extends ConsumerWidget {
             vertical: AppSpacing.sm,
           ),
           child: Text(
-            'Veriler',
+            context.l10n.data,
             style: AppTextStyles.labelSmall.copyWith(
               fontWeight: FontWeight.w700,
               color: AppColors.gray500,
@@ -654,7 +715,7 @@ class _DataAndPrivacySection extends ConsumerWidget {
             children: [
               _SettingsTile._(
                 icon: Icons.file_download_rounded,
-                title: 'Tüm verilerimi indir',
+                title: context.l10n.downloadAllMyData,
                 trailing: const _ChevronWithLabel(label: 'JSON / CSV'),
                 onTap: () {
                   _showExportOptionsDialog(context, 'all_data');
@@ -663,7 +724,7 @@ class _DataAndPrivacySection extends ConsumerWidget {
               const Divider(height: 1),
               _SettingsTile._(
                 icon: Icons.upload_rounded,
-                title: 'Yedekten geri yükle',
+                title: context.l10n.restoreFromBackup,
                 trailing: const _ChevronWithLabel(label: 'JSON'),
                 onTap: () {
                   _importBackup(context, ref);
@@ -714,7 +775,7 @@ class _LogoutSection extends ConsumerWidget {
           color: AppColors.gray700,
         ),
         label: Text(
-          'Çıkış Yap',
+          context.l10n.logOut,
           style: AppTextStyles.bodyMedium.copyWith(
             fontWeight: FontWeight.w600,
             color: AppColors.gray800,
@@ -780,7 +841,7 @@ class _LogoutConfirmationDialog extends StatelessWidget {
             const SizedBox(height: 20),
             // Başlık
             Text(
-              'Çıkış Yap',
+              context.l10n.logOut,
               style: AppTextStyles.titleLarge.copyWith(
                 fontWeight: FontWeight.w700,
                 color: AppColors.gray900,
@@ -789,7 +850,7 @@ class _LogoutConfirmationDialog extends StatelessWidget {
             const SizedBox(height: 12),
             // Açıklama
             Text(
-              'Hesabınızdan çıkış yapmak istediğinize emin misiniz?',
+              context.l10n.logOutConfirmation,
               textAlign: TextAlign.center,
               style: AppTextStyles.bodyMedium.copyWith(
                 color: AppColors.gray600,
@@ -835,7 +896,7 @@ class _LogoutConfirmationDialog extends StatelessWidget {
                       elevation: 0,
                     ),
                     child: Text(
-                      'Çıkış Yap',
+                      context.l10n.logOut,
                       style: AppTextStyles.bodyMedium.copyWith(
                         fontWeight: FontWeight.w700,
                         color: Colors.white,
@@ -876,7 +937,7 @@ class _DangerZoneSection extends ConsumerWidget {
               ),
             ),
             child: Text(
-              'Şifreyi Değiştir',
+              context.l10n.changePassword,
               style: AppTextStyles.bodyMedium.copyWith(
                 fontWeight: FontWeight.w600,
                 color: AppColors.gray800,
@@ -1012,7 +1073,8 @@ class _ChangePasswordBottomSheetState
     if (!_formKey.currentState!.validate()) return;
 
     if (_newPasswordController.text != _confirmPasswordController.text) {
-      AppSnackbar.showError(context, message: 'Yeni şifreler eşleşmiyor');
+      AppSnackbar.showError(context,
+          message: context.l10n.passwordsDoNotMatch);
       return;
     }
 
@@ -1027,7 +1089,7 @@ class _ChangePasswordBottomSheetState
       if (mounted) {
         AppSnackbar.showSuccess(
           context,
-          message: 'Şifre başarıyla değiştirildi',
+          message: context.l10n.passwordChangedSuccess,
         );
         Navigator.of(context).pop();
       }
@@ -1066,7 +1128,7 @@ class _ChangePasswordBottomSheetState
           Row(
             children: [
               Text(
-                'Şifreyi Değiştir',
+                context.l10n.changePassword,
                 style: AppTextStyles.titleLarge.copyWith(
                   fontWeight: FontWeight.w700,
                 ),
@@ -1088,7 +1150,7 @@ class _ChangePasswordBottomSheetState
                   controller: _currentPasswordController,
                   obscureText: _obscureCurrentPassword,
                   decoration: InputDecoration(
-                    labelText: 'Mevcut Şifre',
+                    labelText: context.l10n.currentPassword,
                     suffixIcon: IconButton(
                       icon: Icon(
                         _obscureCurrentPassword
@@ -1105,7 +1167,7 @@ class _ChangePasswordBottomSheetState
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Mevcut şifrenizi girin';
+                      return context.l10n.enterCurrentPassword;
                     }
                     return null;
                   },
@@ -1115,7 +1177,7 @@ class _ChangePasswordBottomSheetState
                   controller: _newPasswordController,
                   obscureText: _obscureNewPassword,
                   decoration: InputDecoration(
-                    labelText: 'Yeni Şifre',
+                    labelText: context.l10n.newPassword,
                     suffixIcon: IconButton(
                       icon: Icon(
                         _obscureNewPassword
@@ -1131,10 +1193,10 @@ class _ChangePasswordBottomSheetState
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Yeni şifrenizi girin';
+                      return context.l10n.enterNewPassword;
                     }
                     if (value.length < 6) {
-                      return 'Şifre en az 6 karakter olmalı';
+                      return context.l10n.passwordMinLength;
                     }
                     return null;
                   },
@@ -1144,7 +1206,7 @@ class _ChangePasswordBottomSheetState
                   controller: _confirmPasswordController,
                   obscureText: _obscureConfirmPassword,
                   decoration: InputDecoration(
-                    labelText: 'Yeni Şifre (Tekrar)',
+                    labelText: context.l10n.newPasswordRepeat,
                     suffixIcon: IconButton(
                       icon: Icon(
                         _obscureConfirmPassword
@@ -1161,10 +1223,10 @@ class _ChangePasswordBottomSheetState
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Yeni şifrenizi tekrar girin';
+                      return context.l10n.reEnterNewPassword;
                     }
                     if (value != _newPasswordController.text) {
-                      return 'Şifreler eşleşmiyor';
+                      return context.l10n.passwordsMismatch;
                     }
                     return null;
                   },
@@ -1223,7 +1285,7 @@ class _ChangePasswordBottomSheetState
                           ),
                         )
                       : Text(
-                          'Şifreyi Değiştir',
+                          context.l10n.changePassword,
                           style: AppTextStyles.bodyMedium.copyWith(
                             fontWeight: FontWeight.w700,
                             color: Colors.white,
@@ -1385,7 +1447,7 @@ class _ExportOptionsBottomSheetState
   Future<void> _handleExport(String format) async {
     final userId = ref.read(currentUserIdProvider);
     if (userId == null) {
-      AppSnackbar.showError(context, message: 'Giriş yapmanız gerekiyor');
+      AppSnackbar.showError(context, message: context.l10n.loginRequired);
       return;
     }
 
@@ -1411,8 +1473,7 @@ class _ExportOptionsBottomSheetState
       if (mounted) {
         AppSnackbar.showSuccess(
           context,
-          message:
-              'Yedekleme tamamlandı. Dosyalar > İndirilenler klasöründen ulaşabilirsin.',
+          message: context.l10n.exportCompleted,
         );
         Navigator.of(context).pop();
       }
@@ -1445,7 +1506,7 @@ class _ExportOptionsBottomSheetState
           Row(
             children: [
               Text(
-                'Tüm Verileri Dışa Aktar',
+                context.l10n.exportAllData,
                 style: AppTextStyles.titleLarge.copyWith(
                   fontWeight: FontWeight.w700,
                 ),
@@ -1459,7 +1520,7 @@ class _ExportOptionsBottomSheetState
           ),
           const SizedBox(height: AppSpacing.lg),
           Text(
-            'Verilerini hangi formatta kaydetmek istersin?',
+            context.l10n.exportDataFormatQuestion,
             style: AppTextStyles.bodyMedium.copyWith(
               color: AppColors.gray700,
             ),
@@ -1472,7 +1533,7 @@ class _ExportOptionsBottomSheetState
                   onPressed:
                       _isLoading ? null : () => _handleExport('csv'),
                   icon: const Icon(Icons.table_chart_rounded),
-                  label: const Text('Tablo (CSV)'),
+                  label: Text(context.l10n.tableCsv),
                   style: OutlinedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     side: const BorderSide(
@@ -1491,7 +1552,7 @@ class _ExportOptionsBottomSheetState
                   onPressed:
                       _isLoading ? null : () => _handleExport('json'),
                   icon: const Icon(Icons.code_rounded),
-                  label: const Text('Gelişmiş (JSON)'),
+                  label: Text(context.l10n.advancedJson),
                   style: OutlinedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     side: const BorderSide(

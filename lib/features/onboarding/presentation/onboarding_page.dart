@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/router/app_routes.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/utils/extensions.dart';
 import '../../../core/widgets/index.dart';
 import '../providers/onboarding_providers.dart';
 
@@ -61,7 +62,7 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
                         true;
                     context.go(AppRoutes.login);
                   },
-                  child: const Text('Atla'),
+                  child: Text(context.l10n.skip),
                 ),
               ),
             // PageView
@@ -85,7 +86,9 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
               child: AppButton(
                 onPressed: _handleContinue,
                 child: Text(
-                  currentPage < 2 ? 'Devam Et' : 'Hemen Başla',
+                  currentPage < 2
+                      ? context.l10n.continueButton
+                      : context.l10n.getStarted,
                 ),
               ),
             ),
@@ -197,7 +200,7 @@ class _OnboardingSlide1 extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
-                  'Bu yıl hedeflerini somutlaştır.',
+                  context.l10n.onboardingSlide1Title,
                   style:
                       Theme.of(context).textTheme.headlineMedium?.copyWith(
                             color: AppColors.gray900,
@@ -207,7 +210,7 @@ class _OnboardingSlide1 extends StatelessWidget {
                 ),
                 AppSpacers.md,
                 Text(
-                  'YearFlow ile hayallerini gerçeğe dönüştür. Ulaşılabilir adımlarla büyük hedeflerine doğru ilerle.',
+                  context.l10n.onboardingSlide1Description,
                   style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                         color: AppColors.gray700,
                       ),
@@ -305,7 +308,7 @@ class _OnboardingSlide2 extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
-                  'Düzenli ilerlemelerle yolculuğunu takip et.',
+                  context.l10n.onboardingSlide2Title,
                   style: Theme.of(context)
                       .textTheme
                       .headlineMedium
@@ -322,7 +325,7 @@ class _OnboardingSlide2 extends StatelessWidget {
                 ),
                 AppSpacers.md,
                 Text(
-                  'Aylık check-in\'lerle hedeflerindeki ilerlemeyi kaydet, motivasyonunu koru ve başarılarını kutla.',
+                  context.l10n.onboardingSlide2Description,
                   style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                         color: AppColors.gray700,
                         fontSize: MediaQuery.of(context).size.width < 360
@@ -446,27 +449,29 @@ class _OnboardingSlide3 extends StatelessWidget {
           flex: 4,
           child: Padding(
             padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  'Yıl sonunda kişisel gelişim raporunu al.',
-                  style:
-                      Theme.of(context).textTheme.headlineMedium?.copyWith(
-                            color: AppColors.gray900,
-                            fontWeight: FontWeight.bold,
-                          ),
-                  textAlign: TextAlign.center,
-                ),
-                AppSpacers.md,
-                Text(
-                  'AI destekli raporlarla yıl boyunca kaydettiğin ilerlemeyi gör, somut verilerle gelişimini anla ve yeni hedefler için ilham al.',
-                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        color: AppColors.gray700,
-                      ),
-                  textAlign: TextAlign.center,
-                ),
-              ],
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    context.l10n.onboardingSlide3Title,
+                    style:
+                        Theme.of(context).textTheme.headlineMedium?.copyWith(
+                              color: AppColors.gray900,
+                              fontWeight: FontWeight.bold,
+                            ),
+                    textAlign: TextAlign.center,
+                  ),
+                  AppSpacers.md,
+                  Text(
+                    context.l10n.onboardingSlide3Description,
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                          color: AppColors.gray700,
+                        ),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
             ),
           ),
         ),

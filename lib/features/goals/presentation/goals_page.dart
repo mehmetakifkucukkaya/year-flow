@@ -9,6 +9,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_radius.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_text_styles.dart';
+import '../../../core/utils/extensions.dart';
 import '../../../shared/models/goal.dart';
 import '../../../shared/providers/goal_providers.dart';
 
@@ -157,7 +158,7 @@ class _GoalsPageState extends ConsumerState<GoalsPage>
                   ),
                   const SizedBox(height: AppSpacing.md),
                   Text(
-                    'Hedefler yüklenirken bir hata oluştu.',
+                    context.l10n.goalsLoadingError,
                     style: AppTextStyles.bodyMedium.copyWith(
                       color: AppColors.error,
                     ),
@@ -169,7 +170,7 @@ class _GoalsPageState extends ConsumerState<GoalsPage>
                       // Stream'i yeniden başlat
                       ref.invalidate(goalsStreamProvider);
                     },
-                    child: const Text('Yeniden Dene'),
+                    child: Text(context.l10n.tryAgain),
                   ),
                 ],
               ),
@@ -290,7 +291,7 @@ class _GoalsPageState extends ConsumerState<GoalsPage>
                                                       : 6),
                                               Flexible(
                                                 child: Text(
-                                                  'Aktif',
+                                                  context.l10n.active,
                                                   style: AppTextStyles
                                                       .labelMedium
                                                       .copyWith(
@@ -376,7 +377,7 @@ class _GoalsPageState extends ConsumerState<GoalsPage>
                                                       : 6),
                                               Flexible(
                                                 child: Text(
-                                                  'Tamamlanan',
+                                                  context.l10n.completed,
                                                   style: AppTextStyles
                                                       .labelMedium
                                                       .copyWith(
@@ -568,7 +569,7 @@ class _TopAppBar extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Hedeflerim',
+                context.l10n.myGoals,
                 style: AppTextStyles.headlineLarge.copyWith(
                   fontWeight: FontWeight.w800,
                   letterSpacing: -0.8,
@@ -577,7 +578,7 @@ class _TopAppBar extends StatelessWidget {
               ),
               const SizedBox(height: 2),
               Text(
-                'Başarı yolculuğun',
+                context.l10n.yourSuccessJourney,
                 style: AppTextStyles.bodySmall.copyWith(
                   color: AppColors.gray600,
                   fontWeight: FontWeight.w500,
@@ -602,7 +603,7 @@ class _TopAppBar extends StatelessWidget {
               onPressed: () {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: const Text('Bildirimler yakında eklenecek'),
+                    content: Text(context.l10n.notificationsComingSoon),
                     behavior: SnackBarBehavior.floating,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -642,7 +643,7 @@ class _FilterSortButtons extends StatelessWidget {
         Expanded(
           child: _ModernActionButton(
             icon: Icons.swap_vert_rounded,
-            label: 'Sırala',
+            label: context.l10n.sort,
             onPressed: () {
               _showSortDialog(context);
             },
@@ -652,7 +653,7 @@ class _FilterSortButtons extends StatelessWidget {
         Expanded(
           child: _ModernActionButton(
             icon: Icons.tune_rounded,
-            label: 'Filtrele',
+            label: context.l10n.filter,
             onPressed: () {
               _showFilterDialog(context);
             },
@@ -682,7 +683,7 @@ class _FilterSortButtons extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Sırala',
+                context.l10n.sort,
                 style: AppTextStyles.titleMedium.copyWith(
                   fontWeight: FontWeight.w700,
                 ),
@@ -690,7 +691,7 @@ class _FilterSortButtons extends StatelessWidget {
               const SizedBox(height: AppSpacing.md),
               ..._SortOption.values
                   .map((option) => RadioListTile<_SortOption>(
-                        title: Text(_getSortLabel(option)),
+                        title: Text(_getSortLabel(context, option)),
                         value: option,
                         groupValue: sortOption,
                         onChanged: (value) {
@@ -727,7 +728,7 @@ class _FilterSortButtons extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Filtrele',
+                context.l10n.filter,
                 style: AppTextStyles.titleMedium.copyWith(
                   fontWeight: FontWeight.w700,
                 ),
@@ -735,7 +736,7 @@ class _FilterSortButtons extends StatelessWidget {
               const SizedBox(height: AppSpacing.md),
               ..._FilterOption.values
                   .map((option) => RadioListTile<_FilterOption>(
-                        title: Text(_getFilterLabel(option)),
+                        title: Text(_getFilterLabel(context, option)),
                         value: option,
                         groupValue: filterOption,
                         onChanged: (value) {
@@ -752,45 +753,47 @@ class _FilterSortButtons extends StatelessWidget {
     );
   }
 
-  String _getSortLabel(_SortOption option) {
+  String _getSortLabel(BuildContext context, _SortOption option) {
+    final l10n = context.l10n;
     switch (option) {
       case _SortOption.newest:
-        return 'En Yeni';
+        return l10n.newest;
       case _SortOption.oldest:
-        return 'En Eski';
+        return l10n.oldest;
       case _SortOption.progressHigh:
-        return 'İlerleme (Yüksek)';
+        return l10n.progressHigh;
       case _SortOption.progressLow:
-        return 'İlerleme (Düşük)';
+        return l10n.progressLow;
       case _SortOption.titleAsc:
-        return 'Başlık (A-Z)';
+        return l10n.titleAsc;
       case _SortOption.titleDesc:
-        return 'Başlık (Z-A)';
+        return l10n.titleDesc;
     }
   }
 
-  String _getFilterLabel(_FilterOption option) {
+  String _getFilterLabel(BuildContext context, _FilterOption option) {
+    final l10n = context.l10n;
     switch (option) {
       case _FilterOption.all:
-        return 'Tümü';
+        return l10n.all;
       case _FilterOption.health:
-        return 'Sağlık';
+        return l10n.health;
       case _FilterOption.mentalHealth:
-        return 'Ruh Sağlığı';
+        return l10n.mentalHealth;
       case _FilterOption.finance:
-        return 'Finans';
+        return l10n.finance;
       case _FilterOption.career:
-        return 'Kariyer';
+        return l10n.career;
       case _FilterOption.relationships:
-        return 'İlişkiler';
+        return l10n.relationships;
       case _FilterOption.learning:
-        return 'Öğrenme';
+        return l10n.learning;
       case _FilterOption.creativity:
-        return 'Yaratıcılık';
+        return l10n.creativity;
       case _FilterOption.hobby:
-        return 'Hobi';
+        return l10n.hobby;
       case _FilterOption.personalGrowth:
-        return 'Kişisel Gelişim';
+        return l10n.personalGrowth;
     }
   }
 }
@@ -943,7 +946,7 @@ class _CompletedGoalCard extends ConsumerWidget {
                           ),
                           const SizedBox(width: 6),
                           Text(
-                            goal.category.label,
+                            goal.category.getLocalizedLabel(context),
                             style: AppTextStyles.labelSmall.copyWith(
                               color: categoryColor,
                               fontWeight: FontWeight.w600,
@@ -960,7 +963,7 @@ class _CompletedGoalCard extends ConsumerWidget {
                         size: 20,
                         color: AppColors.gray600,
                       ),
-                      tooltip: 'Aktif hedeflere geri al',
+                      tooltip: context.l10n.moveToActiveTooltip,
                       onPressed: () async {
                         final shouldUncomplete = await showDialog<bool>(
                           context: context,
@@ -974,9 +977,9 @@ class _CompletedGoalCard extends ConsumerWidget {
                           final userId = ref.read(currentUserIdProvider);
                           if (userId == null) {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
+                              SnackBar(
                                 content: Text(
-                                  'Bu işlemi yapmak için giriş yapmalısın.',
+                                  context.l10n.mustSignInToPerformAction,
                                 ),
                               ),
                             );
@@ -995,9 +998,9 @@ class _CompletedGoalCard extends ConsumerWidget {
 
                             if (context.mounted) {
                               ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
+                                SnackBar(
                                   content: Text(
-                                    'Hedef tekrar aktifler listesine taşındı.',
+                                    context.l10n.goalMovedToActive,
                                   ),
                                 ),
                               );
@@ -1007,7 +1010,8 @@ class _CompletedGoalCard extends ConsumerWidget {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
                                   content: Text(
-                                    'Hedef güncellenirken hata oluştu: $e',
+                                    context.l10n
+                                        .errorUpdatingGoal(e.toString()),
                                   ),
                                 ),
                               );
@@ -1093,7 +1097,7 @@ class _CompletedGoalCard extends ConsumerWidget {
                           ),
                           const SizedBox(width: 6),
                           Text(
-                            'Tamamlandı',
+                            context.l10n.completed,
                             style: AppTextStyles.labelSmall.copyWith(
                               color: AppColors.primary,
                               fontWeight: FontWeight.w600,
@@ -1186,7 +1190,7 @@ class _UncompleteGoalDialog extends StatelessWidget {
             const SizedBox(height: AppSpacing.lg),
             // Title
             Text(
-              'Hedefi tekrar aktifleştir',
+              context.l10n.reactivateGoal,
               style: AppTextStyles.titleLarge.copyWith(
                 fontWeight: FontWeight.w700,
                 color: AppColors.gray900,
@@ -1196,7 +1200,7 @@ class _UncompleteGoalDialog extends StatelessWidget {
             const SizedBox(height: AppSpacing.sm),
             // Description
             Text(
-              '"$goalTitle" hedefini tamamlananlardan çıkarıp tekrar aktif hedefler listesine almak istiyor musun?',
+              context.l10n.reactivateGoalDescription(goalTitle),
               style: AppTextStyles.bodyMedium.copyWith(
                 color: AppColors.gray700,
                 height: 1.5,
@@ -1218,7 +1222,7 @@ class _UncompleteGoalDialog extends StatelessWidget {
                       ),
                     ),
                     child: Text(
-                      'İptal',
+                      context.l10n.cancel,
                       style: AppTextStyles.bodyMedium.copyWith(
                         fontWeight: FontWeight.w600,
                         color: AppColors.gray800,
@@ -1240,7 +1244,7 @@ class _UncompleteGoalDialog extends StatelessWidget {
                       ),
                     ),
                     child: Text(
-                      'Evet, aktifleştir',
+                      context.l10n.moveToActive,
                       style: AppTextStyles.bodyMedium.copyWith(
                         fontWeight: FontWeight.w700,
                         color: Colors.white,
@@ -1330,23 +1334,26 @@ class _GoalCard extends ConsumerWidget {
 
   final Goal goal;
 
-  String _formatLastCheckIn(DateTime? date) {
-    if (date == null) return 'Henüz Check-in yok';
+  String _formatLastCheckIn(BuildContext context, DateTime? date) {
+    final l10n = context.l10n;
+    if (date == null) return l10n.noCheckInYet;
 
     final now = DateTime.now();
     final difference = now.difference(date);
 
     if (difference.inDays == 0) {
-      return 'Bugün';
+      return l10n.today;
     } else if (difference.inDays == 1) {
-      return 'Dün';
+      return l10n.yesterday;
     } else if (difference.inDays < 7) {
-      return '${difference.inDays} gün önce';
+      return l10n.daysAgo(difference.inDays);
     } else if (difference.inDays < 30) {
       final weeks = (difference.inDays / 7).floor();
-      return '$weeks hafta önce';
+      return l10n.weeksAgo(weeks);
     } else {
-      return DateFormat('d MMMM', 'tr_TR').format(date);
+      // Use localized date format
+      final locale = Localizations.localeOf(context);
+      return DateFormat('d MMMM', locale.toString()).format(date);
     }
   }
 
@@ -1356,14 +1363,16 @@ class _GoalCard extends ConsumerWidget {
     final backgroundColor = baseColor.withOpacity(0.12);
 
     final checkInsAsync = ref.watch(checkInsStreamProvider(goal.id));
+    final l10n = context.l10n;
     final lastCheckInLabel = checkInsAsync.when(
-      loading: () => 'Yükleniyor...',
-      error: (_, __) => 'Henüz Check-in yok',
+      loading: () => l10n.loading,
+      error: (_, __) => l10n.noCheckInYet,
       data: (checkIns) {
-        if (checkIns.isEmpty) return 'Henüz Check-in yok';
+        if (checkIns.isEmpty) return l10n.noCheckInYet;
         final sorted = checkIns
           ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
-        return 'Son Check-in: ${_formatLastCheckIn(sorted.first.createdAt)}';
+        return l10n.lastCheckIn(
+            _formatLastCheckIn(context, sorted.first.createdAt));
       },
     );
 
@@ -1420,7 +1429,7 @@ class _GoalCard extends ConsumerWidget {
                             BorderRadius.circular(16), // Softer pill shape
                       ),
                       child: Text(
-                        goal.category.label,
+                        goal.category.getLocalizedLabel(context),
                         style: AppTextStyles.labelSmall.copyWith(
                           color: baseColor,
                           fontWeight: FontWeight.w500,
@@ -1545,7 +1554,7 @@ class _EmptyState extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.xl + AppSpacing.md),
           Text(
-            'Henüz hedef eklemedin',
+            context.l10n.noGoalsYet,
             style: AppTextStyles.headlineMedium.copyWith(
               fontWeight: FontWeight.w800,
               color: AppColors.gray900,
@@ -1555,7 +1564,7 @@ class _EmptyState extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.md),
           Text(
-            'Yeni bir hedef ekleyerek başarı yolculuğuna başla',
+            context.l10n.startJourneyWithGoal,
             style: AppTextStyles.bodyLarge.copyWith(
               color: AppColors.gray600,
               height: 1.5,
@@ -1585,9 +1594,9 @@ class _EmptyState extends StatelessWidget {
                 context.push(AppRoutes.goalCreate);
               },
               icon: const Icon(Icons.add_rounded, size: 22),
-              label: const Text(
-                'Yeni Hedef Ekle',
-                style: TextStyle(
+              label: Text(
+                context.l10n.addNewGoal,
+                style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
                 ),

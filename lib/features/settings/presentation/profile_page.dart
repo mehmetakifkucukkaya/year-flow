@@ -7,9 +7,12 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_radius.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_text_styles.dart';
+import '../../../core/utils/extensions.dart';
 import '../../../core/widgets/index.dart';
+import '../../../shared/models/yearly_report.dart';
 import '../../../shared/providers/goal_providers.dart';
 import '../../auth/providers/auth_providers.dart';
+import '../../reports/providers/reports_providers.dart';
 
 class ProfilePage extends ConsumerWidget {
   const ProfilePage({super.key});
@@ -66,7 +69,7 @@ class _ProfileBodyState extends ConsumerState<_ProfileBody> {
     final authState = ref.read(authStateProvider);
     final user = authState.currentUser;
     setState(() {
-      _name = user?.displayName ?? 'Kullanıcı';
+      _name = user?.displayName ?? context.l10n.user;
       _email = user?.email ?? '';
     });
   }
@@ -95,7 +98,7 @@ class _ProfileBodyState extends ConsumerState<_ProfileBody> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Profili Düzenle',
+                context.l10n.editProfile,
                 style: AppTextStyles.titleMedium.copyWith(
                   fontWeight: FontWeight.w700,
                   color: AppColors.gray900,
@@ -104,8 +107,8 @@ class _ProfileBodyState extends ConsumerState<_ProfileBody> {
               const SizedBox(height: AppSpacing.md),
               TextField(
                 controller: nameController,
-                decoration: const InputDecoration(
-                  labelText: 'Ad Soyad',
+                decoration: InputDecoration(
+                  labelText: context.l10n.fullName,
                 ),
               ),
               const SizedBox(height: AppSpacing.md),
@@ -114,9 +117,9 @@ class _ProfileBodyState extends ConsumerState<_ProfileBody> {
                 keyboardType: TextInputType.emailAddress,
                 readOnly: true,
                 enabled: false,
-                decoration: const InputDecoration(
-                  labelText: 'E-posta',
-                  helperText: 'E-posta adresi değiştirilemez',
+                decoration: InputDecoration(
+                  labelText: context.l10n.email,
+                  helperText: context.l10n.emailCannotBeChanged,
                 ),
               ),
               const SizedBox(height: AppSpacing.lg),
@@ -138,7 +141,7 @@ class _ProfileBodyState extends ConsumerState<_ProfileBody> {
                       if (mounted) {
                         AppSnackbar.showSuccess(
                           context,
-                          message: 'Profil bilgileri güncellendi',
+                          message: context.l10n.profileUpdatedSuccess,
                         );
                         Navigator.of(ctx).pop();
                       }
@@ -154,7 +157,7 @@ class _ProfileBodyState extends ConsumerState<_ProfileBody> {
                       }
                     }
                   },
-                  child: const Text('Kaydet'),
+                  child: Text(context.l10n.save),
                 ),
               ),
             ],
@@ -168,7 +171,7 @@ class _ProfileBodyState extends ConsumerState<_ProfileBody> {
   Widget build(BuildContext context) {
     final authState = ref.watch(authStateProvider);
     final user = authState.currentUser;
-    final displayName = user?.displayName ?? _name ?? 'Kullanıcı';
+    final displayName = user?.displayName ?? _name ?? context.l10n.user;
     final email = user?.email ?? _email ?? '';
 
     return SingleChildScrollView(
@@ -265,7 +268,7 @@ class _ProfileDangerZoneSection extends ConsumerWidget {
               ),
             ),
             child: Text(
-              'Şifreyi Değiştir',
+              context.l10n.changePassword,
               style: AppTextStyles.bodyMedium.copyWith(
                 fontWeight: FontWeight.w600,
                 color: AppColors.gray800,
@@ -312,7 +315,7 @@ class _ProfileDangerZoneSection extends ConsumerWidget {
                 color: Colors.white,
               ),
               label: Text(
-                'Hesabı Sil',
+                context.l10n.deleteAccount,
                 style: AppTextStyles.bodyMedium.copyWith(
                   fontWeight: FontWeight.w700,
                   color: Colors.white,
@@ -348,7 +351,7 @@ class _ProfileDangerZoneSection extends ConsumerWidget {
         if (context.mounted) {
           AppSnackbar.showSuccess(
             context,
-            message: 'Hesabınız başarıyla silindi',
+            message: context.l10n.accountDeletedSuccess,
           );
           await Future.delayed(const Duration(milliseconds: 500));
           if (context.mounted) {
@@ -359,7 +362,7 @@ class _ProfileDangerZoneSection extends ConsumerWidget {
         if (context.mounted) {
           AppSnackbar.showError(
             context,
-            message: 'Hesap silinirken hata oluştu: $e',
+            message: '${context.l10n.errorDeletingAccount}: $e',
           );
         }
       }
@@ -402,7 +405,7 @@ class _ChangePasswordBottomSheetState
     if (!_formKey.currentState!.validate()) return;
 
     if (_newPasswordController.text != _confirmPasswordController.text) {
-      AppSnackbar.showError(context, message: 'Yeni şifreler eşleşmiyor');
+      AppSnackbar.showError(context, message: context.l10n.passwordsDoNotMatch);
       return;
     }
 
@@ -417,7 +420,7 @@ class _ChangePasswordBottomSheetState
       if (mounted) {
         AppSnackbar.showSuccess(
           context,
-          message: 'Şifre başarıyla değiştirildi',
+          message: context.l10n.passwordChangedSuccess,
         );
         Navigator.of(context).pop();
       }
@@ -456,7 +459,7 @@ class _ChangePasswordBottomSheetState
           Row(
             children: [
               Text(
-                'Şifreyi Değiştir',
+                context.l10n.changePassword,
                 style: AppTextStyles.titleLarge.copyWith(
                   fontWeight: FontWeight.w700,
                 ),
@@ -478,7 +481,7 @@ class _ChangePasswordBottomSheetState
                   controller: _currentPasswordController,
                   obscureText: _obscureCurrentPassword,
                   decoration: InputDecoration(
-                    labelText: 'Mevcut Şifre',
+                    labelText: context.l10n.currentPassword,
                     suffixIcon: IconButton(
                       icon: Icon(
                         _obscureCurrentPassword
@@ -495,7 +498,7 @@ class _ChangePasswordBottomSheetState
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Mevcut şifrenizi girin';
+                      return context.l10n.enterCurrentPassword;
                     }
                     return null;
                   },
@@ -505,7 +508,7 @@ class _ChangePasswordBottomSheetState
                   controller: _newPasswordController,
                   obscureText: _obscureNewPassword,
                   decoration: InputDecoration(
-                    labelText: 'Yeni Şifre',
+                    labelText: context.l10n.newPassword,
                     suffixIcon: IconButton(
                       icon: Icon(
                         _obscureNewPassword
@@ -521,10 +524,10 @@ class _ChangePasswordBottomSheetState
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Yeni şifrenizi girin';
+                      return context.l10n.enterNewPassword;
                     }
                     if (value.length < 6) {
-                      return 'Şifre en az 6 karakter olmalı';
+                      return context.l10n.passwordMinLength;
                     }
                     return null;
                   },
@@ -534,7 +537,7 @@ class _ChangePasswordBottomSheetState
                   controller: _confirmPasswordController,
                   obscureText: _obscureConfirmPassword,
                   decoration: InputDecoration(
-                    labelText: 'Yeni Şifre (Tekrar)',
+                    labelText: context.l10n.newPasswordRepeat,
                     suffixIcon: IconButton(
                       icon: Icon(
                         _obscureConfirmPassword
@@ -551,10 +554,10 @@ class _ChangePasswordBottomSheetState
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Yeni şifrenizi tekrar girin';
+                      return context.l10n.reEnterNewPassword;
                     }
                     if (value != _newPasswordController.text) {
-                      return 'Şifreler eşleşmiyor';
+                      return context.l10n.passwordsMismatch;
                     }
                     return null;
                   },
@@ -582,7 +585,7 @@ class _ChangePasswordBottomSheetState
                     ),
                   ),
                   child: Text(
-                    'İptal',
+                    context.l10n.cancel,
                     style: AppTextStyles.bodyMedium.copyWith(
                       fontWeight: FontWeight.w600,
                       color: AppColors.gray800,
@@ -613,7 +616,7 @@ class _ChangePasswordBottomSheetState
                           ),
                         )
                       : Text(
-                          'Şifreyi Değiştir',
+                          context.l10n.changePassword,
                           style: AppTextStyles.bodyMedium.copyWith(
                             fontWeight: FontWeight.w700,
                             color: Colors.white,
@@ -686,7 +689,7 @@ class _DeleteAccountConfirmationDialog extends StatelessWidget {
             ),
             const SizedBox(height: AppSpacing.lg),
             Text(
-              'Hesabı Sil',
+              context.l10n.deleteAccount,
               style: AppTextStyles.titleLarge.copyWith(
                 fontWeight: FontWeight.w700,
                 color: AppColors.gray900,
@@ -695,7 +698,7 @@ class _DeleteAccountConfirmationDialog extends StatelessWidget {
             ),
             const SizedBox(height: AppSpacing.sm),
             Text(
-              'Hesabınızı silmek istediğinize emin misiniz? Bu işlem geri alınamaz ve tüm verileriniz kalıcı olarak silinecektir.',
+              context.l10n.deleteAccountConfirmation,
               style: AppTextStyles.bodyMedium.copyWith(
                 color: AppColors.gray700,
               ),
@@ -718,7 +721,7 @@ class _DeleteAccountConfirmationDialog extends StatelessWidget {
                       ),
                     ),
                     child: Text(
-                      'İptal',
+                      context.l10n.cancel,
                       style: AppTextStyles.bodyMedium.copyWith(
                         fontWeight: FontWeight.w600,
                         color: AppColors.gray800,
@@ -739,7 +742,7 @@ class _DeleteAccountConfirmationDialog extends StatelessWidget {
                       elevation: 0,
                     ),
                     child: Text(
-                      'Hesabı Sil',
+                      context.l10n.deleteAccount,
                       style: AppTextStyles.bodyMedium.copyWith(
                         fontWeight: FontWeight.w700,
                         color: Colors.white,
@@ -790,7 +793,7 @@ class _ProfileAppBar extends StatelessWidget {
           ),
           const Spacer(),
           Text(
-            'Profil',
+            context.l10n.profile,
             style: AppTextStyles.titleLarge.copyWith(
               fontWeight: FontWeight.w700,
               letterSpacing: -0.2,
@@ -943,40 +946,41 @@ class _ProfileStatsSection extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final allGoalsAsync = ref.watch(allGoalsStreamProvider);
+    final reportsAsync = ref.watch(reportsHistoryProvider);
 
     return allGoalsAsync.when(
-      loading: () => const Row(
+      loading: () => Row(
         children: [
           Expanded(
             child: _ProfileStatCard(
-              label: 'Toplam Hedef',
+              label: context.l10n.totalGoals,
               value: '0',
               icon: Icons.flag_rounded,
             ),
           ),
-          SizedBox(width: AppSpacing.md),
+          const SizedBox(width: AppSpacing.md),
           Expanded(
             child: _ProfileStatCard(
-              label: 'Yıllık Rapor',
+              label: context.l10n.annualReport,
               value: '0',
               icon: Icons.auto_graph_rounded,
             ),
           ),
         ],
       ),
-      error: (_, __) => const Row(
+      error: (_, __) => Row(
         children: [
           Expanded(
             child: _ProfileStatCard(
-              label: 'Toplam Hedef',
+              label: context.l10n.totalGoals,
               value: '0',
               icon: Icons.flag_rounded,
             ),
           ),
-          SizedBox(width: AppSpacing.md),
+          const SizedBox(width: AppSpacing.md),
           Expanded(
             child: _ProfileStatCard(
-              label: 'Yıllık Rapor',
+              label: context.l10n.annualReport,
               value: '0',
               icon: Icons.auto_graph_rounded,
             ),
@@ -985,22 +989,31 @@ class _ProfileStatsSection extends ConsumerWidget {
       ),
       data: (goals) {
         final totalGoals = goals.length;
-        // Yıllık rapor sayısı için şimdilik 0 gösteriyoruz
-        // Gerçek veriyi almak için ayrı bir provider gerekebilir
+        
+        // Yıllık rapor sayısını veritabanından al
+        final yearlyReportsCount = reportsAsync.when(
+          loading: () => 0,
+          error: (_, __) => 0,
+          data: (reports) {
+            // ReportType.yearly olan raporları filtrele
+            return reports.where((report) => report.reportType == ReportType.yearly).length;
+          },
+        );
+        
         return Row(
           children: [
             Expanded(
               child: _ProfileStatCard(
-                label: 'Toplam Hedef',
+                label: context.l10n.totalGoals,
                 value: totalGoals.toString(),
                 icon: Icons.flag_rounded,
               ),
             ),
             const SizedBox(width: AppSpacing.md),
-            const Expanded(
+            Expanded(
               child: _ProfileStatCard(
-                label: 'Yıllık Rapor',
-                value: '0',
+                label: context.l10n.annualReport,
+                value: yearlyReportsCount.toString(),
                 icon: Icons.auto_graph_rounded,
               ),
             ),
@@ -1113,7 +1126,7 @@ class _ProfileInfoSection extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              'Hesap Bilgileri',
+              context.l10n.accountInformation,
               style: AppTextStyles.labelSmall.copyWith(
                 fontWeight: FontWeight.w700,
                 color: AppColors.gray500,
@@ -1122,18 +1135,18 @@ class _ProfileInfoSection extends StatelessWidget {
             ),
             TextButton(
               onPressed: onEdit,
-              child: const Text('Düzenle'),
+              child: Text(context.l10n.edit),
             ),
           ],
         ),
         const SizedBox(height: AppSpacing.sm),
         _ProfileFieldCard(
-          label: 'Ad Soyad',
+          label: context.l10n.fullName,
           value: name,
         ),
         const SizedBox(height: AppSpacing.sm),
         _ProfileFieldCard(
-          label: 'E-posta',
+          label: context.l10n.email,
           value: email,
         ),
       ],

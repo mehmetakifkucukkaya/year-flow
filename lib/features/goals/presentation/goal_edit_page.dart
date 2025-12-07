@@ -7,6 +7,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_radius.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_text_styles.dart';
+import '../../../core/utils/extensions.dart';
 import '../../../core/widgets/index.dart';
 import '../../../shared/models/goal.dart';
 import '../../../shared/providers/goal_providers.dart';
@@ -109,7 +110,7 @@ class _GoalEditPageState extends ConsumerState<GoalEditPage> {
 
       if (currentGoal == null) {
         if (mounted) {
-          AppSnackbar.showError(context, message: 'Hedef bulunamadı');
+          AppSnackbar.showError(context, message: context.l10n.goalNotFound);
         }
         return;
       }
@@ -132,14 +133,14 @@ class _GoalEditPageState extends ConsumerState<GoalEditPage> {
         // Goal detail'i de invalidate et
         ref.invalidate(goalDetailProvider(widget.goalId));
 
-        AppSnackbar.showSuccess(context, message: 'Hedef güncellendi! ✅');
+        AppSnackbar.showSuccess(context, message: context.l10n.goalUpdatedSuccess);
         context.pop();
       }
     } catch (e) {
       if (mounted) {
         AppSnackbar.showError(
           context,
-          message: 'Hedef güncellenirken bir hata oluştu: ${e.toString()}',
+          message: context.l10n.errorUpdatingGoal(e.toString()),
         );
       }
     }
@@ -150,26 +151,26 @@ class _GoalEditPageState extends ConsumerState<GoalEditPage> {
     if (!_formKey.currentState!.validate()) {
       AppSnackbar.showError(
         context,
-        message: 'Lütfen formdaki tüm alanları doldurun',
+        message: context.l10n.pleaseFillAllFields,
       );
       return;
     }
 
     if (_selectedCategory == null) {
-      AppSnackbar.showError(context, message: 'Lütfen bir kategori seçin');
+      AppSnackbar.showError(context, message: context.l10n.pleaseSelectCategory);
       return;
     }
 
     if (_completionDate == null) {
       AppSnackbar.showError(context,
-          message: 'Lütfen tamamlanma tarihi seçin');
+          message: context.l10n.pleaseSelectCompletionDate);
       return;
     }
 
     if (_reasonController.text.trim().isEmpty) {
       AppSnackbar.showError(
         context,
-        message: 'Lütfen bu hedefi neden istediğinizi açıklayın',
+        message: context.l10n.pleaseExplainWhy,
       );
       return;
     }
@@ -201,7 +202,7 @@ class _GoalEditPageState extends ConsumerState<GoalEditPage> {
 
           AppSnackbar.showSuccess(
             context,
-            message: 'Hedef optimize edildi! ✨',
+            message: context.l10n.goalOptimizedSuccess,
           );
         },
       ),
@@ -224,7 +225,7 @@ class _GoalEditPageState extends ConsumerState<GoalEditPage> {
           ),
         ),
         title: Text(
-          'Hedefi Düzenle',
+          context.l10n.editGoal,
           style: AppTextStyles.titleLarge.copyWith(
             fontWeight: FontWeight.w600,
           ),
@@ -301,7 +302,7 @@ class _GoalEditPageState extends ConsumerState<GoalEditPage> {
                           ),
                           const SizedBox(width: AppSpacing.sm),
                           Text(
-                            'AI ile Optimize Et',
+                            context.l10n.optimizeWithAI,
                             style: AppTextStyles.bodyMedium.copyWith(
                               fontWeight: FontWeight.w600,
                               color: AppColors.primary,
@@ -318,7 +319,7 @@ class _GoalEditPageState extends ConsumerState<GoalEditPage> {
                   onPressed: _handleSave,
                   minHeight: 60,
                   child: Text(
-                    'Güncelle',
+                    context.l10n.update,
                     style: AppTextStyles.bodyMedium.copyWith(
                       fontWeight: FontWeight.w700,
                     ),
