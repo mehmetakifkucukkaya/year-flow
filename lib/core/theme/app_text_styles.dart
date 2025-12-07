@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import 'app_colors.dart';
 
@@ -7,8 +6,9 @@ import 'app_colors.dart';
 class AppTextStyles {
   AppTextStyles._();
 
-  // Font family
-  static String? get _fontFamily => GoogleFonts.inter().fontFamily;
+  // Font family - sistem varsayılan fontunu kullan (internet bağlantısı gerektirmez)
+  // İleride asset olarak font eklenirse buraya font family adı yazılabilir
+  static String? get _fontFamily => null; // null = sistem varsayılan fontu
 
   // Display styles
   static TextStyle get displayLarge => TextStyle(

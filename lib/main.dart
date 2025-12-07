@@ -60,7 +60,7 @@ void main() async {
 }
 
 class YearFlowApp extends ConsumerWidget {
-  const YearFlowApp({super.key});
+  const YearFlowApp({super.key}); 
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
