@@ -42,6 +42,11 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
+# Keystore files (NEVER commit these!)
+/android/key.properties
+/android/*.jks
+/android/*.keystore
+/upload-keystore.jks
 
 /designs
 Yearflow-PRD.md

@@ -177,4 +177,3 @@ class AppTextStyles {
         height: 1.5,
       );
 }
-

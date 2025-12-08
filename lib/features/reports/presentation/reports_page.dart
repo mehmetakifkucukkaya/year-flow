@@ -467,23 +467,33 @@ class _OverviewSection extends ConsumerWidget {
                 ],
               ),
               const SizedBox(height: AppSpacing.lg),
-              Text(
-                context.l10n.yearlyProgress,
-                style: AppTextStyles.bodyMedium.copyWith(
-                  color: AppColors.gray600,
-                  fontWeight: FontWeight.w600,
-                ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Text(
+                    context.l10n.yearlyProgress,
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      color: AppColors.gray600,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  Text(
+                    '${stats.averageProgress.toInt()}%',
+                    style: AppTextStyles.bodySmall.copyWith(
+                      color: AppColors.gray600,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: AppSpacing.sm),
-              ClipRRect(
-                borderRadius: AppRadius.borderRadiusFull,
-                child: LinearProgressIndicator(
-                  value: stats.averageProgress / 100,
-                  backgroundColor: AppColors.gray200,
-                  valueColor:
-                      AlwaysStoppedAnimation<Color>(colorScheme.primary),
-                  minHeight: 8,
-                ),
+              AppProgressBar(
+                progress: stats.averageProgress,
+                height: 8,
+                backgroundColor: AppColors.gray200,
+                progressColor: colorScheme.primary,
+                showPercentage: false,
               ),
             ],
           ),
