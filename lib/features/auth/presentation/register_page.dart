@@ -25,6 +25,16 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
 
+  String _resolveAuthError(BuildContext context, String errorMessage) {
+    if (errorMessage == AuthNotifier.googleAuthFailedCode) {
+      return context.l10n.googleAuthFailed;
+    }
+    if (errorMessage == AuthNotifier.googleAuthCancelledCode) {
+      return context.l10n.googleAuthCancelled;
+    }
+    return errorMessage;
+  }
+
   @override
   void dispose() {
     _nameController.dispose();
@@ -57,7 +67,8 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
     final authState = ref.read(authStateProvider);
 
     if (authState.errorMessage != null) {
-      AppSnackbar.showError(context, message: authState.errorMessage!);
+      final message = _resolveAuthError(context, authState.errorMessage!);
+      AppSnackbar.showError(context, message: message);
     } else if (authState.isAuthenticated) {
       // Kullanıcıya bilgi mesajı göster
       final user = authState.currentUser;
@@ -99,8 +110,9 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
       // Hata mesajı varsa göster
       if (next.errorMessage != null &&
           next.errorMessage != previous?.errorMessage) {
+        final resolvedMessage = _resolveAuthError(context, next.errorMessage!);
         try {
-          AppSnackbar.showError(context, message: next.errorMessage!);
+          AppSnackbar.showError(context, message: resolvedMessage);
         } catch (e) {
           debugPrint('Snackbar error: $e');
         }

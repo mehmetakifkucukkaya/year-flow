@@ -14,6 +14,8 @@
   "signIn": "Giriş Yap",
   "or": "veya",
   "continueWithGoogle": "Google ile devam et",
+  "googleAuthFailed": "Google ile giriş / kayıt ol işlemi yapılamadı.",
+  "googleAuthCancelled": "Google ile giriş iptal edildi.",
   "noAccount": "Hesabın yok mu? ",
   "signUp": "Kayıt Ol",
   "register": "Kayıt Ol",
