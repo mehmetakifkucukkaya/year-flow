@@ -5,6 +5,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_radius.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_text_styles.dart';
+import '../../../core/utils/extensions.dart';
 
 class PrivacySecurityPage extends ConsumerWidget {
   const PrivacySecurityPage({super.key});
@@ -89,7 +90,7 @@ class _PrivacyAppBar extends StatelessWidget {
           ),
           const Spacer(),
           Text(
-            'Gizlilik & Güvenlik',
+            context.l10n.privacyAndSecurity,
             style: AppTextStyles.titleLarge.copyWith(
               fontWeight: FontWeight.w700,
               letterSpacing: -0.2,
@@ -149,7 +150,7 @@ class _PrivacyIntroCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Verilerin Senin Kontrolünde',
+                  context.l10n.privacyDataControlTitle,
                   style: AppTextStyles.titleMedium.copyWith(
                     fontWeight: FontWeight.w700,
                     color: AppColors.gray900,
@@ -157,9 +158,7 @@ class _PrivacyIntroCard extends StatelessWidget {
                 ),
                 const SizedBox(height: AppSpacing.xs),
                 Text(
-                  'YearFlow, Hedef, Check-in ve Rapor verilerini KVKK ve ilgili veri koruma mevzuatına uygun şekilde işler. '
-                  'Kişisel verilerin reklam amaçlı üçüncü kişilerle paylaşılmaz; yalnızca uygulama deneyimini geliştirmek, kişiselleştirilmiş içerik üretmek ve ürün analitiği yapmak için kullanılır. '
-                  'Dilediğin zaman verilerini indirip inceleyebilir veya hesap silme sürecini kullanarak verilerinin sistemden kaldırılmasını talep edebilirsin.',
+                  context.l10n.privacyDataControlBody,
                   style: AppTextStyles.bodyMedium.copyWith(
                     color: AppColors.gray700,
                     height: 1.4,
@@ -183,7 +182,7 @@ class _PrivacyOptionsSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Veri İşleme ve Güvenlik',
+          context.l10n.dataProcessingAndSecurity,
           style: AppTextStyles.labelSmall.copyWith(
             fontWeight: FontWeight.w700,
             color: AppColors.gray500,
@@ -209,40 +208,25 @@ class _PrivacyOptionsSection extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'KVKK ve Veri Koruma',
+                  context.l10n.kvkkAndDataProtection,
                   style: AppTextStyles.titleSmall.copyWith(
                     fontWeight: FontWeight.w600,
                     color: AppColors.gray900,
                   ),
                 ),
                 const SizedBox(height: AppSpacing.sm),
-                const _BulletText(
-                  text:
-                      'YearFlow\'da tuttuğun tüm Hedef, Check-in ve Rapor verileri KVKK ve ilgili mevzuata uygun şekilde işlenir.',
-                ),
-                const _BulletText(
-                  text:
-                      'Verilerin; uygulama deneyimini iyileştirmek, kişiselleştirilmiş içerikler sunmak ve ürün analitiği yapmak dışında başka bir amaçla kullanılmaz.',
-                ),
-                const _BulletText(
-                  text:
-                      'Kişisel verilerin reklam, pazarlama veya profilleme amaçlı üçüncü taraflarla paylaşılmaz.',
-                ),
-                const _BulletText(
-                  text:
-                      'Hesabını sildiğinde, kimliğini doğrudan belirleyen kişisel verilerin makul bir süre içinde sistemden silinmesi hedeflenir.',
-                ),
-                const _BulletText(
-                  text:
-                      'Yasal yükümlülükler gereği tutulması zorunlu olan kayıtlar, yalnızca mevzuata uygun süre boyunca saklanır ve süresi dolduğunda güvenli biçimde imha edilir.',
-                ),
+                _BulletText(text: context.l10n.kvkkBullet1),
+                _BulletText(text: context.l10n.kvkkBullet2),
+                _BulletText(text: context.l10n.kvkkBullet3),
+                _BulletText(text: context.l10n.kvkkBullet4),
+                _BulletText(text: context.l10n.kvkkBullet5),
               ],
             ),
           ),
         ),
         const SizedBox(height: AppSpacing.xl),
         Text(
-          'Güvenlik',
+          context.l10n.security,
           style: AppTextStyles.labelSmall.copyWith(
             fontWeight: FontWeight.w700,
             color: AppColors.gray500,
@@ -262,23 +246,14 @@ class _PrivacyOptionsSection extends StatelessWidget {
               ),
             ],
           ),
-          child: const Padding(
-            padding: EdgeInsets.all(AppSpacing.md),
+          child: Padding(
+            padding: const EdgeInsets.all(AppSpacing.md),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _BulletText(
-                  text:
-                      'Verilerin, endüstri standartlarına uygun biçimde yetkisiz erişime, kayba veya kötüye kullanıma karşı korunur.',
-                ),
-                _BulletText(
-                  text:
-                      'Sistem içindeki tüm veri iletimi şifrelenmiş bağlantılar üzerinden gerçekleşir.',
-                ),
-                _BulletText(
-                  text:
-                      'Güvenlik uygulamaları belirli aralıklarla gözden geçirilir ve iyileştirilir.',
-                ),
+                _BulletText(text: context.l10n.securityBullet1),
+                _BulletText(text: context.l10n.securityBullet2),
+                _BulletText(text: context.l10n.securityBullet3),
               ],
             ),
           ),

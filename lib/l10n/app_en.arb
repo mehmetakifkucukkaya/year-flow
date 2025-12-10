@@ -1310,6 +1310,19 @@
   "@upcomingCheckInsDescription": {
     "description": "Upcoming check-ins description text"
   },
+  "upcomingCheckInsEmptyMessage": "Goals that are within 7 days of their deadline will appear here",
+  "@upcomingCheckInsEmptyMessage": {
+    "description": "Empty state hint when no upcoming check-ins exist"
+  },
+  "upcomingGoalsCount": "{count, plural, =0{0 goal} =1{1 goal} other{{count} goals}}",
+  "@upcomingGoalsCount": {
+    "description": "Badge text showing number of upcoming goals",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "questionOfTheDay": "QUESTION OF THE DAY",
   "@questionOfTheDay": {
     "description": "Question of the day title"
@@ -1361,6 +1374,156 @@
   "privacyAndSecurity": "Privacy & Security",
   "@privacyAndSecurity": {
     "description": "Privacy and security option"
+  },
+  "privacyDataControlTitle": "Your Data, Under Your Control",
+  "@privacyDataControlTitle": {
+    "description": "Privacy intro headline"
+  },
+  "privacyDataControlBody": "YearFlow processes your Goals, Check-ins, and Reports in line with data protection laws. Your personal data is never shared with third parties for advertising; it is only used to improve the app experience, create personalized content, and run product analytics. You can download and review your data anytime or request its removal by deleting your account.",
+  "@privacyDataControlBody": {
+    "description": "Privacy intro body text"
+  },
+  "dataProcessingAndSecurity": "Data Processing & Security",
+  "@dataProcessingAndSecurity": {
+    "description": "Data processing section label"
+  },
+  "kvkkAndDataProtection": "Data Protection Compliance",
+  "@kvkkAndDataProtection": {
+    "description": "KVKK / data protection title"
+  },
+  "kvkkBullet1": "All Goals, Check-ins, and Reports you keep in YearFlow are processed in accordance with applicable data protection regulations.",
+  "@kvkkBullet1": {
+    "description": "Bullet about lawful processing"
+  },
+  "kvkkBullet2": "Your data is not used for any purpose other than improving the experience, serving personalized content, and performing product analytics.",
+  "@kvkkBullet2": {
+    "description": "Bullet about limited use"
+  },
+  "kvkkBullet3": "Your personal data is not shared with third parties for advertising, marketing, or profiling.",
+  "@kvkkBullet3": {
+    "description": "Bullet about no ad sharing"
+  },
+  "kvkkBullet4": "When you delete your account, personal data that directly identifies you is targeted to be removed from the system within a reasonable period.",
+  "@kvkkBullet4": {
+    "description": "Bullet about deletion on account removal"
+  },
+  "kvkkBullet5": "Records that must be retained for legal obligations are stored only for the required period and securely disposed of when that period ends.",
+  "@kvkkBullet5": {
+    "description": "Bullet about retention limits"
+  },
+  "security": "Security",
+  "@security": {
+    "description": "Security section label"
+  },
+  "securityBullet1": "Your data is protected against unauthorized access, loss, or misuse in line with industry standards.",
+  "@securityBullet1": {
+    "description": "Security bullet 1"
+  },
+  "securityBullet2": "All data transmission within the system takes place over encrypted connections.",
+  "@securityBullet2": {
+    "description": "Security bullet 2"
+  },
+  "securityBullet3": "Security practices are reviewed and improved at regular intervals.",
+  "@securityBullet3": {
+    "description": "Security bullet 3"
+  },
+  "notesEmptyTitle": "No notes yet",
+  "@notesEmptyTitle": {
+    "description": "Empty state title for notes"
+  },
+  "notesEmptySubtitle": "Add your first note to get started",
+  "@notesEmptySubtitle": {
+    "description": "Empty state subtitle for notes"
+  },
+  "notesEditHint": "Tap a note to edit, tap the trash icon on the right to delete.",
+  "@notesEditHint": {
+    "description": "Helper text for editing/deleting notes"
+  },
+  "subtaskIntroTitle": "Let's break this goal into steps",
+  "@subtaskIntroTitle": {
+    "description": "Subtask intro headline"
+  },
+  "subtaskIntroBody": "Subtasks help you turn your goal into daily and weekly, actionable steps.",
+  "@subtaskIntroBody": {
+    "description": "Subtask intro body text"
+  },
+  "subtaskIntroAiHint": "If you want, AI can generate suggestions for you",
+  "@subtaskIntroAiHint": {
+    "description": "Subtask intro AI hint"
+  },
+  "createSubtask": "Create Subtask",
+  "@createSubtask": {
+    "description": "Primary action to create subtask"
+  },
+  "suggestSubtaskWithAi": "Suggest subtask with AI",
+  "@suggestSubtaskWithAi": {
+    "description": "CTA for AI subtask suggestion"
+  },
+  "subtaskListHint": "Tap a subtask card to edit, tap the circle on the left to complete.",
+  "@subtaskListHint": {
+    "description": "Helper text above subtask list"
+  },
+  "addSubtask": "Add Subtask",
+  "@addSubtask": {
+    "description": "Dialog title for adding subtask"
+  },
+  "editSubtask": "Edit Subtask",
+  "@editSubtask": {
+    "description": "Dialog title for editing subtask"
+  },
+  "subtaskDialogDescription": "Define a small, actionable step for this goal.",
+  "@subtaskDialogDescription": {
+    "description": "Dialog helper text for subtask"
+  },
+  "subtaskDialogHint": "e.g., Study English 30 minutes, 3 days a week",
+  "@subtaskDialogHint": {
+    "description": "Placeholder example for subtask input"
+  },
+  "aiSubtaskSuggestError": "Subtask suggestions couldn't be generated right now. Please try again.",
+  "@aiSubtaskSuggestError": {
+    "description": "Error when AI suggestions are empty/fail"
+  },
+  "aiSubtaskSuggestionsTitle": "AI subtask suggestions",
+  "@aiSubtaskSuggestionsTitle": {
+    "description": "Bottom sheet title for AI subtask suggestions"
+  },
+  "aiSubtaskSuggestionsBody": "Choose the suggested subtasks you like and add them to your list for this goal.",
+  "@aiSubtaskSuggestionsBody": {
+    "description": "Bottom sheet helper text for AI subtask suggestions"
+  },
+  "addSelectedSubtasks": "Add selected",
+  "@addSelectedSubtasks": {
+    "description": "CTA to add selected AI subtask suggestions"
+  },
+  "deleteNoteTitle": "Delete Note",
+  "@deleteNoteTitle": {
+    "description": "Delete note dialog title"
+  },
+  "deleteNoteConfirmation": "Are you sure you want to delete this note?",
+  "@deleteNoteConfirmation": {
+    "description": "Delete note confirmation text"
+  },
+  "completeGoalConfirmation": "Are you sure you want to complete the \"{goalTitle}\" goal?",
+  "@completeGoalConfirmation": {
+    "description": "Confirm completing goal prompt",
+    "placeholders": {
+      "goalTitle": {
+        "type": "String"
+      }
+    }
+  },
+  "inDays": "In {days} days",
+  "@inDays": {
+    "description": "Relative date for upcoming target",
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "deleteGoalConfirmation": "Are you sure you want to delete this goal? This action cannot be undone.",
+  "@deleteGoalConfirmation": {
+    "description": "Delete goal confirmation text"
   },
   "logOut": "Log Out",
   "@logOut": {
@@ -1654,7 +1817,7 @@
   "@optional": {
     "description": "Optional field label"
   },
-  "completed": "Completed:",
+  "completed": "Completed",
   "@completed": {
     "description": "Completed items label in note"
   },

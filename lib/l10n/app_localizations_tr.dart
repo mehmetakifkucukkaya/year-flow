@@ -1,3 +1,5 @@
+import 'package:intl/intl.dart' as intl;
+
 import 'app_localizations.dart';
 
 // ignore_for_file: type=lint
@@ -328,7 +330,7 @@ class AppLocalizationsTr extends AppLocalizations {
   String get active => 'Aktif';
 
   @override
-  String get completed => 'Yapılanlar:';
+  String get completed => 'Yapılanlar';
 
   @override
   String get myGoals => 'Hedeflerim';
@@ -884,6 +886,21 @@ class AppLocalizationsTr extends AppLocalizations {
   String get upcomingCheckInsDescription => '7 günden az kalmış hedeflerin check-in\'lerini yap';
 
   @override
+  String get upcomingCheckInsEmptyMessage => 'Hedeflerinin bitmesine 7 gün kalınca burada gözükecekler';
+
+  @override
+  String upcomingGoalsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count hedef',
+      one: '1 hedef',
+      zero: '0 hedef',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get questionOfTheDay => 'GÜNÜN SORUSU';
 
   @override
@@ -915,6 +932,115 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get privacyAndSecurity => 'Gizlilik & Güvenlik';
+
+  @override
+  String get privacyDataControlTitle => 'Verilerin Senin Kontrolünde';
+
+  @override
+  String get privacyDataControlBody => 'YearFlow, Hedef, Check-in ve Rapor verilerini KVKK ve ilgili veri koruma mevzuatına uygun şekilde işler. Kişisel verilerin reklam amaçlı üçüncü kişilerle paylaşılmaz; yalnızca uygulama deneyimini geliştirmek, kişiselleştirilmiş içerik üretmek ve ürün analitiği yapmak için kullanılır. Dilediğin zaman verilerini indirip inceleyebilir veya hesap silme sürecini kullanarak verilerinin sistemden kaldırılmasını talep edebilirsin.';
+
+  @override
+  String get dataProcessingAndSecurity => 'Veri İşleme ve Güvenlik';
+
+  @override
+  String get kvkkAndDataProtection => 'KVKK ve Veri Koruma';
+
+  @override
+  String get kvkkBullet1 => 'YearFlow\'da tuttuğun tüm Hedef, Check-in ve Rapor verileri KVKK ve ilgili mevzuata uygun şekilde işlenir.';
+
+  @override
+  String get kvkkBullet2 => 'Verilerin; uygulama deneyimini iyileştirmek, kişiselleştirilmiş içerikler sunmak ve ürün analitiği yapmak dışında başka bir amaçla kullanılmaz.';
+
+  @override
+  String get kvkkBullet3 => 'Kişisel verilerin reklam, pazarlama veya profilleme amaçlı üçüncü taraflarla paylaşılmaz.';
+
+  @override
+  String get kvkkBullet4 => 'Hesabını sildiğinde, kimliğini doğrudan belirleyen kişisel verilerin makul bir süre içinde sistemden silinmesi hedeflenir.';
+
+  @override
+  String get kvkkBullet5 => 'Yasal yükümlülükler gereği tutulması zorunlu olan kayıtlar, yalnızca mevzuata uygun süre boyunca saklanır ve süresi dolduğunda güvenli biçimde imha edilir.';
+
+  @override
+  String get security => 'Güvenlik';
+
+  @override
+  String get securityBullet1 => 'Verilerin, endüstri standartlarına uygun biçimde yetkisiz erişime, kayba veya kötüye kullanıma karşı korunur.';
+
+  @override
+  String get securityBullet2 => 'Sistem içindeki tüm veri iletimi şifrelenmiş bağlantılar üzerinden gerçekleşir.';
+
+  @override
+  String get securityBullet3 => 'Güvenlik uygulamaları belirli aralıklarla gözden geçirilir ve iyileştirilir.';
+
+  @override
+  String get notesEmptyTitle => 'Henüz not yok';
+
+  @override
+  String get notesEmptySubtitle => 'İlk notunuzu ekleyerek başlayın';
+
+  @override
+  String get notesEditHint => 'Notu düzenlemek için karta dokun, silmek için sağdaki çöp ikonuna bas.';
+
+  @override
+  String get subtaskIntroTitle => 'Bu hedefi adımlara bölelim';
+
+  @override
+  String get subtaskIntroBody => 'Alt görevler, hedefini günlük ve haftalık uygulanabilir adımlara dönüştürmene yardım eder.';
+
+  @override
+  String get subtaskIntroAiHint => 'İstersen AI senin için öneri üretsin';
+
+  @override
+  String get createSubtask => 'Alt Görev Oluştur';
+
+  @override
+  String get suggestSubtaskWithAi => 'AI ile alt görev öner';
+
+  @override
+  String get subtaskListHint => 'Alt görevi düzenlemek için karta dokun, tamamlamak için soldaki çembere bas.';
+
+  @override
+  String get addSubtask => 'Alt Görev Ekle';
+
+  @override
+  String get editSubtask => 'Alt Görevi Düzenle';
+
+  @override
+  String get subtaskDialogDescription => 'Bu hedefe ait küçük, uygulanabilir bir adım tanımla.';
+
+  @override
+  String get subtaskDialogHint => 'Örn: Haftada 3 gün 30 dakika İngilizce çalışmak';
+
+  @override
+  String get aiSubtaskSuggestError => 'Şu anda alt görev önerisi üretilemedi. Lütfen tekrar dene.';
+
+  @override
+  String get aiSubtaskSuggestionsTitle => 'AI ile alt görev önerileri';
+
+  @override
+  String get aiSubtaskSuggestionsBody => 'Bu hedef için önerilen alt görevlerden istediklerini seçip listeye ekleyebilirsin.';
+
+  @override
+  String get addSelectedSubtasks => 'Seçilenleri ekle';
+
+  @override
+  String get deleteNoteTitle => 'Notu Sil';
+
+  @override
+  String get deleteNoteConfirmation => 'Bu notu silmek istediğinize emin misiniz?';
+
+  @override
+  String completeGoalConfirmation(String goalTitle) {
+    return '\"$goalTitle\" hedefini tamamlamak istediğinize emin misiniz?';
+  }
+
+  @override
+  String inDays(int days) {
+    return '$days gün sonra';
+  }
+
+  @override
+  String get deleteGoalConfirmation => 'Bu hedefi silmek istediğine emin misin? Bu işlem geri alınamaz.';
 
   @override
   String get logOut => 'Çıkış Yap';

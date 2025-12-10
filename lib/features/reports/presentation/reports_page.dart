@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_radius.dart';
 import '../../../core/theme/app_spacing.dart';
@@ -595,9 +596,34 @@ class _CategoryProgressSection extends ConsumerWidget {
         child: Text(context.l10n.errorLoadingData(error.toString())),
       ),
       data: (stats) {
+        final l10n = context.l10n;
+
+        String _mapCategoryLabel(GoalCategory category) {
+          switch (category) {
+            case GoalCategory.health:
+              return l10n.health;
+            case GoalCategory.mentalHealth:
+              return l10n.mentalHealth;
+            case GoalCategory.finance:
+              return l10n.finance;
+            case GoalCategory.career:
+              return l10n.career;
+            case GoalCategory.relationships:
+              return l10n.relationships;
+            case GoalCategory.learning:
+              return l10n.learning;
+            case GoalCategory.creativity:
+              return l10n.creativity;
+            case GoalCategory.hobby:
+              return l10n.hobby;
+            case GoalCategory.personalGrowth:
+              return l10n.personalGrowth;
+          }
+        }
+
         final categories = stats.categoryProgress.entries.map((entry) {
           return _CategoryProgressData(
-            label: entry.key.label,
+            label: _mapCategoryLabel(entry.key),
             value: entry.value / 100,
           );
         }).toList();
@@ -809,7 +835,7 @@ class _AchievementsSection extends ConsumerWidget {
           final primaryValue = primary.value.round();
 
           var text = l10n.strongestProgressInCategory(
-            primary.key.label,
+            primary.key.getLocalizedLabel(context),
             primaryValue,
           );
 
@@ -818,7 +844,7 @@ class _AchievementsSection extends ConsumerWidget {
             final secondaryValue = secondary.value.round();
             text += l10n.reachedLevelInCategory(
               secondaryValue,
-              secondary.key.label,
+              secondary.key.getLocalizedLabel(context),
             );
           } else {
             text += '.';
@@ -985,7 +1011,8 @@ class _ChallengesSection extends ConsumerWidget {
           final value = first.value.round();
           items.add(
             _ChallengeData(
-              title: l10n.challengeLowProgress(first.key.label, value),
+              title:
+                  l10n.challengeLowProgress(first.key.getLocalizedLabel(context), value),
               solution: l10n.solutionAddActions,
             ),
           );
@@ -996,8 +1023,10 @@ class _ChallengesSection extends ConsumerWidget {
           final value = second.value.round();
           items.add(
             _ChallengeData(
-              title:
-                  l10n.challengeFocusDifficulty(second.key.label, value),
+              title: l10n.challengeFocusDifficulty(
+                second.key.getLocalizedLabel(context),
+                value,
+              ),
               solution: l10n.solutionBreakDownGoals,
             ),
           );
@@ -1685,7 +1714,7 @@ class _CreateReportBottomSheetState
           Row(
             children: [
               Text(
-                'Rapor Oluştur',
+                context.l10n.createReport,
                 style: AppTextStyles.titleLarge.copyWith(
                   fontWeight: FontWeight.w700,
                 ),
@@ -1933,7 +1962,7 @@ class _ReportsHistorySection extends ConsumerWidget {
                 ),
                 const SizedBox(height: AppSpacing.md),
                 Text(
-                  'Henüz rapor oluşturulmamış',
+                  context.l10n.noReportsYet,
                   style: AppTextStyles.bodyLarge.copyWith(
                     color: AppColors.gray600,
                   ),

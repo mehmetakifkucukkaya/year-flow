@@ -43,15 +43,13 @@ extension ContextExtensions on BuildContext {
 
 /// DateTime extension'ları
 extension DateTimeExtensions on DateTime {
-  /// Türkçe tarih formatı (15 Ocak 2025)
-  String get formatted {
-    return DateFormat('d MMMM yyyy', 'tr_TR').format(this);
-  }
+  /// Lokalize tam tarih formatı (15 Ocak 2025 / January 15, 2025)
+  String get formatted =>
+      DateFormat('d MMMM yyyy', Intl.getCurrentLocale()).format(this);
 
-  /// Kısa tarih formatı (15 Oca)
-  String get shortFormatted {
-    return DateFormat('d MMM', 'tr_TR').format(this);
-  }
+  /// Lokalize kısa tarih formatı (15 Oca / Jan 15)
+  String get shortFormatted =>
+      DateFormat('d MMM', Intl.getCurrentLocale()).format(this);
 
   /// Göreceli zaman (3 gün önce)
   String get relative {
@@ -72,10 +70,9 @@ extension DateTimeExtensions on DateTime {
     }
   }
 
-  /// Ay ve yıl formatı (Ocak 2025)
-  String get monthYear {
-    return DateFormat('MMMM yyyy', 'tr_TR').format(this);
-  }
+  /// Lokalize ay ve yıl formatı (Ocak 2025 / January 2025)
+  String get monthYear =>
+      DateFormat('MMMM yyyy', Intl.getCurrentLocale()).format(this);
 }
 
 /// String extension'ları

@@ -1046,7 +1046,7 @@ class _UpcomingCheckInsSection extends ConsumerWidget {
                           const SizedBox(width: AppSpacing.sm),
                           Expanded(
                             child: Text(
-                              'Hedeflerinin bitmesine 7 gün kalınca burada gözükecekler',
+                              context.l10n.upcomingCheckInsEmptyMessage,
                               style: AppTextStyles.bodyMedium.copyWith(
                                 color: AppColors.gray700,
                               ),
@@ -1105,7 +1105,7 @@ class _UpcomingCheckInsSection extends ConsumerWidget {
                                           CrossAxisAlignment.start,
                                       children: [
                                         Text(
-                                          'Yaklaşan check-in\'lerin',
+                                          context.l10n.upcomingCheckIns,
                                           style: AppTextStyles.titleSmall
                                               .copyWith(
                                             fontWeight: FontWeight.w700,
@@ -1136,7 +1136,9 @@ class _UpcomingCheckInsSection extends ConsumerWidget {
                                           BorderRadius.circular(999),
                                     ),
                                     child: Text(
-                                      '${upcomingGoals.length} hedef',
+                                    context.l10n.upcomingGoalsCount(
+                                      upcomingGoals.length,
+                                    ),
                                       style: AppTextStyles.labelSmall
                                           .copyWith(
                                         color: AppColors.primary,

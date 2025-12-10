@@ -56,10 +56,11 @@ class _GoalDetailPageState extends ConsumerState<GoalDetailPage>
       Goal? goal, List<CheckIn> checkIns) {
     final items = <_TimelineItem>[];
 
+    final locale = Localizations.localeOf(context).toLanguageTag();
+
     if (goal != null) {
       // Goal created item
-      final createdDate =
-          DateFormat('d MMMM', 'tr_TR').format(goal.createdAt);
+      final createdDate = DateFormat('d MMMM', locale).format(goal.createdAt);
       items.add(_TimelineItem(
         title: context.l10n.goalCreated,
         date: createdDate,
@@ -69,7 +70,7 @@ class _GoalDetailPageState extends ConsumerState<GoalDetailPage>
       // Check-in items
       for (final checkIn in checkIns) {
         final checkInDate =
-            DateFormat('d MMMM', 'tr_TR').format(checkIn.createdAt);
+            DateFormat('d MMMM', locale).format(checkIn.createdAt);
         items.add(_TimelineItem(
           title: context.l10n.checkInCompleted(checkIn.score),
           date: checkInDate,
@@ -85,6 +86,7 @@ class _GoalDetailPageState extends ConsumerState<GoalDetailPage>
   String _formatNextCheckIn(BuildContext context, Goal? goal) {
     if (goal?.targetDate == null) return context.l10n.notSpecified;
 
+    final locale = Localizations.localeOf(context).toLanguageTag();
     final now = DateTime.now();
     final target = goal!.targetDate!;
     final daysLeft = target.difference(now).inDays;
@@ -92,13 +94,14 @@ class _GoalDetailPageState extends ConsumerState<GoalDetailPage>
     if (daysLeft < 0) return context.l10n.expired;
     if (daysLeft == 0) return context.l10n.today;
     if (daysLeft == 1) return context.l10n.tomorrow;
-    if (daysLeft < 7) return '$daysLeft gün sonra';
+    if (daysLeft < 7) return context.l10n.inDays(daysLeft);
 
-    return DateFormat('d MMMM', 'tr_TR').format(target);
+    return DateFormat('d MMMM', locale).format(target);
   }
 
   @override
   Widget build(BuildContext context) {
+    final locale = Localizations.localeOf(context).toLanguageTag();
     final goalAsync = ref.watch(goalDetailProvider(widget.goalId));
     final checkInsAsync = ref.watch(checkInsStreamProvider(widget.goalId));
 
@@ -228,7 +231,7 @@ class _GoalDetailPageState extends ConsumerState<GoalDetailPage>
                                 title: sg.title,
                                 isCompleted: sg.isCompleted,
                                 dueDate: sg.dueDate != null
-                                    ? DateFormat('d MMMM', 'tr_TR')
+                                    ? DateFormat('d MMMM', locale)
                                         .format(sg.dueDate!)
                                     : null,
                               ))
@@ -240,7 +243,7 @@ class _GoalDetailPageState extends ConsumerState<GoalDetailPage>
                       description: null,
                       category: '',
                       progress: 0,
-                      nextCheckIn: 'Belirtilmemiş',
+                      nextCheckIn: context.l10n.notSpecified,
                       categoryColor: AppColors.primary,
                       categoryBackgroundColor:
                           AppColors.primary.withOpacity(0.1),
@@ -1328,14 +1331,14 @@ class _NotesTab extends ConsumerWidget {
                         ),
                         const SizedBox(height: AppSpacing.lg),
                         Text(
-                          'Henüz not yok',
+                          context.l10n.notesEmptyTitle,
                           style: AppTextStyles.titleMedium.copyWith(
                             color: AppColors.gray600,
                           ),
                         ),
                         const SizedBox(height: AppSpacing.md),
                         Text(
-                          'İlk notunuzu ekleyerek başlayın',
+                          context.l10n.notesEmptySubtitle,
                           style: AppTextStyles.bodyMedium.copyWith(
                             color: AppColors.gray500,
                           ),
@@ -1352,7 +1355,7 @@ class _NotesTab extends ConsumerWidget {
                                 : 20,
                           ),
                           label: Text(
-                            'Not Ekle',
+                            context.l10n.addNote,
                             style: AppTextStyles.bodyMedium.copyWith(
                               fontSize:
                                   MediaQuery.of(context).size.width < 360
@@ -1406,7 +1409,7 @@ class _NotesTab extends ConsumerWidget {
                       const SizedBox(width: AppSpacing.xs),
                       Expanded(
                         child: Text(
-                          'Notu düzenlemek için karta dokun, silmek için sağdaki çöp ikonuna bas.',
+                          context.l10n.notesEditHint,
                           style: AppTextStyles.bodySmall.copyWith(
                             color: AppColors.gray500,
                             fontSize: isSmallScreen ? 11 : 12,
@@ -1544,7 +1547,7 @@ class _NotesTab extends ConsumerWidget {
               ),
               const SizedBox(height: AppSpacing.lg),
               Text(
-                'Notu Sil',
+                context.l10n.deleteNoteTitle,
                 style: AppTextStyles.titleLarge.copyWith(
                   fontWeight: FontWeight.w700,
                   color: AppColors.gray900,
@@ -1553,7 +1556,7 @@ class _NotesTab extends ConsumerWidget {
               ),
               const SizedBox(height: AppSpacing.sm),
               Text(
-                'Bu notu silmek istediğinize emin misiniz?',
+                context.l10n.deleteNoteConfirmation,
                 style: AppTextStyles.bodyMedium.copyWith(
                   color: AppColors.gray700,
                 ),
@@ -1576,7 +1579,7 @@ class _NotesTab extends ConsumerWidget {
                         ),
                       ),
                       child: Text(
-                        'İptal',
+                        context.l10n.cancel,
                         style: AppTextStyles.bodyMedium.copyWith(
                           fontWeight: FontWeight.w600,
                           color: AppColors.gray800,
@@ -1653,7 +1656,8 @@ class _NoteCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final dateFormat = DateFormat('d MMMM yyyy, HH:mm', 'tr_TR');
+    final locale = Localizations.localeOf(context).toLanguageTag();
+    final dateFormat = DateFormat('d MMMM yyyy, HH:mm', locale);
 
     return GestureDetector(
       onTap: onTap,
@@ -1781,8 +1785,7 @@ class _SubtasksTabState extends ConsumerState<_SubtasksTab> {
       if (titles.isEmpty) {
         AppSnackbar.showError(
           context,
-          message:
-              'Şu anda alt görev önerisi üretilemedi. Lütfen tekrar dene.',
+          message: context.l10n.aiSubtaskSuggestError,
         );
         return;
       }
@@ -1828,7 +1831,7 @@ class _SubtasksTabState extends ConsumerState<_SubtasksTab> {
                         Row(
                           children: [
                             Text(
-                              'AI ile alt görev önerileri',
+                              context.l10n.aiSubtaskSuggestionsTitle,
                               style: AppTextStyles.titleLarge.copyWith(
                                 fontWeight: FontWeight.w700,
                               ),
@@ -1843,7 +1846,7 @@ class _SubtasksTabState extends ConsumerState<_SubtasksTab> {
                         ),
                         const SizedBox(height: AppSpacing.sm),
                         Text(
-                          'Bu hedef için önerilen alt görevlerden istediklerini seçip listeye ekleyebilirsin.',
+                          context.l10n.aiSubtaskSuggestionsBody,
                           style: AppTextStyles.bodySmall.copyWith(
                             color: AppColors.gray600,
                           ),
@@ -1945,7 +1948,7 @@ class _SubtasksTabState extends ConsumerState<_SubtasksTab> {
                                   ),
                                 ),
                                 child: Text(
-                                  'İptal',
+                                  context.l10n.cancel,
                                   style: AppTextStyles.bodyMedium.copyWith(
                                     fontWeight: FontWeight.w600,
                                   ),
@@ -1977,7 +1980,7 @@ class _SubtasksTabState extends ConsumerState<_SubtasksTab> {
                                   ),
                                 ),
                                 child: Text(
-                                  'Seçilenleri ekle',
+                                  context.l10n.addSelectedSubtasks,
                                   style: AppTextStyles.bodyMedium.copyWith(
                                     fontWeight: FontWeight.w700,
                                   ),
@@ -2153,8 +2156,8 @@ class _SubtasksTabState extends ConsumerState<_SubtasksTab> {
                         children: [
                           Text(
                             existing == null
-                                ? 'Alt Görev Ekle'
-                                : 'Alt Görevi Düzenle',
+                                ? context.l10n.addSubtask
+                                : context.l10n.editSubtask,
                             style: AppTextStyles.titleLarge.copyWith(
                               fontWeight: FontWeight.w700,
                             ),
@@ -2168,7 +2171,7 @@ class _SubtasksTabState extends ConsumerState<_SubtasksTab> {
                       ),
                       const SizedBox(height: AppSpacing.sm),
                       Text(
-                        'Bu hedefe ait küçük, uygulanabilir bir adım tanımla.',
+                        context.l10n.subtaskDialogDescription,
                         style: AppTextStyles.bodySmall.copyWith(
                           color: AppColors.gray600,
                         ),
@@ -2178,8 +2181,7 @@ class _SubtasksTabState extends ConsumerState<_SubtasksTab> {
                         controller: controller,
                         maxLines: 3,
                         decoration: InputDecoration(
-                          hintText:
-                              'Örn: Haftada 3 gün 30 dakika İngilizce çalışmak',
+                          hintText: context.l10n.subtaskDialogHint,
                           hintStyle: AppTextStyles.bodyMedium.copyWith(
                             color: AppColors.gray400,
                           ),
@@ -2213,7 +2215,7 @@ class _SubtasksTabState extends ConsumerState<_SubtasksTab> {
                                 ),
                               ),
                               child: Text(
-                                'İptal',
+                                context.l10n.cancel,
                                 style: AppTextStyles.bodyMedium.copyWith(
                                   fontWeight: FontWeight.w600,
                                 ),
@@ -2237,7 +2239,7 @@ class _SubtasksTabState extends ConsumerState<_SubtasksTab> {
                                 ),
                               ),
                               child: Text(
-                                'Kaydet',
+                                context.l10n.save,
                                 style: AppTextStyles.bodyMedium.copyWith(
                                   fontWeight: FontWeight.w700,
                                 ),
@@ -2352,7 +2354,7 @@ class _SubtasksTabState extends ConsumerState<_SubtasksTab> {
                     ),
                     const SizedBox(height: AppSpacing.lg),
                     Text(
-                      'Bu hedefi adımlara bölelim',
+                      context.l10n.subtaskIntroTitle,
                       style: AppTextStyles.titleLarge.copyWith(
                         fontWeight: FontWeight.w700,
                         color: AppColors.gray900,
@@ -2361,7 +2363,7 @@ class _SubtasksTabState extends ConsumerState<_SubtasksTab> {
                     ),
                     const SizedBox(height: AppSpacing.sm),
                     Text(
-                      'Alt görevler, hedefini günlük ve haftalık uygulanabilir adımlara dönüştürmene yardım eder.',
+                      context.l10n.subtaskIntroBody,
                       style: AppTextStyles.bodyMedium.copyWith(
                         color: AppColors.gray600,
                         height: 1.4,
@@ -2388,7 +2390,7 @@ class _SubtasksTabState extends ConsumerState<_SubtasksTab> {
                           ),
                           const SizedBox(width: AppSpacing.xs),
                           Text(
-                            'İstersen AI senin için öneri üretsin',
+                            context.l10n.subtaskIntroAiHint,
                             style: AppTextStyles.bodySmall.copyWith(
                               color: AppColors.gray700,
                             ),
@@ -2414,7 +2416,7 @@ class _SubtasksTabState extends ConsumerState<_SubtasksTab> {
                               ),
                             ),
                             child: Text(
-                              'Alt Görev Oluştur',
+                              context.l10n.createSubtask,
                               style: AppTextStyles.bodyMedium.copyWith(
                                 fontWeight: FontWeight.w700,
                                 color: Colors.white,
@@ -2452,7 +2454,7 @@ class _SubtasksTabState extends ConsumerState<_SubtasksTab> {
                               size: 18,
                             ),
                       label: Text(
-                        'AI ile alt görev öner',
+                        context.l10n.suggestSubtaskWithAi,
                         style: AppTextStyles.bodySmall.copyWith(
                           color: AppColors.primary,
                           fontWeight: FontWeight.w600,
@@ -2493,7 +2495,7 @@ class _SubtasksTabState extends ConsumerState<_SubtasksTab> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Alt görevi düzenlemek için karta dokun, tamamlamak için soldaki çembere bas.',
+                          context.l10n.subtaskListHint,
                           style: AppTextStyles.bodySmall.copyWith(
                             color: AppColors.gray500,
                             fontSize: isSmallScreen ? 11 : 12,
@@ -2523,7 +2525,7 @@ class _SubtasksTabState extends ConsumerState<_SubtasksTab> {
                                   size: isSmallScreen ? 14 : 15,
                                 ),
                           label: Text(
-                            'AI ile alt görev öner',
+                            context.l10n.suggestSubtaskWithAi,
                             style: AppTextStyles.bodySmall.copyWith(
                               color: AppColors.primary,
                               fontWeight: FontWeight.w600,
@@ -2872,7 +2874,7 @@ class _AddNoteBottomSheetState extends ConsumerState<_AddNoteBottomSheet> {
                     ),
                   ),
                   child: Text(
-                    'İptal',
+                    context.l10n.cancel,
                     style: AppTextStyles.bodyMedium.copyWith(
                       fontWeight: FontWeight.w600,
                       color: AppColors.gray800,
@@ -2903,7 +2905,7 @@ class _AddNoteBottomSheetState extends ConsumerState<_AddNoteBottomSheet> {
                           ),
                         )
                       : Text(
-                          'Kaydet',
+                          context.l10n.save,
                           style: AppTextStyles.bodyMedium.copyWith(
                             fontWeight: FontWeight.w700,
                             color: Colors.white,
@@ -3068,7 +3070,7 @@ class _CompleteConfirmationDialog extends StatelessWidget {
             ),
             const SizedBox(height: AppSpacing.sm),
             Text(
-              '"$goalTitle" hedefini tamamlamak istediğinize emin misiniz?',
+              context.l10n.completeGoalConfirmation(goalTitle),
               style: AppTextStyles.bodyMedium.copyWith(
                 color: AppColors.gray700,
               ),
@@ -3176,7 +3178,7 @@ class _DeleteConfirmationDialog extends StatelessWidget {
             ),
             const SizedBox(height: AppSpacing.lg),
             Text(
-              'Hedefi Sil',
+              context.l10n.deleteGoal,
               style: AppTextStyles.titleLarge.copyWith(
                 fontWeight: FontWeight.w700,
                 color: AppColors.gray900,
@@ -3185,7 +3187,7 @@ class _DeleteConfirmationDialog extends StatelessWidget {
             ),
             const SizedBox(height: AppSpacing.sm),
             Text(
-              'Bu hedefi silmek istediğinize emin misiniz? Bu işlem geri alınamaz.',
+              context.l10n.deleteGoalConfirmation,
               style: AppTextStyles.bodyMedium.copyWith(
                 color: AppColors.gray700,
               ),
@@ -3208,7 +3210,7 @@ class _DeleteConfirmationDialog extends StatelessWidget {
                       ),
                     ),
                     child: Text(
-                      'İptal',
+                      context.l10n.cancel,
                       style: AppTextStyles.bodyMedium.copyWith(
                         fontWeight: FontWeight.w600,
                         color: AppColors.gray800,
