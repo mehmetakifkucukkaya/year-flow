@@ -179,6 +179,18 @@ abstract class AppLocalizations {
   /// **'Continue with Google'**
   String get continueWithGoogle;
 
+  /// User friendly Google auth failure message
+  ///
+  /// In en, this message translates to:
+  /// **'Could not complete Google sign in / sign up.'**
+  String get googleAuthFailed;
+
+  /// Google auth cancelled message
+  ///
+  /// In en, this message translates to:
+  /// **'Google sign in was cancelled.'**
+  String get googleAuthCancelled;
+
   /// Register link prefix text
   ///
   /// In en, this message translates to:

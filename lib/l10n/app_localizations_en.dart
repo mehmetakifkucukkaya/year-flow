@@ -49,6 +49,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get continueWithGoogle => 'Continue with Google';
 
   @override
+  String get googleAuthFailed => 'Could not complete Google sign in / sign up.';
+
+  @override
+  String get googleAuthCancelled => 'Google sign in was cancelled.';
+
+  @override
   String get noAccount => 'Don\'t have an account? ';
 
   @override

@@ -49,6 +49,13 @@ class AppLocalizationsTr extends AppLocalizations {
   String get continueWithGoogle => 'Google ile devam et';
 
   @override
+  String get googleAuthFailed =>
+      'Google ile giriş / kayıt ol işlemi yapılamadı.';
+
+  @override
+  String get googleAuthCancelled => 'Google ile giriş iptal edildi.';
+
+  @override
   String get noAccount => 'Hesabın yok mu? ';
 
   @override

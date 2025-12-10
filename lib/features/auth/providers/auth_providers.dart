@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
@@ -91,6 +92,9 @@ class AuthState {
 
 /// Auth notifier
 class AuthNotifier extends StateNotifier<AuthState> {
+  static const String googleAuthFailedCode = 'google_auth_failed';
+  static const String googleAuthCancelledCode = 'google_auth_cancelled';
+
   AuthNotifier({required this.authRepository}) : super(const AuthState()) {
     // İlk kullanıcı durumunu kontrol et
     _checkInitialAuthState();
@@ -312,37 +316,29 @@ class AuthNotifier extends StateNotifier<AuthState> {
           isGoogleLoading: false,
           isLoading: false,
           isAuthenticated: false,
-          errorMessage: 'Google ile giriş iptal edildi.',
+          errorMessage: googleAuthCancelledCode,
           currentUser: null,
         );
       }
     } on FirebaseAuthException catch (e) {
-      String errorMessage = 'Google ile giriş sırasında hata oluştu.';
-      
-      // Daha anlamlı hata mesajları
-      if (e.code == 'account-exists-with-different-credential') {
-        errorMessage = 'Bu e-posta adresi farklı bir giriş yöntemiyle kayıtlı.';
-      } else if (e.code == 'invalid-credential') {
-        errorMessage = 'Google ile giriş bilgileri geçersiz. Lütfen tekrar deneyin.';
-      } else if (e.code == 'operation-not-allowed') {
-        errorMessage = 'Google ile giriş etkin değil. Lütfen Firebase Console\'dan etkinleştirin.';
-      } else if (e.message != null) {
-        errorMessage = e.message!;
-      }
+      debugPrint(
+        'Google sign-in failed (FirebaseAuthException): code=${e.code}, message=${e.message}',
+      );
       
       state = state.copyWith(
         isGoogleLoading: false,
         isLoading: false,
         isAuthenticated: false,
-        errorMessage: errorMessage,
+        errorMessage: googleAuthFailedCode,
         currentUser: null,
       );
     } catch (e) {
+      debugPrint('Google sign-in failed (unexpected): $e');
       state = state.copyWith(
         isGoogleLoading: false,
         isLoading: false,
         isAuthenticated: false,
-        errorMessage: 'Google ile giriş sırasında beklenmeyen bir hata oluştu: ${e.toString()}',
+        errorMessage: googleAuthFailedCode,
         currentUser: null,
       );
     }

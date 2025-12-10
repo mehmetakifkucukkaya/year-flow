@@ -53,6 +53,8 @@
     "description": "Separator text between sign in options"
   },
   "continueWithGoogle": "Continue with Google",
+  "googleAuthFailed": "Could not complete Google sign in / sign up.",
+  "googleAuthCancelled": "Google sign in was cancelled.",
   "@continueWithGoogle": {
     "description": "Google sign in button text"
   },

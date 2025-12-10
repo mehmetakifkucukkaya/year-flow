@@ -25,6 +25,16 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   bool _obscurePassword = true;
   String? _lastShownError; // Son gösterilen hata mesajını takip et
 
+  String _resolveAuthError(BuildContext context, String errorMessage) {
+    if (errorMessage == AuthNotifier.googleAuthFailedCode) {
+      return context.l10n.googleAuthFailed;
+    }
+    if (errorMessage == AuthNotifier.googleAuthCancelledCode) {
+      return context.l10n.googleAuthCancelled;
+    }
+    return errorMessage;
+  }
+
   @override
   void dispose() {
     _emailController.dispose();
@@ -57,7 +67,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     final authState = ref.read(authStateProvider);
 
     if (authState.errorMessage != null) {
-      AppSnackbar.showError(context, message: authState.errorMessage!);
+      final message = _resolveAuthError(context, authState.errorMessage!);
+      AppSnackbar.showError(context, message: message);
+      _lastShownError = message;
     } else if (authState.isAuthenticated) {
       // Kullanıcıya bilgi mesajı göster
       final user = authState.currentUser;
@@ -96,14 +108,16 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       if (!mounted) return;
       
       // Hata mesajı varsa ve daha önce gösterilmemişse göster
-      if (next.errorMessage != null && 
-          next.errorMessage != previous?.errorMessage &&
-          next.errorMessage != _lastShownError) {
-        _lastShownError = next.errorMessage;
-        try {
-          AppSnackbar.showError(context, message: next.errorMessage!);
-        } catch (e) {
-          debugPrint('Snackbar error: $e');
+      if (next.errorMessage != null) {
+        final resolvedMessage = _resolveAuthError(context, next.errorMessage!);
+        if (resolvedMessage != _lastShownError &&
+            resolvedMessage != previous?.errorMessage) {
+          _lastShownError = resolvedMessage;
+          try {
+            AppSnackbar.showError(context, message: resolvedMessage);
+          } catch (e) {
+            debugPrint('Snackbar error: $e');
+          }
         }
       }
       
