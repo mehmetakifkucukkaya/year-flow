@@ -704,7 +704,7 @@ abstract class AppLocalizations {
   /// Completed items label in note
   ///
   /// In en, this message translates to:
-  /// **'Completed:'**
+  /// **'Completed'**
   String get completed;
 
   /// My goals section title
@@ -1709,6 +1709,18 @@ abstract class AppLocalizations {
   /// **'Do check-ins for goals with less than 7 days remaining'**
   String get upcomingCheckInsDescription;
 
+  /// Empty state hint when no upcoming check-ins exist
+  ///
+  /// In en, this message translates to:
+  /// **'Goals that are within 7 days of their deadline will appear here'**
+  String get upcomingCheckInsEmptyMessage;
+
+  /// Badge text showing number of upcoming goals
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{0 goal} =1{1 goal} other{{count} goals}}'**
+  String upcomingGoalsCount(int count);
+
   /// Question of the day title
   ///
   /// In en, this message translates to:
@@ -1774,6 +1786,216 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Privacy & Security'**
   String get privacyAndSecurity;
+
+  /// Privacy intro headline
+  ///
+  /// In en, this message translates to:
+  /// **'Your Data, Under Your Control'**
+  String get privacyDataControlTitle;
+
+  /// Privacy intro body text
+  ///
+  /// In en, this message translates to:
+  /// **'YearFlow processes your Goals, Check-ins, and Reports in line with data protection laws. Your personal data is never shared with third parties for advertising; it is only used to improve the app experience, create personalized content, and run product analytics. You can download and review your data anytime or request its removal by deleting your account.'**
+  String get privacyDataControlBody;
+
+  /// Data processing section label
+  ///
+  /// In en, this message translates to:
+  /// **'Data Processing & Security'**
+  String get dataProcessingAndSecurity;
+
+  /// KVKK / data protection title
+  ///
+  /// In en, this message translates to:
+  /// **'Data Protection Compliance'**
+  String get kvkkAndDataProtection;
+
+  /// Bullet about lawful processing
+  ///
+  /// In en, this message translates to:
+  /// **'All Goals, Check-ins, and Reports you keep in YearFlow are processed in accordance with applicable data protection regulations.'**
+  String get kvkkBullet1;
+
+  /// Bullet about limited use
+  ///
+  /// In en, this message translates to:
+  /// **'Your data is not used for any purpose other than improving the experience, serving personalized content, and performing product analytics.'**
+  String get kvkkBullet2;
+
+  /// Bullet about no ad sharing
+  ///
+  /// In en, this message translates to:
+  /// **'Your personal data is not shared with third parties for advertising, marketing, or profiling.'**
+  String get kvkkBullet3;
+
+  /// Bullet about deletion on account removal
+  ///
+  /// In en, this message translates to:
+  /// **'When you delete your account, personal data that directly identifies you is targeted to be removed from the system within a reasonable period.'**
+  String get kvkkBullet4;
+
+  /// Bullet about retention limits
+  ///
+  /// In en, this message translates to:
+  /// **'Records that must be retained for legal obligations are stored only for the required period and securely disposed of when that period ends.'**
+  String get kvkkBullet5;
+
+  /// Security section label
+  ///
+  /// In en, this message translates to:
+  /// **'Security'**
+  String get security;
+
+  /// Security bullet 1
+  ///
+  /// In en, this message translates to:
+  /// **'Your data is protected against unauthorized access, loss, or misuse in line with industry standards.'**
+  String get securityBullet1;
+
+  /// Security bullet 2
+  ///
+  /// In en, this message translates to:
+  /// **'All data transmission within the system takes place over encrypted connections.'**
+  String get securityBullet2;
+
+  /// Security bullet 3
+  ///
+  /// In en, this message translates to:
+  /// **'Security practices are reviewed and improved at regular intervals.'**
+  String get securityBullet3;
+
+  /// Empty state title for notes
+  ///
+  /// In en, this message translates to:
+  /// **'No notes yet'**
+  String get notesEmptyTitle;
+
+  /// Empty state subtitle for notes
+  ///
+  /// In en, this message translates to:
+  /// **'Add your first note to get started'**
+  String get notesEmptySubtitle;
+
+  /// Helper text for editing/deleting notes
+  ///
+  /// In en, this message translates to:
+  /// **'Tap a note to edit, tap the trash icon on the right to delete.'**
+  String get notesEditHint;
+
+  /// Subtask intro headline
+  ///
+  /// In en, this message translates to:
+  /// **'Let\'s break this goal into steps'**
+  String get subtaskIntroTitle;
+
+  /// Subtask intro body text
+  ///
+  /// In en, this message translates to:
+  /// **'Subtasks help you turn your goal into daily and weekly, actionable steps.'**
+  String get subtaskIntroBody;
+
+  /// Subtask intro AI hint
+  ///
+  /// In en, this message translates to:
+  /// **'If you want, AI can generate suggestions for you'**
+  String get subtaskIntroAiHint;
+
+  /// Primary action to create subtask
+  ///
+  /// In en, this message translates to:
+  /// **'Create Subtask'**
+  String get createSubtask;
+
+  /// CTA for AI subtask suggestion
+  ///
+  /// In en, this message translates to:
+  /// **'Suggest subtask with AI'**
+  String get suggestSubtaskWithAi;
+
+  /// Helper text above subtask list
+  ///
+  /// In en, this message translates to:
+  /// **'Tap a subtask card to edit, tap the circle on the left to complete.'**
+  String get subtaskListHint;
+
+  /// Dialog title for adding subtask
+  ///
+  /// In en, this message translates to:
+  /// **'Add Subtask'**
+  String get addSubtask;
+
+  /// Dialog title for editing subtask
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Subtask'**
+  String get editSubtask;
+
+  /// Dialog helper text for subtask
+  ///
+  /// In en, this message translates to:
+  /// **'Define a small, actionable step for this goal.'**
+  String get subtaskDialogDescription;
+
+  /// Placeholder example for subtask input
+  ///
+  /// In en, this message translates to:
+  /// **'e.g., Study English 30 minutes, 3 days a week'**
+  String get subtaskDialogHint;
+
+  /// Error when AI suggestions are empty/fail
+  ///
+  /// In en, this message translates to:
+  /// **'Subtask suggestions couldn\'t be generated right now. Please try again.'**
+  String get aiSubtaskSuggestError;
+
+  /// Bottom sheet title for AI subtask suggestions
+  ///
+  /// In en, this message translates to:
+  /// **'AI subtask suggestions'**
+  String get aiSubtaskSuggestionsTitle;
+
+  /// Bottom sheet helper text for AI subtask suggestions
+  ///
+  /// In en, this message translates to:
+  /// **'Choose the suggested subtasks you like and add them to your list for this goal.'**
+  String get aiSubtaskSuggestionsBody;
+
+  /// CTA to add selected AI subtask suggestions
+  ///
+  /// In en, this message translates to:
+  /// **'Add selected'**
+  String get addSelectedSubtasks;
+
+  /// Delete note dialog title
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Note'**
+  String get deleteNoteTitle;
+
+  /// Delete note confirmation text
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to delete this note?'**
+  String get deleteNoteConfirmation;
+
+  /// Confirm completing goal prompt
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to complete the \"{goalTitle}\" goal?'**
+  String completeGoalConfirmation(String goalTitle);
+
+  /// Relative date for upcoming target
+  ///
+  /// In en, this message translates to:
+  /// **'In {days} days'**
+  String inDays(int days);
+
+  /// Delete goal confirmation text
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to delete this goal? This action cannot be undone.'**
+  String get deleteGoalConfirmation;
 
   /// Log out button text
   ///

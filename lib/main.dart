@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:intl/intl.dart';
 
 import 'core/providers/locale_provider.dart';
 import 'core/router/app_router.dart';
@@ -35,8 +36,11 @@ void main() async {
     rethrow;
   }
 
-  // Türkçe tarih formatı için
-  await initializeDateFormatting('tr_TR', null);
+  // Tarih formatı için gerekli locale verileri
+  await Future.wait([
+    initializeDateFormatting('tr_TR', null),
+    initializeDateFormatting('en_US', null),
+  ]);
 
   // Status bar rengini ayarla
   SystemChrome.setSystemUIOverlayStyle(
@@ -60,12 +64,15 @@ void main() async {
 }
 
 class YearFlowApp extends ConsumerWidget {
-  const YearFlowApp({super.key}); 
+  const YearFlowApp({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final router = ref.watch(routerProvider);
     final locale = ref.watch(localeProvider);
+
+    // intl varsayılan locale'ini seçili dile göre ayarla
+    Intl.defaultLocale = locale.toLanguageTag();
 
     return MaterialApp.router(
       title: 'YearFlow',

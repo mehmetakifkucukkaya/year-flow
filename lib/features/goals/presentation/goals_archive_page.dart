@@ -228,7 +228,8 @@ class _ArchivedGoalCard extends ConsumerWidget {
     final categoryColor = _getCategoryColor(goal.category);
     final completedDate =
         goal.completedAt ?? goal.targetDate ?? goal.createdAt;
-    final dateFormat = DateFormat('d MMMM yyyy', 'tr_TR');
+    final locale = Localizations.localeOf(context).toLanguageTag();
+    final dateFormat = DateFormat('d MMMM yyyy', locale);
 
     return Container(
       margin: const EdgeInsets.only(bottom: AppSpacing.md),

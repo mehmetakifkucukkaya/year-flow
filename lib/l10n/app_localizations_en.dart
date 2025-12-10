@@ -1,3 +1,5 @@
+import 'package:intl/intl.dart' as intl;
+
 import 'app_localizations.dart';
 
 // ignore_for_file: type=lint
@@ -328,7 +330,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get active => 'Active';
 
   @override
-  String get completed => 'Completed:';
+  String get completed => 'Completed';
 
   @override
   String get myGoals => 'My Goals';
@@ -884,6 +886,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String get upcomingCheckInsDescription => 'Do check-ins for goals with less than 7 days remaining';
 
   @override
+  String get upcomingCheckInsEmptyMessage => 'Goals that are within 7 days of their deadline will appear here';
+
+  @override
+  String upcomingGoalsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count goals',
+      one: '1 goal',
+      zero: '0 goal',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get questionOfTheDay => 'QUESTION OF THE DAY';
 
   @override
@@ -915,6 +932,115 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get privacyAndSecurity => 'Privacy & Security';
+
+  @override
+  String get privacyDataControlTitle => 'Your Data, Under Your Control';
+
+  @override
+  String get privacyDataControlBody => 'YearFlow processes your Goals, Check-ins, and Reports in line with data protection laws. Your personal data is never shared with third parties for advertising; it is only used to improve the app experience, create personalized content, and run product analytics. You can download and review your data anytime or request its removal by deleting your account.';
+
+  @override
+  String get dataProcessingAndSecurity => 'Data Processing & Security';
+
+  @override
+  String get kvkkAndDataProtection => 'Data Protection Compliance';
+
+  @override
+  String get kvkkBullet1 => 'All Goals, Check-ins, and Reports you keep in YearFlow are processed in accordance with applicable data protection regulations.';
+
+  @override
+  String get kvkkBullet2 => 'Your data is not used for any purpose other than improving the experience, serving personalized content, and performing product analytics.';
+
+  @override
+  String get kvkkBullet3 => 'Your personal data is not shared with third parties for advertising, marketing, or profiling.';
+
+  @override
+  String get kvkkBullet4 => 'When you delete your account, personal data that directly identifies you is targeted to be removed from the system within a reasonable period.';
+
+  @override
+  String get kvkkBullet5 => 'Records that must be retained for legal obligations are stored only for the required period and securely disposed of when that period ends.';
+
+  @override
+  String get security => 'Security';
+
+  @override
+  String get securityBullet1 => 'Your data is protected against unauthorized access, loss, or misuse in line with industry standards.';
+
+  @override
+  String get securityBullet2 => 'All data transmission within the system takes place over encrypted connections.';
+
+  @override
+  String get securityBullet3 => 'Security practices are reviewed and improved at regular intervals.';
+
+  @override
+  String get notesEmptyTitle => 'No notes yet';
+
+  @override
+  String get notesEmptySubtitle => 'Add your first note to get started';
+
+  @override
+  String get notesEditHint => 'Tap a note to edit, tap the trash icon on the right to delete.';
+
+  @override
+  String get subtaskIntroTitle => 'Let\'s break this goal into steps';
+
+  @override
+  String get subtaskIntroBody => 'Subtasks help you turn your goal into daily and weekly, actionable steps.';
+
+  @override
+  String get subtaskIntroAiHint => 'If you want, AI can generate suggestions for you';
+
+  @override
+  String get createSubtask => 'Create Subtask';
+
+  @override
+  String get suggestSubtaskWithAi => 'Suggest subtask with AI';
+
+  @override
+  String get subtaskListHint => 'Tap a subtask card to edit, tap the circle on the left to complete.';
+
+  @override
+  String get addSubtask => 'Add Subtask';
+
+  @override
+  String get editSubtask => 'Edit Subtask';
+
+  @override
+  String get subtaskDialogDescription => 'Define a small, actionable step for this goal.';
+
+  @override
+  String get subtaskDialogHint => 'e.g., Study English 30 minutes, 3 days a week';
+
+  @override
+  String get aiSubtaskSuggestError => 'Subtask suggestions couldn\'t be generated right now. Please try again.';
+
+  @override
+  String get aiSubtaskSuggestionsTitle => 'AI subtask suggestions';
+
+  @override
+  String get aiSubtaskSuggestionsBody => 'Choose the suggested subtasks you like and add them to your list for this goal.';
+
+  @override
+  String get addSelectedSubtasks => 'Add selected';
+
+  @override
+  String get deleteNoteTitle => 'Delete Note';
+
+  @override
+  String get deleteNoteConfirmation => 'Are you sure you want to delete this note?';
+
+  @override
+  String completeGoalConfirmation(String goalTitle) {
+    return 'Are you sure you want to complete the \"$goalTitle\" goal?';
+  }
+
+  @override
+  String inDays(int days) {
+    return 'In $days days';
+  }
+
+  @override
+  String get deleteGoalConfirmation => 'Are you sure you want to delete this goal? This action cannot be undone.';
 
   @override
   String get logOut => 'Log Out';
