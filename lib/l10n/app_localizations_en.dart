@@ -1233,4 +1233,28 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get errorUnexpectedAuth => 'An unexpected error occurred. Please try again.';
+
+  @override
+  String get aiOptimization => 'AI Optimization';
+
+  @override
+  String get aiOptimizationSubtitle => 'Your goal has been converted to SMART format';
+
+  @override
+  String get optimizationFailed => 'Optimization failed';
+
+  @override
+  String get optimizedGoal => 'Optimized Goal';
+
+  @override
+  String get optimizedGoalHint => 'Write a short goal name…';
+
+  @override
+  String get explanation => 'Explanation';
+
+  @override
+  String get suggestedSubTasks => 'Suggested Sub Tasks';
+
+  @override
+  String get apply => 'Apply';
 }

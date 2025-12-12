@@ -202,23 +202,25 @@ class _HeaderSection extends StatelessWidget {
         ),
         const SizedBox(width: AppSpacing.md),
         Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'AI Optimizasyonu',
-                style: AppTextStyles.titleMedium.copyWith(
-                  fontWeight: FontWeight.w700,
+          child: Builder(
+            builder: (context) => Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  context.l10n.aiOptimization,
+                  style: AppTextStyles.titleMedium.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                'Hedefiniz SMART formatına çevrildi',
-                style: AppTextStyles.bodySmall.copyWith(
-                  color: AppColors.gray600,
+                const SizedBox(height: 4),
+                Text(
+                  context.l10n.aiOptimizationSubtitle,
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: AppColors.gray600,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ],
@@ -270,7 +272,7 @@ class _ErrorSection extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.md),
           Text(
-            'Optimizasyon başarısız',
+            context.l10n.optimizationFailed,
             style: AppTextStyles.titleSmall.copyWith(
               fontWeight: FontWeight.w600,
             ),
@@ -346,7 +348,7 @@ class _OptimizedTitleField extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const _SectionTitle('Optimize Edilmiş Hedef'),
+        _SectionTitle(context.l10n.optimizedGoal),
         const SizedBox(height: AppSpacing.sm),
         Container(
           width: double.infinity,
@@ -381,10 +383,10 @@ class _OptimizedTitleField extends StatelessWidget {
               color: AppColors.primary,
               height: 1.4,
             ),
-            decoration: const InputDecoration(
+            decoration: InputDecoration(
               contentPadding: AppSpacing.paddingMd,
               border: InputBorder.none,
-              hintText: 'Kısa bir hedef adı yazın…',
+              hintText: context.l10n.optimizedGoalHint,
             ),
           ),
         ),
@@ -403,7 +405,7 @@ class _ExplanationSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const _SectionTitle('Açıklama'),
+        _SectionTitle(context.l10n.explanation),
         const SizedBox(height: AppSpacing.sm),
         Container(
           width: double.infinity,
@@ -438,7 +440,7 @@ class _SubGoalsSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const _SectionTitle('Önerilen Alt Görevler'),
+        _SectionTitle(context.l10n.suggestedSubTasks),
         const SizedBox(height: AppSpacing.md),
         ...subGoals.asMap().entries.map((entry) {
           return _SubGoalItem(
@@ -586,7 +588,7 @@ class _ActionButtonsSection extends StatelessWidget {
                     ),
                   ),
                   child: Text(
-                    'İptal',
+                    context.l10n.cancel,
                     style: AppTextStyles.bodyMedium.copyWith(
                       fontWeight: FontWeight.w600,
                       color: AppColors.gray700,
@@ -626,7 +628,7 @@ class _ActionButtonsSection extends StatelessWidget {
                         height: 56,
                         alignment: Alignment.center,
                         child: Text(
-                          'Uygula',
+                          context.l10n.apply,
                           style: AppTextStyles.bodyMedium.copyWith(
                             fontWeight: FontWeight.w700,
                             color: Colors.white,

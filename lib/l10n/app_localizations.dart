@@ -2386,6 +2386,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'An unexpected error occurred. Please try again.'**
   String get errorUnexpectedAuth;
+
+  /// AI optimization bottom sheet title
+  ///
+  /// In en, this message translates to:
+  /// **'AI Optimization'**
+  String get aiOptimization;
+
+  /// AI optimization bottom sheet subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'Your goal has been converted to SMART format'**
+  String get aiOptimizationSubtitle;
+
+  /// AI optimization failed message
+  ///
+  /// In en, this message translates to:
+  /// **'Optimization failed'**
+  String get optimizationFailed;
+
+  /// Optimized goal section title
+  ///
+  /// In en, this message translates to:
+  /// **'Optimized Goal'**
+  String get optimizedGoal;
+
+  /// Optimized goal input hint
+  ///
+  /// In en, this message translates to:
+  /// **'Write a short goal name…'**
+  String get optimizedGoalHint;
+
+  /// Explanation section title
+  ///
+  /// In en, this message translates to:
+  /// **'Explanation'**
+  String get explanation;
+
+  /// Suggested sub tasks section title
+  ///
+  /// In en, this message translates to:
+  /// **'Suggested Sub Tasks'**
+  String get suggestedSubTasks;
+
+  /// Apply button text
+  ///
+  /// In en, this message translates to:
+  /// **'Apply'**
+  String get apply;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

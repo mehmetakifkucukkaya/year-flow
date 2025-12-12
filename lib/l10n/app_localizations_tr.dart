@@ -1233,4 +1233,28 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get errorUnexpectedAuth => 'Beklenmeyen bir hata oluştu. Lütfen tekrar deneyin.';
+
+  @override
+  String get aiOptimization => 'AI Optimizasyonu';
+
+  @override
+  String get aiOptimizationSubtitle => 'Hedefiniz SMART formatına çevrildi';
+
+  @override
+  String get optimizationFailed => 'Optimizasyon başarısız';
+
+  @override
+  String get optimizedGoal => 'Optimize Edilmiş Hedef';
+
+  @override
+  String get optimizedGoalHint => 'Kısa bir hedef adı yazın…';
+
+  @override
+  String get explanation => 'Açıklama';
+
+  @override
+  String get suggestedSubTasks => 'Önerilen Alt Görevler';
+
+  @override
+  String get apply => 'Uygula';
 }

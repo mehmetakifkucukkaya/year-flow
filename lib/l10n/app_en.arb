@@ -1809,6 +1809,38 @@
   "errorUnexpectedAuth": "An unexpected error occurred. Please try again.",
   "@errorUnexpectedAuth": {
     "description": "Firebase Auth error: unexpected error"
+  },
+  "aiOptimization": "AI Optimization",
+  "@aiOptimization": {
+    "description": "AI optimization bottom sheet title"
+  },
+  "aiOptimizationSubtitle": "Your goal has been converted to SMART format",
+  "@aiOptimizationSubtitle": {
+    "description": "AI optimization bottom sheet subtitle"
+  },
+  "optimizationFailed": "Optimization failed",
+  "@optimizationFailed": {
+    "description": "AI optimization failed message"
+  },
+  "optimizedGoal": "Optimized Goal",
+  "@optimizedGoal": {
+    "description": "Optimized goal section title"
+  },
+  "optimizedGoalHint": "Write a short goal name…",
+  "@optimizedGoalHint": {
+    "description": "Optimized goal input hint"
+  },
+  "explanation": "Explanation",
+  "@explanation": {
+    "description": "Explanation section title"
+  },
+  "suggestedSubTasks": "Suggested Sub Tasks",
+  "@suggestedSubTasks": {
+    "description": "Suggested sub tasks section title"
+  },
+  "apply": "Apply",
+  "@apply": {
+    "description": "Apply button text"
   }
 }
 
