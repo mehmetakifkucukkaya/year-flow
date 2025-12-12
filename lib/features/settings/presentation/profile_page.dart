@@ -56,27 +56,18 @@ class _ProfileBody extends ConsumerStatefulWidget {
 }
 
 class _ProfileBodyState extends ConsumerState<_ProfileBody> {
-  String? _name;
-  String? _email;
-
   @override
   void initState() {
     super.initState();
-    _loadUserData();
   }
 
-  void _loadUserData() {
-    final authState = ref.read(authStateProvider);
-    final user = authState.currentUser;
-    setState(() {
-      _name = user?.displayName ?? context.l10n.user;
-      _email = user?.email ?? '';
-    });
-  }
-
-  Future<void> _showEditProfileSheet(BuildContext context) async {
-    final nameController = TextEditingController(text: _name ?? '');
-    final emailController = TextEditingController(text: _email ?? '');
+  Future<void> _showEditProfileSheet(
+    BuildContext context, {
+    required String currentName,
+    required String currentEmail,
+  }) async {
+    final nameController = TextEditingController(text: currentName);
+    final emailController = TextEditingController(text: currentEmail);
 
     await showModalBottomSheet<void>(
       context: context,
@@ -131,7 +122,7 @@ class _ProfileBodyState extends ConsumerState<_ProfileBody> {
                     final newName = nameController.text.trim();
 
                     try {
-                      // Doğrudan repository'yi kullan - auth state değişmez, router rebuild olmaz
+                      // Doğrudan repository'yi kullan
                       final authRepository =
                           ref.read(authRepositoryProvider);
                       await authRepository.updateProfile(
@@ -139,20 +130,21 @@ class _ProfileBodyState extends ConsumerState<_ProfileBody> {
                         email: null,
                       );
 
-                      if (mounted) {
-                        // Local state'i güncelle (UI'da yansıması için)
-                        setState(() {
-                          _name = newName.isEmpty ? null : newName;
-                        });
+                      // Auth state'i yenile (UI'ın otomatik güncellenmesi için)
+                      ref.invalidate(authStateProvider);
 
+                      if (ctx.mounted) {
+                        Navigator.of(ctx).pop();
+                      }
+
+                      if (context.mounted) {
                         AppSnackbar.showSuccess(
                           context,
                           message: context.l10n.profileUpdatedSuccess,
                         );
-                        Navigator.of(ctx).pop();
                       }
                     } catch (e) {
-                      if (mounted) {
+                      if (context.mounted) {
                         AppSnackbar.showError(
                           context,
                           message: e.toString().replaceFirst(
@@ -177,8 +169,8 @@ class _ProfileBodyState extends ConsumerState<_ProfileBody> {
   Widget build(BuildContext context) {
     final authState = ref.watch(authStateProvider);
     final user = authState.currentUser;
-    final displayName = user?.displayName ?? _name ?? context.l10n.user;
-    final email = user?.email ?? _email ?? '';
+    final displayName = user?.displayName ?? context.l10n.user;
+    final email = user?.email ?? '';
 
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(
@@ -199,7 +191,11 @@ class _ProfileBodyState extends ConsumerState<_ProfileBody> {
           _ProfileInfoSection(
             name: displayName,
             email: email,
-            onEdit: () => _showEditProfileSheet(context),
+            onEdit: () => _showEditProfileSheet(
+              context,
+              currentName: displayName,
+              currentEmail: email,
+            ),
           ),
           const SizedBox(height: AppSpacing.xl),
           const _ProfileSecuritySection(),
@@ -951,7 +947,6 @@ class _ProfileHeaderCard extends StatelessWidget {
                           fontWeight: FontWeight.w800,
                           color: AppColors.gray900,
                         ),
-                        overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: AppSpacing.xs),
                       Text(
@@ -959,7 +954,6 @@ class _ProfileHeaderCard extends StatelessWidget {
                         style: AppTextStyles.bodyMedium.copyWith(
                           color: AppColors.gray700,
                         ),
-                        overflow: TextOverflow.ellipsis,
                       ),
                       if (createdAt != null) ...[
                         const SizedBox(height: AppSpacing.sm),
