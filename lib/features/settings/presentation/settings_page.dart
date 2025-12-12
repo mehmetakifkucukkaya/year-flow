@@ -997,13 +997,50 @@ class _DangerZoneSection extends ConsumerWidget {
     );
   }
 
-  void _showChangePasswordDialog(BuildContext context, WidgetRef ref) {
-    showModalBottomSheet(
+  void _showChangePasswordDialog(
+      BuildContext context, WidgetRef ref) async {
+    // Result: true = başarılı, String = hata mesajı, null = iptal
+    final result = await showModalBottomSheet<dynamic>(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
-      builder: (context) => _ChangePasswordBottomSheet(ref: ref),
+      builder: (sheetContext) => _ChangePasswordBottomSheet(
+        ref: ref,
+        parentContext: context,
+      ),
     );
+
+    if (!context.mounted) return;
+
+    // Hata durumu - String döndü
+    if (result is String) {
+      AppSnackbar.showError(
+        context,
+        message: result,
+      );
+      return;
+    }
+
+    // Şifre başarıyla değiştirildi - true döndü
+    if (result == true) {
+      // Snackbar'ı göster (bottom sheet kapandıktan sonra, context hala geçerli)
+      AppSnackbar.showSuccess(
+        context,
+        message: context.l10n.passwordChangedSuccess,
+        duration: const Duration(seconds: 2),
+      );
+
+      // 2 saniye bekle (snackbar görünsün)
+      await Future.delayed(const Duration(seconds: 2));
+
+      // Logout yap ve login'e yönlendir
+      if (context.mounted) {
+        await ref.read(authStateProvider.notifier).signOut();
+        if (context.mounted) {
+          context.go(AppRoutes.login);
+        }
+      }
+    }
   }
 
   void _showDeleteAccountDialog(
@@ -1041,9 +1078,13 @@ class _DangerZoneSection extends ConsumerWidget {
 
 /// Change Password Bottom Sheet
 class _ChangePasswordBottomSheet extends ConsumerStatefulWidget {
-  const _ChangePasswordBottomSheet({required this.ref});
+  const _ChangePasswordBottomSheet({
+    required this.ref,
+    required this.parentContext,
+  });
 
   final WidgetRef ref;
+  final BuildContext parentContext;
 
   @override
   ConsumerState<_ChangePasswordBottomSheet> createState() =>
@@ -1073,32 +1114,46 @@ class _ChangePasswordBottomSheetState
     if (!_formKey.currentState!.validate()) return;
 
     if (_newPasswordController.text != _confirmPasswordController.text) {
-      AppSnackbar.showError(context,
-          message: context.l10n.passwordsDoNotMatch);
+      AppSnackbar.showError(
+        context,
+        message: context.l10n.passwordsDoNotMatch,
+      );
       return;
     }
 
     setState(() => _isLoading = true);
 
+    // Auth listener'ı pause et (şifre değiştirme sırasında auth event'lerini yoksay)
+    widget.ref.read(authStateProvider.notifier).startPasswordChange();
+
     try {
-      await widget.ref.read(authStateProvider.notifier).changePassword(
-            currentPassword: _currentPasswordController.text,
-            newPassword: _newPasswordController.text,
-          );
+      // Firebase'den doğrudan şifre değiştir
+      final authRepository = widget.ref.read(authRepositoryProvider);
+      await authRepository.changePassword(
+        currentPassword: _currentPasswordController.text,
+        newPassword: _newPasswordController.text,
+      );
 
       if (mounted) {
-        AppSnackbar.showSuccess(
-          context,
-          message: context.l10n.passwordChangedSuccess,
-        );
-        Navigator.of(context).pop();
+        // Başarılı: Bottom sheet'i kapat ve true döndür
+        // Snackbar ve logout işlemleri parent'ta yapılacak
+        // NOT: endPasswordChange() signOut() içinde çağrılacak
+        Navigator.of(context).pop(true);
       }
     } catch (e) {
+      // Hata durumunda auth listener'ı resume et
+      widget.ref.read(authStateProvider.notifier).endPasswordChange();
+
+      // Hata durumunda: Bottom sheet'i kapat ve hata mesajını döndür
       if (mounted) {
-        AppSnackbar.showError(
-          context,
-          message: e.toString().replaceFirst('Exception: ', ''),
-        );
+        // Lokalize hata mesajı
+        final errorMessage =
+            e.toString().contains('Mevcut şifre yanlış') ||
+                    e.toString().contains('wrong-password') ||
+                    e.toString().contains('invalid-credential')
+                ? context.l10n.errorWrongCurrentPassword
+                : e.toString().replaceFirst('Exception: ', '');
+        Navigator.of(context).pop(errorMessage);
       }
     } finally {
       if (mounted) {

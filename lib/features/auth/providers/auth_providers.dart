@@ -57,6 +57,7 @@ final authStateProvider = StateNotifierProvider<AuthNotifier, AuthState>(
 class AuthState {
   const AuthState({
     this.isLoading = false,
+    this.isPasswordChanging = false,
     this.isEmailLoading = false,
     this.isGoogleLoading = false,
     this.isAuthenticated = false,
@@ -66,6 +67,7 @@ class AuthState {
   });
 
   final bool isLoading; // Genel loading (geriye dönük uyumluluk için)
+  final bool isPasswordChanging; // Şifre değiştirme için özel loading
   final bool isEmailLoading; // Email/Password giriş için
   final bool isGoogleLoading; // Google giriş için
   final bool isAuthenticated;
@@ -75,6 +77,7 @@ class AuthState {
 
   AuthState copyWith({
     bool? isLoading,
+    bool? isPasswordChanging,
     bool? isEmailLoading,
     bool? isGoogleLoading,
     bool? isAuthenticated,
@@ -84,6 +87,7 @@ class AuthState {
   }) {
     return AuthState(
       isLoading: isLoading ?? this.isLoading,
+      isPasswordChanging: isPasswordChanging ?? this.isPasswordChanging,
       isEmailLoading: isEmailLoading ?? this.isEmailLoading,
       isGoogleLoading: isGoogleLoading ?? this.isGoogleLoading,
       isAuthenticated: isAuthenticated ?? this.isAuthenticated,
@@ -105,6 +109,21 @@ class AuthNotifier extends StateNotifier<AuthState> {
     
     // Auth state değişikliklerini dinle
     _authSubscription = authRepository.authStateChanges().listen((user) {
+      // Şifre değişimi sırasında tüm auth event'lerini yoksay
+      if (_isChangePasswordInProgress) {
+        return;
+      }
+      
+      // Şifre değişimi veya ardıl null event sırasında logout tetikleme
+      if ((state.isPasswordChanging || _suppressAuthNull) && user == null) {
+        return;
+      }
+
+      // Kullanıcı geri geldiğinde artık null eventleri bastırma
+      if (user != null && _suppressAuthNull) {
+        _suppressAuthNull = false;
+      }
+
       state = state.copyWith(
         isAuthenticated: user != null,
         currentUser: user,
@@ -114,6 +133,18 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
   final AuthRepository authRepository;
   StreamSubscription<AppUser?>? _authSubscription;
+  bool _suppressAuthNull = false; // Şifre değişimi sonrası kısa süreli null'u yoksay
+  bool _isChangePasswordInProgress = false; // Şifre değişimi sırasında auth listener'ı yoksay
+  
+  /// Şifre değiştirme işlemi başlatıldığında çağır (auth listener'ı pause eder)
+  void startPasswordChange() {
+    _isChangePasswordInProgress = true;
+  }
+  
+  /// Şifre değiştirme işlemi bittiğinde çağır (auth listener'ı resume eder)
+  void endPasswordChange() {
+    _isChangePasswordInProgress = false;
+  }
 
   /// İlk auth state'i kontrol et
   Future<void> _checkInitialAuthState() async {
@@ -331,47 +362,61 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
   /// Çıkış
   Future<void> signOut() async {
+    _suppressAuthNull = false; // Auth null event'lerini artık yoksayma
+    _isChangePasswordInProgress = false; // Şifre değiştirme flag'ini sıfırla
     await authRepository.signOut();
     state = const AuthState(
       isAuthenticated: false,
+      isPasswordChanging: false,
       currentUser: null,
     );
   }
 
   /// Şifre değiştir
+  /// NOT: Başarılı olduğunda isPasswordChanging TRUE kalır (logout yapılana kadar)
+  /// Bu sayede router redirect tetiklenmez
   Future<void> changePassword({
     required String currentPassword,
     required String newPassword,
   }) async {
     state = state.copyWith(
-      isLoading: true,
+      isPasswordChanging: true,
       errorMessage: null,
       errorCode: null,
     );
+    _suppressAuthNull = true;
     try {
-      await authRepository.changePassword(
+      final updatedUser = await authRepository.changePassword(
         currentPassword: currentPassword,
         newPassword: newPassword,
       );
+      // BAŞARILI: isPasswordChanging TRUE KALSIN (logout yapılana kadar)
+      // Bu sayede router redirect tetiklenmez ve snackbar gösterilebilir
       state = state.copyWith(
-        isLoading: false,
+        isPasswordChanging: true, // TRUE KALMALI!
+        isAuthenticated: true,
+        currentUser: updatedUser,
         errorMessage: null,
         errorCode: null,
       );
+      // _suppressAuthNull TRUE KALSIN (logout yapılana kadar)
     } on FirebaseAuthException catch (e) {
-      // Hata kodunu state'e kaydet (UI tarafında lokalize edilecek)
+      // HATA: isPasswordChanging FALSE olsun
       state = state.copyWith(
-        isLoading: false,
-        errorMessage: e.message, // Ham mesaj (geriye dönük uyumluluk için)
-        errorCode: e.code, // Firebase Auth hata kodu
+        isPasswordChanging: false,
+        errorMessage: e.message,
+        errorCode: e.code,
       );
+      _suppressAuthNull = false;
       rethrow;
     } catch (e) {
+      // HATA: isPasswordChanging FALSE olsun
       state = state.copyWith(
-        isLoading: false,
+        isPasswordChanging: false,
         errorMessage: e.toString(),
         errorCode: null,
       );
+      _suppressAuthNull = false;
       rethrow;
     }
   }

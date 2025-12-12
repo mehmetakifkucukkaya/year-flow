@@ -111,6 +111,7 @@ final routerProvider = Provider<GoRouter>((ref) {
   // - Yalnızca isAuthenticated true ise
   // - Ve herhangi bir loading durumu yoksa
   // - Ve errorMessage ve errorCode null ise kullanıcıyı authenticated kabul et.
+  // - Şifre değiştirme sırasında (isPasswordChanging) authenticated kabul et
   final authState = ref.watch(authStateProvider);
   final isAuthenticated = authState.isAuthenticated &&
       !authState.isLoading &&
@@ -118,6 +119,8 @@ final routerProvider = Provider<GoRouter>((ref) {
       !authState.isGoogleLoading &&
       authState.errorMessage == null &&
       authState.errorCode == null;
+  // Şifre değiştirme sırasında authenticated kabul et (login'e yönlendirme yapma)
+  final isAuthenticatedOrChangingPassword = isAuthenticated || authState.isPasswordChanging;
 
   // Onboarding tamamlandı mı kontrolü - try-catch ile güvenli okuma
   // İlk açılışta false olacak (henüz yüklenmemişse), sonra SharedPreferences'tan yüklenecek
@@ -132,7 +135,7 @@ final routerProvider = Provider<GoRouter>((ref) {
   // Initial location belirleme
   // İlk açılışta: authenticated değilse ve onboarding tamamlanmamışsa onboarding'e git
   String getInitialLocation() {
-    if (isAuthenticated) {
+    if (isAuthenticatedOrChangingPassword) {
       return AppRoutes.home;
     }
     // Authenticated değilse - onboarding tamamlanmışsa login'e, değilse onboarding'e git
@@ -157,6 +160,8 @@ final routerProvider = Provider<GoRouter>((ref) {
             !currentAuthState.isGoogleLoading &&
             currentAuthState.errorMessage == null &&
             currentAuthState.errorCode == null;
+        // Şifre değiştirme sırasında authenticated kabul et (login'e yönlendirme yapma)
+        final currentIsAuthenticatedOrChangingPassword = currentIsAuthenticated || currentAuthState.isPasswordChanging;
 
         bool currentIsOnboardingCompleted = false;
         try {
@@ -177,8 +182,8 @@ final routerProvider = Provider<GoRouter>((ref) {
             currentPath == AppRoutes.settings;
         final isOnboardingRoute = currentPath == AppRoutes.onboarding;
 
-        // Eğer authenticated ise:
-        if (currentIsAuthenticated) {
+        // Eğer authenticated ise veya şifre değiştiriyorsa:
+        if (currentIsAuthenticatedOrChangingPassword) {
           // Auth sayfalarına gitmeye çalışıyorsa home'a yönlendir
           if (isAuthRoute) {
             return AppRoutes.home;
@@ -189,8 +194,8 @@ final routerProvider = Provider<GoRouter>((ref) {
           }
         }
 
-        // Eğer authenticated değilse:
-        if (!currentIsAuthenticated) {
+        // Eğer authenticated değilse ve şifre değiştirmiyorsa:
+        if (!currentIsAuthenticatedOrChangingPassword) {
           // Home sayfalarına gitmeye çalışıyorsa login'e yönlendir
           if (isHomeRoute) {
             return AppRoutes.login;
@@ -229,6 +234,8 @@ final routerProvider = Provider<GoRouter>((ref) {
                     !currentAuthState.isGoogleLoading &&
                     currentAuthState.errorMessage == null &&
                     currentAuthState.errorCode == null;
+            // Şifre değiştirme sırasında authenticated kabul et
+            final currentIsAuthenticatedOrChangingPassword = currentIsAuthenticated || currentAuthState.isPasswordChanging;
 
             bool currentIsOnboardingCompleted = false;
             try {
@@ -239,7 +246,7 @@ final routerProvider = Provider<GoRouter>((ref) {
               currentIsOnboardingCompleted = false;
             }
 
-            if (currentIsAuthenticated) {
+            if (currentIsAuthenticatedOrChangingPassword) {
               return AppRoutes.home;
             }
             if (currentIsOnboardingCompleted) {

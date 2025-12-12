@@ -1859,6 +1859,12 @@ abstract class AppLocalizations {
   /// **'Password changed successfully'**
   String get passwordChangedSuccess;
 
+  /// Wrong password error message
+  ///
+  /// In en, this message translates to:
+  /// **'Current password is incorrect'**
+  String get wrongPassword;
+
   /// Export all data dialog title
   ///
   /// In en, this message translates to:
@@ -2320,6 +2326,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'The email or password is incorrect. Please try again.'**
   String get errorInvalidCredential;
+
+  /// Error when current password is wrong during password change
+  ///
+  /// In en, this message translates to:
+  /// **'Current password is incorrect. Please try again.'**
+  String get errorWrongCurrentPassword;
 
   /// Firebase Auth error: user disabled
   ///
