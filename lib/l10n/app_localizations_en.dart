@@ -959,6 +959,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get passwordChangedSuccess => 'Password changed successfully';
 
   @override
+  String get wrongPassword => 'Current password is incorrect';
+
+  @override
   String get exportAllData => 'Export All Data';
 
   @override
@@ -1200,6 +1203,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get errorInvalidCredential => 'The email or password is incorrect. Please try again.';
+
+  @override
+  String get errorWrongCurrentPassword => 'Current password is incorrect. Please try again.';
 
   @override
   String get errorUserDisabled => 'This account has been disabled. Please contact support.';

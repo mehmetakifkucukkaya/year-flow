@@ -51,7 +51,7 @@ abstract class AuthRepository {
   Future<void> signOut();
 
   /// Şifre değiştir (mevcut şifre ile)
-  Future<void> changePassword({
+  Future<AppUser> changePassword({
     required String currentPassword,
     required String newPassword,
   });
@@ -210,7 +210,7 @@ class FirebaseAuthRepository implements AuthRepository {
   }
 
   @override
-  Future<void> changePassword({
+  Future<AppUser> changePassword({
     required String currentPassword,
     required String newPassword,
   }) async {
@@ -244,6 +244,14 @@ class FirebaseAuthRepository implements AuthRepository {
 
     // Yeni şifreyi güncelle
     await user.updatePassword(newPassword);
+    await user.reload();
+    final updatedUser = _firebaseAuth.currentUser ?? user;
+    final appUser = AppUser.fromFirebaseUser(updatedUser);
+
+    // Güncellenme zamanını Firestore'da dokümana yansıt
+    await _saveUserToFirestore(appUser);
+
+    return appUser;
   }
 
   @override

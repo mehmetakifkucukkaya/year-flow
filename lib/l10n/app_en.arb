@@ -1412,6 +1412,10 @@
   "@passwordChangedSuccess": {
     "description": "Password changed success message"
   },
+  "wrongPassword": "Current password is incorrect",
+  "@wrongPassword": {
+    "description": "Wrong password error message"
+  },
   "exportAllData": "Export All Data",
   "@exportAllData": {
     "description": "Export all data dialog title"
@@ -1765,6 +1769,10 @@
   "errorInvalidCredential": "The email or password is incorrect. Please try again.",
   "@errorInvalidCredential": {
     "description": "Firebase Auth error: invalid credential"
+  },
+  "errorWrongCurrentPassword": "Current password is incorrect. Please try again.",
+  "@errorWrongCurrentPassword": {
+    "description": "Error when current password is wrong during password change"
   },
   "errorUserDisabled": "This account has been disabled. Please contact support.",
   "@errorUserDisabled": {

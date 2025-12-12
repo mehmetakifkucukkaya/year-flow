@@ -959,6 +959,9 @@ class AppLocalizationsTr extends AppLocalizations {
   String get passwordChangedSuccess => 'Şifre başarıyla değiştirildi';
 
   @override
+  String get wrongPassword => 'Mevcut şifre yanlış';
+
+  @override
   String get exportAllData => 'Tüm Verileri Dışa Aktar';
 
   @override
@@ -1200,6 +1203,9 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get errorInvalidCredential => 'E-posta veya şifre hatalı. Lütfen tekrar deneyin.';
+
+  @override
+  String get errorWrongCurrentPassword => 'Mevcut şifre yanlış. Lütfen tekrar deneyin.';
 
   @override
   String get errorUserDisabled => 'Bu hesap devre dışı bırakılmış. Lütfen destek ile iletişime geçin.';
