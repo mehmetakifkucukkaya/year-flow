@@ -58,6 +58,7 @@ class AuthState {
   const AuthState({
     this.isLoading = false,
     this.isPasswordChanging = false,
+    this.isProfileUpdating = false,
     this.isEmailLoading = false,
     this.isGoogleLoading = false,
     this.isAuthenticated = false,
@@ -68,6 +69,7 @@ class AuthState {
 
   final bool isLoading; // Genel loading (geriye dönük uyumluluk için)
   final bool isPasswordChanging; // Şifre değiştirme için özel loading
+  final bool isProfileUpdating; // Profil güncelleme için özel loading
   final bool isEmailLoading; // Email/Password giriş için
   final bool isGoogleLoading; // Google giriş için
   final bool isAuthenticated;
@@ -78,6 +80,7 @@ class AuthState {
   AuthState copyWith({
     bool? isLoading,
     bool? isPasswordChanging,
+    bool? isProfileUpdating,
     bool? isEmailLoading,
     bool? isGoogleLoading,
     bool? isAuthenticated,
@@ -88,6 +91,7 @@ class AuthState {
     return AuthState(
       isLoading: isLoading ?? this.isLoading,
       isPasswordChanging: isPasswordChanging ?? this.isPasswordChanging,
+      isProfileUpdating: isProfileUpdating ?? this.isProfileUpdating,
       isEmailLoading: isEmailLoading ?? this.isEmailLoading,
       isGoogleLoading: isGoogleLoading ?? this.isGoogleLoading,
       isAuthenticated: isAuthenticated ?? this.isAuthenticated,
@@ -444,42 +448,25 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 
   /// Profil bilgilerini güncelle (isim ve/veya e-posta)
+  /// NOT: State değişikliği minimize edildi - router rebuild'i önlemek için
+  /// Sadece sonuçta currentUser güncellenir, loading state kullanılmaz
   Future<void> updateProfile({
     String? displayName,
     String? email,
   }) async {
-    state = state.copyWith(
-      isLoading: true,
-      errorMessage: null,
-      errorCode: null,
-    );
-
     try {
       final updatedUser = await authRepository.updateProfile(
         displayName: displayName,
         email: email,
       );
 
+      // Sadece currentUser'ı güncelle - router rebuild tetiklenmez
       state = state.copyWith(
-        isLoading: false,
         currentUser: updatedUser,
-        errorMessage: null,
-        errorCode: null,
       );
-    } on FirebaseAuthException catch (e) {
-      // Hata kodunu state'e kaydet (UI tarafında lokalize edilecek)
-      state = state.copyWith(
-        isLoading: false,
-        errorMessage: e.message, // Ham mesaj (geriye dönük uyumluluk için)
-        errorCode: e.code, // Firebase Auth hata kodu
-      );
-      rethrow;
-    } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        errorMessage: e.toString(),
-        errorCode: null,
-      );
+    } on FirebaseAuthException {
+      // Hata durumunda state'i değiştirme, sadece exception fırlat
+      // UI tarafında catch ile yakalanacak
       rethrow;
     }
   }
