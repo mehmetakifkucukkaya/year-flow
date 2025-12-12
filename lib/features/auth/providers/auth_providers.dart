@@ -61,6 +61,7 @@ class AuthState {
     this.isGoogleLoading = false,
     this.isAuthenticated = false,
     this.errorMessage,
+    this.errorCode,
     this.currentUser,
   });
 
@@ -68,7 +69,8 @@ class AuthState {
   final bool isEmailLoading; // Email/Password giriş için
   final bool isGoogleLoading; // Google giriş için
   final bool isAuthenticated;
-  final String? errorMessage;
+  final String? errorMessage; // Ham hata mesajı (geriye dönük uyumluluk için)
+  final String? errorCode; // Firebase Auth hata kodu (lokalizasyon için)
   final AppUser? currentUser; // Mevcut kullanıcı bilgisi (isNewUser kontrolü için)
 
   AuthState copyWith({
@@ -77,6 +79,7 @@ class AuthState {
     bool? isGoogleLoading,
     bool? isAuthenticated,
     String? errorMessage,
+    String? errorCode,
     AppUser? currentUser,
   }) {
     return AuthState(
@@ -85,7 +88,8 @@ class AuthState {
       isGoogleLoading: isGoogleLoading ?? this.isGoogleLoading,
       isAuthenticated: isAuthenticated ?? this.isAuthenticated,
       errorMessage: errorMessage,
-      currentUser: currentUser,
+      errorCode: errorCode,
+      currentUser: currentUser ?? this.currentUser,
     );
   }
 }
@@ -139,6 +143,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       isEmailLoading: true,
       isLoading: true,
       errorMessage: null,
+      errorCode: null,
     );
     try {
       final user = await authRepository.signInWithEmail(
@@ -151,6 +156,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
           isLoading: false,
           isAuthenticated: true,
           errorMessage: null,
+          errorCode: null,
           currentUser: user,
         );
       } else {
@@ -159,47 +165,17 @@ class AuthNotifier extends StateNotifier<AuthState> {
           isLoading: false,
           isAuthenticated: false,
           errorMessage: 'Giriş yapılamadı. Lütfen bilgilerini kontrol et.',
+          errorCode: null,
         );
       }
     } on FirebaseAuthException catch (e) {
-      String errorMessage =
-          'Giriş yapılamadı. E-posta veya şifre hatalı olabilir, lütfen tekrar deneyin.';
-
-      // Kullanıcı var/yok ayrımını gizlemek için hesapla ilgili hatalarda
-      // tek bir genel mesaj kullanıyoruz (account enumeration riskini azaltmak için).
-      switch (e.code) {
-        case 'user-not-found':
-        case 'wrong-password':
-        case 'invalid-email':
-        case 'invalid-credential':
-          errorMessage =
-              'Giriş yapılamadı. E-posta veya şifre hatalı olabilir, lütfen tekrar deneyin.';
-          break;
-        case 'user-disabled':
-          errorMessage = 'Bu hesap devre dışı bırakılmış.';
-          break;
-        case 'too-many-requests':
-          errorMessage =
-              'Çok fazla başarısız giriş denemesi. Lütfen daha sonra tekrar deneyin.';
-          break;
-        case 'operation-not-allowed':
-          errorMessage =
-              'Bu giriş yöntemi şu anda kullanılamıyor. Lütfen daha sonra tekrar deneyin.';
-          break;
-        case 'network-request-failed':
-          errorMessage = 'İnternet bağlantınızı kontrol edin.';
-          break;
-        default:
-          errorMessage =
-              'Giriş sırasında bir hata oluştu. Lütfen tekrar deneyin.';
-          break;
-      }
-      
+      // Hata kodunu state'e kaydet (UI tarafında lokalize edilecek)
       state = state.copyWith(
         isEmailLoading: false,
         isLoading: false,
         isAuthenticated: false,
-        errorMessage: errorMessage,
+        errorMessage: e.message, // Ham mesaj (geriye dönük uyumluluk için)
+        errorCode: e.code, // Firebase Auth hata kodu
       );
     } catch (e) {
       state = state.copyWith(
@@ -221,6 +197,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       isEmailLoading: true,
       isLoading: true,
       errorMessage: null,
+      errorCode: null,
     );
 
     try {
@@ -247,11 +224,13 @@ class AuthNotifier extends StateNotifier<AuthState> {
         );
       }
     } on FirebaseAuthException catch (e) {
+      // Hata kodunu state'e kaydet (UI tarafında lokalize edilecek)
       state = state.copyWith(
         isEmailLoading: false,
         isLoading: false,
         isAuthenticated: false,
-        errorMessage: e.message ?? 'Kayıt sırasında bir hata oluştu.',
+        errorMessage: e.message, // Ham mesaj (geriye dönük uyumluluk için)
+        errorCode: e.code, // Firebase Auth hata kodu
       );
     } catch (_) {
       state = state.copyWith(
@@ -269,6 +248,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       isEmailLoading: true,
       isLoading: true,
       errorMessage: null,
+      errorCode: null,
     );
     try {
       await authRepository.sendPasswordResetEmail(email: email);
@@ -276,12 +256,15 @@ class AuthNotifier extends StateNotifier<AuthState> {
         isEmailLoading: false,
         isLoading: false,
         errorMessage: null,
+        errorCode: null,
       );
     } on FirebaseAuthException catch (e) {
+      // Hata kodunu state'e kaydet (UI tarafında lokalize edilecek)
       state = state.copyWith(
         isEmailLoading: false,
         isLoading: false,
-        errorMessage: e.message ?? 'Şifre sıfırlama sırasında hata oluştu.',
+        errorMessage: e.message, // Ham mesaj (geriye dönük uyumluluk için)
+        errorCode: e.code, // Firebase Auth hata kodu
       );
     } catch (_) {
       state = state.copyWith(
@@ -299,6 +282,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       isGoogleLoading: true,
       isLoading: true,
       errorMessage: null,
+      errorCode: null,
       currentUser: null,
     );
     try {
@@ -309,6 +293,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
           isLoading: false,
           isAuthenticated: true,
           errorMessage: null,
+          errorCode: null,
           currentUser: user, // Kullanıcı bilgisini state'e kaydet (isNewUser kontrolü için)
         );
       } else {
@@ -361,6 +346,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     state = state.copyWith(
       isLoading: true,
       errorMessage: null,
+      errorCode: null,
     );
     try {
       await authRepository.changePassword(
@@ -370,25 +356,21 @@ class AuthNotifier extends StateNotifier<AuthState> {
       state = state.copyWith(
         isLoading: false,
         errorMessage: null,
+        errorCode: null,
       );
     } on FirebaseAuthException catch (e) {
-      String errorMessage = 'Şifre değiştirme sırasında hata oluştu.';
-      if (e.code == 'weak-password') {
-        errorMessage = 'Yeni şifre çok zayıf. Lütfen daha güçlü bir şifre seçin.';
-      } else if (e.code == 'requires-recent-login') {
-        errorMessage = 'Güvenlik nedeniyle lütfen tekrar giriş yapın.';
-      } else if (e.message != null) {
-        errorMessage = e.message!;
-      }
+      // Hata kodunu state'e kaydet (UI tarafında lokalize edilecek)
       state = state.copyWith(
         isLoading: false,
-        errorMessage: errorMessage,
+        errorMessage: e.message, // Ham mesaj (geriye dönük uyumluluk için)
+        errorCode: e.code, // Firebase Auth hata kodu
       );
       rethrow;
     } catch (e) {
       state = state.copyWith(
         isLoading: false,
         errorMessage: e.toString(),
+        errorCode: null,
       );
       rethrow;
     }
@@ -399,6 +381,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     state = state.copyWith(
       isLoading: true,
       errorMessage: null,
+      errorCode: null,
     );
     try {
       await authRepository.deleteAccount();
@@ -423,6 +406,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     state = state.copyWith(
       isLoading: true,
       errorMessage: null,
+      errorCode: null,
     );
 
     try {
@@ -435,17 +419,21 @@ class AuthNotifier extends StateNotifier<AuthState> {
         isLoading: false,
         currentUser: updatedUser,
         errorMessage: null,
+        errorCode: null,
       );
     } on FirebaseAuthException catch (e) {
+      // Hata kodunu state'e kaydet (UI tarafında lokalize edilecek)
       state = state.copyWith(
         isLoading: false,
-        errorMessage: e.message ?? 'Profil güncellenirken hata oluştu.',
+        errorMessage: e.message, // Ham mesaj (geriye dönük uyumluluk için)
+        errorCode: e.code, // Firebase Auth hata kodu
       );
       rethrow;
     } catch (e) {
       state = state.copyWith(
         isLoading: false,
         errorMessage: e.toString(),
+        errorCode: null,
       );
       rethrow;
     }

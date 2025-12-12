@@ -179,13 +179,13 @@ abstract class AppLocalizations {
   /// **'Continue with Google'**
   String get continueWithGoogle;
 
-  /// User friendly Google auth failure message
+  /// No description provided for @googleAuthFailed.
   ///
   /// In en, this message translates to:
   /// **'Could not complete Google sign in / sign up.'**
   String get googleAuthFailed;
 
-  /// Google auth cancelled message
+  /// No description provided for @googleAuthCancelled.
   ///
   /// In en, this message translates to:
   /// **'Google sign in was cancelled.'**
@@ -2284,6 +2284,96 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Close'**
   String get close;
+
+  /// Firebase Auth error: email already in use
+  ///
+  /// In en, this message translates to:
+  /// **'The email address is already in use by another account.'**
+  String get errorEmailAlreadyInUse;
+
+  /// Firebase Auth error: weak password
+  ///
+  /// In en, this message translates to:
+  /// **'The password is too weak. Please choose a stronger password.'**
+  String get errorWeakPassword;
+
+  /// Firebase Auth error: invalid email
+  ///
+  /// In en, this message translates to:
+  /// **'The email address is invalid. Please enter a valid email address.'**
+  String get errorInvalidEmail;
+
+  /// Firebase Auth error: user not found
+  ///
+  /// In en, this message translates to:
+  /// **'No account found with this email address. Please check your email or sign up.'**
+  String get errorUserNotFound;
+
+  /// Firebase Auth error: wrong password
+  ///
+  /// In en, this message translates to:
+  /// **'The password is incorrect. Please try again.'**
+  String get errorWrongPassword;
+
+  /// Firebase Auth error: invalid credential
+  ///
+  /// In en, this message translates to:
+  /// **'The email or password is incorrect. Please try again.'**
+  String get errorInvalidCredential;
+
+  /// Firebase Auth error: user disabled
+  ///
+  /// In en, this message translates to:
+  /// **'This account has been disabled. Please contact support.'**
+  String get errorUserDisabled;
+
+  /// Firebase Auth error: too many requests
+  ///
+  /// In en, this message translates to:
+  /// **'Too many failed login attempts. Please try again later.'**
+  String get errorTooManyRequests;
+
+  /// Firebase Auth error: operation not allowed
+  ///
+  /// In en, this message translates to:
+  /// **'This sign-in method is not currently available. Please try again later.'**
+  String get errorOperationNotAllowed;
+
+  /// Firebase Auth error: network request failed
+  ///
+  /// In en, this message translates to:
+  /// **'Please check your internet connection.'**
+  String get errorNetworkRequestFailed;
+
+  /// Firebase Auth error: requires recent login
+  ///
+  /// In en, this message translates to:
+  /// **'For security reasons, please sign in again.'**
+  String get errorRequiresRecentLogin;
+
+  /// Firebase Auth error: general sign in failure
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in failed. Please check your email and password, then try again.'**
+  String get errorSignInFailed;
+
+  /// Firebase Auth error: general sign up failure
+  ///
+  /// In en, this message translates to:
+  /// **'Registration failed. Please try again.'**
+  String get errorSignUpFailed;
+
+  /// Firebase Auth error: password reset failure
+  ///
+  /// In en, this message translates to:
+  /// **'Password reset failed. Please try again.'**
+  String get errorPasswordResetFailed;
+
+  /// Firebase Auth error: unexpected error
+  ///
+  /// In en, this message translates to:
+  /// **'An unexpected error occurred. Please try again.'**
+  String get errorUnexpectedAuth;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

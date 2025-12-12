@@ -49,8 +49,7 @@ class AppLocalizationsTr extends AppLocalizations {
   String get continueWithGoogle => 'Google ile devam et';
 
   @override
-  String get googleAuthFailed =>
-      'Google ile giriş / kayıt ol işlemi yapılamadı.';
+  String get googleAuthFailed => 'Google ile giriş / kayıt ol işlemi yapılamadı.';
 
   @override
   String get googleAuthCancelled => 'Google ile giriş iptal edildi.';
@@ -1183,4 +1182,49 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get close => 'Kapat';
+
+  @override
+  String get errorEmailAlreadyInUse => 'Bu e-posta adresi başka bir hesap tarafından kullanılıyor.';
+
+  @override
+  String get errorWeakPassword => 'Şifre çok zayıf. Lütfen daha güçlü bir şifre seçin.';
+
+  @override
+  String get errorInvalidEmail => 'E-posta adresi geçersiz. Lütfen geçerli bir e-posta adresi girin.';
+
+  @override
+  String get errorUserNotFound => 'Bu e-posta adresi ile kayıtlı hesap bulunamadı. Lütfen e-posta adresinizi kontrol edin veya kayıt olun.';
+
+  @override
+  String get errorWrongPassword => 'Şifre hatalı. Lütfen tekrar deneyin.';
+
+  @override
+  String get errorInvalidCredential => 'E-posta veya şifre hatalı. Lütfen tekrar deneyin.';
+
+  @override
+  String get errorUserDisabled => 'Bu hesap devre dışı bırakılmış. Lütfen destek ile iletişime geçin.';
+
+  @override
+  String get errorTooManyRequests => 'Çok fazla başarısız giriş denemesi. Lütfen daha sonra tekrar deneyin.';
+
+  @override
+  String get errorOperationNotAllowed => 'Bu giriş yöntemi şu anda kullanılamıyor. Lütfen daha sonra tekrar deneyin.';
+
+  @override
+  String get errorNetworkRequestFailed => 'İnternet bağlantınızı kontrol edin.';
+
+  @override
+  String get errorRequiresRecentLogin => 'Güvenlik nedeniyle lütfen tekrar giriş yapın.';
+
+  @override
+  String get errorSignInFailed => 'Giriş yapılamadı. E-posta veya şifre hatalı olabilir, lütfen tekrar deneyin.';
+
+  @override
+  String get errorSignUpFailed => 'Kayıt işlemi tamamlanamadı. Lütfen tekrar deneyin.';
+
+  @override
+  String get errorPasswordResetFailed => 'Şifre sıfırlama sırasında hata oluştu. Lütfen tekrar deneyin.';
+
+  @override
+  String get errorUnexpectedAuth => 'Beklenmeyen bir hata oluştu. Lütfen tekrar deneyin.';
 }

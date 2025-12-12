@@ -1182,4 +1182,49 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get close => 'Close';
+
+  @override
+  String get errorEmailAlreadyInUse => 'The email address is already in use by another account.';
+
+  @override
+  String get errorWeakPassword => 'The password is too weak. Please choose a stronger password.';
+
+  @override
+  String get errorInvalidEmail => 'The email address is invalid. Please enter a valid email address.';
+
+  @override
+  String get errorUserNotFound => 'No account found with this email address. Please check your email or sign up.';
+
+  @override
+  String get errorWrongPassword => 'The password is incorrect. Please try again.';
+
+  @override
+  String get errorInvalidCredential => 'The email or password is incorrect. Please try again.';
+
+  @override
+  String get errorUserDisabled => 'This account has been disabled. Please contact support.';
+
+  @override
+  String get errorTooManyRequests => 'Too many failed login attempts. Please try again later.';
+
+  @override
+  String get errorOperationNotAllowed => 'This sign-in method is not currently available. Please try again later.';
+
+  @override
+  String get errorNetworkRequestFailed => 'Please check your internet connection.';
+
+  @override
+  String get errorRequiresRecentLogin => 'For security reasons, please sign in again.';
+
+  @override
+  String get errorSignInFailed => 'Sign in failed. Please check your email and password, then try again.';
+
+  @override
+  String get errorSignUpFailed => 'Registration failed. Please try again.';
+
+  @override
+  String get errorPasswordResetFailed => 'Password reset failed. Please try again.';
+
+  @override
+  String get errorUnexpectedAuth => 'An unexpected error occurred. Please try again.';
 }
