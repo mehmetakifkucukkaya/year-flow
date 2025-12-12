@@ -3,10 +3,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:firebase_auth/firebase_auth.dart';
+
 import '../../../core/constants/app_assets.dart';
 import '../../../core/router/app_routes.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
+import '../../../core/utils/auth_error_handler.dart';
 import '../../../core/utils/extensions.dart';
 import '../../../core/widgets/index.dart';
 import '../providers/auth_providers.dart';
@@ -25,14 +28,28 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   bool _obscurePassword = true;
   String? _lastShownError; // Son gösterilen hata mesajını takip et
 
-  String _resolveAuthError(BuildContext context, String errorMessage) {
+  String _resolveAuthError(BuildContext context, String? errorMessage, String? errorCode) {
+    // Google auth özel kodları
     if (errorMessage == AuthNotifier.googleAuthFailedCode) {
       return context.l10n.googleAuthFailed;
     }
     if (errorMessage == AuthNotifier.googleAuthCancelledCode) {
       return context.l10n.googleAuthCancelled;
     }
-    return errorMessage;
+    
+    // Firebase Auth hata kodu varsa lokalize et
+    if (errorCode != null) {
+      try {
+        final exception = FirebaseAuthException(code: errorCode, message: errorMessage);
+        return AuthErrorHandler.getLocalizedSignInMessage(context, exception);
+      } catch (_) {
+        // Hata kodu parse edilemezse ham mesajı döndür
+        return errorMessage ?? context.l10n.errorUnexpectedAuth;
+      }
+    }
+    
+    // Fallback: ham mesajı döndür
+    return errorMessage ?? context.l10n.errorUnexpectedAuth;
   }
 
   @override
@@ -66,8 +83,12 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
     final authState = ref.read(authStateProvider);
 
-    if (authState.errorMessage != null) {
-      final message = _resolveAuthError(context, authState.errorMessage!);
+    if (authState.errorMessage != null || authState.errorCode != null) {
+      final message = _resolveAuthError(
+        context,
+        authState.errorMessage,
+        authState.errorCode,
+      );
       AppSnackbar.showError(context, message: message);
       _lastShownError = message;
     } else if (authState.isAuthenticated) {
@@ -108,8 +129,12 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       if (!mounted) return;
       
       // Hata mesajı varsa ve daha önce gösterilmemişse göster
-      if (next.errorMessage != null) {
-        final resolvedMessage = _resolveAuthError(context, next.errorMessage!);
+      if (next.errorMessage != null || next.errorCode != null) {
+        final resolvedMessage = _resolveAuthError(
+          context,
+          next.errorMessage,
+          next.errorCode,
+        );
         if (resolvedMessage != _lastShownError &&
             resolvedMessage != previous?.errorMessage) {
           _lastShownError = resolvedMessage;

@@ -110,13 +110,14 @@ final routerProvider = Provider<GoRouter>((ref) {
   // Auth state'i daha güvenli bir şekilde hesapla:
   // - Yalnızca isAuthenticated true ise
   // - Ve herhangi bir loading durumu yoksa
-  // - Ve errorMessage null ise kullanıcıyı authenticated kabul et.
+  // - Ve errorMessage ve errorCode null ise kullanıcıyı authenticated kabul et.
   final authState = ref.watch(authStateProvider);
   final isAuthenticated = authState.isAuthenticated &&
       !authState.isLoading &&
       !authState.isEmailLoading &&
       !authState.isGoogleLoading &&
-      authState.errorMessage == null;
+      authState.errorMessage == null &&
+      authState.errorCode == null;
 
   // Onboarding tamamlandı mı kontrolü - try-catch ile güvenli okuma
   // İlk açılışta false olacak (henüz yüklenmemişse), sonra SharedPreferences'tan yüklenecek
@@ -154,7 +155,8 @@ final routerProvider = Provider<GoRouter>((ref) {
             !currentAuthState.isLoading &&
             !currentAuthState.isEmailLoading &&
             !currentAuthState.isGoogleLoading &&
-            currentAuthState.errorMessage == null;
+            currentAuthState.errorMessage == null &&
+            currentAuthState.errorCode == null;
 
         bool currentIsOnboardingCompleted = false;
         try {
@@ -225,7 +227,8 @@ final routerProvider = Provider<GoRouter>((ref) {
                     !currentAuthState.isLoading &&
                     !currentAuthState.isEmailLoading &&
                     !currentAuthState.isGoogleLoading &&
-                    currentAuthState.errorMessage == null;
+                    currentAuthState.errorMessage == null &&
+                    currentAuthState.errorCode == null;
 
             bool currentIsOnboardingCompleted = false;
             try {

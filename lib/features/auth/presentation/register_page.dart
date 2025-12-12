@@ -3,10 +3,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:firebase_auth/firebase_auth.dart';
+
 import '../../../core/constants/app_assets.dart';
 import '../../../core/router/app_routes.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
+import '../../../core/utils/auth_error_handler.dart';
 import '../../../core/utils/extensions.dart';
 import '../../../core/widgets/index.dart';
 import '../providers/auth_providers.dart';
@@ -25,14 +28,28 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
 
-  String _resolveAuthError(BuildContext context, String errorMessage) {
+  String _resolveAuthError(BuildContext context, String? errorMessage, String? errorCode) {
+    // Google auth özel kodları
     if (errorMessage == AuthNotifier.googleAuthFailedCode) {
       return context.l10n.googleAuthFailed;
     }
     if (errorMessage == AuthNotifier.googleAuthCancelledCode) {
       return context.l10n.googleAuthCancelled;
     }
-    return errorMessage;
+    
+    // Firebase Auth hata kodu varsa lokalize et
+    if (errorCode != null) {
+      try {
+        final exception = FirebaseAuthException(code: errorCode, message: errorMessage);
+        return AuthErrorHandler.getLocalizedSignUpMessage(context, exception);
+      } catch (_) {
+        // Hata kodu parse edilemezse ham mesajı döndür
+        return errorMessage ?? context.l10n.errorUnexpectedAuth;
+      }
+    }
+    
+    // Fallback: ham mesajı döndür
+    return errorMessage ?? context.l10n.errorUnexpectedAuth;
   }
 
   @override
@@ -66,8 +83,12 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
 
     final authState = ref.read(authStateProvider);
 
-    if (authState.errorMessage != null) {
-      final message = _resolveAuthError(context, authState.errorMessage!);
+    if (authState.errorMessage != null || authState.errorCode != null) {
+      final message = _resolveAuthError(
+        context,
+        authState.errorMessage,
+        authState.errorCode,
+      );
       AppSnackbar.showError(context, message: message);
     } else if (authState.isAuthenticated) {
       // Kullanıcıya bilgi mesajı göster
@@ -107,19 +128,31 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
     ref.listen<AuthState>(authStateProvider, (previous, next) {
       if (!mounted) return;
 
-      // Hata mesajı varsa göster
-      if (next.errorMessage != null &&
-          next.errorMessage != previous?.errorMessage) {
-        final resolvedMessage = _resolveAuthError(context, next.errorMessage!);
+      // Hata mesajı varsa göster ve yönlendirme yapma
+      if ((next.errorMessage != null || next.errorCode != null) &&
+          (next.errorMessage != previous?.errorMessage ||
+              next.errorCode != previous?.errorCode)) {
+        final resolvedMessage = _resolveAuthError(
+          context,
+          next.errorMessage,
+          next.errorCode,
+        );
         try {
           AppSnackbar.showError(context, message: resolvedMessage);
         } catch (e) {
           debugPrint('Snackbar error: $e');
         }
+        // Hata durumunda yönlendirme yapma, kullanıcı kayıt sayfasında kalsın
+        // email-already-in-use hatası için özel bir işlem yapılabilir ama şimdilik sadece hata göster
+        return;
       }
 
-      // Başarılı kayıt yapıldıysa yönlendir
-      if (next.isAuthenticated && !(previous?.isAuthenticated ?? false)) {
+      // Sadece başarılı kayıt yapıldıysa ve hata yoksa yönlendir
+      // Hata durumunda (errorMessage veya errorCode varsa) yönlendirme yapma
+      if (next.isAuthenticated && 
+          !(previous?.isAuthenticated ?? false) &&
+          next.errorMessage == null &&
+          next.errorCode == null) {
         try {
           context.go(AppRoutes.home);
         } catch (e) {
