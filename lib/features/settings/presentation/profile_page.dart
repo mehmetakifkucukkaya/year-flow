@@ -131,14 +131,20 @@ class _ProfileBodyState extends ConsumerState<_ProfileBody> {
                     final newName = nameController.text.trim();
 
                     try {
-                      await ref
-                          .read(authStateProvider.notifier)
-                          .updateProfile(
-                            displayName: newName.isEmpty ? null : newName,
-                            email: null,
-                          );
+                      // Doğrudan repository'yi kullan - auth state değişmez, router rebuild olmaz
+                      final authRepository =
+                          ref.read(authRepositoryProvider);
+                      await authRepository.updateProfile(
+                        displayName: newName.isEmpty ? null : newName,
+                        email: null,
+                      );
 
                       if (mounted) {
+                        // Local state'i güncelle (UI'da yansıması için)
+                        setState(() {
+                          _name = newName.isEmpty ? null : newName;
+                        });
+
                         AppSnackbar.showSuccess(
                           context,
                           message: context.l10n.profileUpdatedSuccess,
