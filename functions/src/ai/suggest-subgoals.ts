@@ -9,15 +9,17 @@ import {
   SuggestSubGoalsResponse,
 } from '../types/ai-types';
 import {GeminiClient} from './gemini-client';
-import { cleanJsonResponse } from './json-utils';
+import {cleanJsonResponse} from './json-utils';
+import {getLanguageInstruction} from './locale-utils';
 
 export async function suggestSubGoals(
   request: SuggestSubGoalsRequest,
   geminiClient: GeminiClient
 ): Promise<SuggestSubGoalsResponse> {
-  const {goalTitle, description, category} = request;
+  const {goalTitle, description, category, locale = 'tr'} = request;
+  const outputLang = locale === 'tr' ? 'Turkish' : 'English';
 
-  const prompt = `You are a Turkish-speaking personal development and productivity coach.
+  const prompt = `You are a personal development and productivity coach.
 
 Task:
 - For the given goal, suggest 3–6 practical and clear sub-goals.
@@ -25,10 +27,10 @@ Task:
 Input:
 - Goal title: "${goalTitle}"
 - Category: ${category}
-- Goal description / context: ${description || 'Belirtilmemiş'}
+- Goal description / context: ${description || 'Not specified'}
 
 Language & safety rules:
-- OUTPUT LANGUAGE MUST BE TURKISH.
+- ${getLanguageInstruction(locale)}
 - Respond with VALID JSON ONLY. No markdown, no explanations, no comments, no extra text.
 - For health / exercise goals, give safe and reasonable suggestions, without medical advice.
 - Sub-goals must be:
@@ -39,13 +41,14 @@ JSON SCHEMA (use exactly this structure):
 {
   "subGoals": [
     {
-      "title": "Clear and actionable sub-goal in Turkish (single sentence)"
+      "title": "Clear and actionable sub-goal in ${outputLang} (single sentence)"
     }
   ]
 }
 
 IMPORTANT:
 - Generate between 3 and 6 sub-goals.
+- All sub-goal titles must be written in ${outputLang}.
 - Return ONLY parseable JSON that exactly follows the schema above.`;
 
   try {
@@ -79,5 +82,3 @@ IMPORTANT:
     throw new Error(`Suggest sub-goals failed: ${error.message}`);
   }
 }
-
-

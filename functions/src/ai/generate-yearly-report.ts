@@ -10,7 +10,8 @@ import {
   GenerateYearlyReportResponse,
   Goal,
 } from '../types/ai-types';
-import { GeminiClient } from './gemini-client';
+import {GeminiClient} from './gemini-client';
+import {getLanguageInstruction, getMonthNames} from './locale-utils';
 
 interface YearlyAnalytics {
   completedGoals: Goal[];
@@ -26,10 +27,10 @@ export async function generateYearlyReport(
   request: GenerateYearlyReportRequest,
   geminiClient: GeminiClient
 ): Promise<GenerateYearlyReportResponse> {
-  const { year, goals, checkIns } = request;
+  const {year, goals, checkIns, locale = 'tr'} = request;
 
   const analytics = calculateYearlyAnalytics(goals, checkIns);
-  const prompt = buildYearlyReportPrompt(year, analytics, goals, checkIns);
+  const prompt = buildYearlyReportPrompt(year, analytics, goals, checkIns, locale);
 
   try {
     const content = await geminiClient.generateText(prompt, 4000);
@@ -47,9 +48,12 @@ function calculateYearlyAnalytics(
   goals: Goal[],
   checkIns: CheckIn[]
 ): YearlyAnalytics {
-  // Tamamlanan hedefler: isCompleted=true veya progress=100
-  const completedGoals = goals.filter((g) => g.isCompleted || g.progress >= 100);
-  const activeGoals = goals.filter((g) => !g.isArchived && !g.isCompleted && g.progress < 100);
+  const completedGoals = goals.filter(
+    (g) => g.isCompleted || g.progress >= 100
+  );
+  const activeGoals = goals.filter(
+    (g) => !g.isArchived && !g.isCompleted && g.progress < 100
+  );
   const averageProgress =
     goals.length > 0
       ? goals.reduce((sum, g) => sum + g.progress, 0) / goals.length
@@ -68,31 +72,37 @@ function calculateYearlyAnalytics(
   };
 }
 
-function groupGoalsByCategory(
-  goals: Goal[]
-): Record<string, number> {
-  return goals.reduce((acc, g) => {
-    acc[g.category] = (acc[g.category] || 0) + 1;
-    return acc;
-  }, {} as Record<string, number>);
+function groupGoalsByCategory(goals: Goal[]): Record<string, number> {
+  return goals.reduce(
+    (acc, g) => {
+      acc[g.category] = (acc[g.category] || 0) + 1;
+      return acc;
+    },
+    {} as Record<string, number>
+  );
 }
 
-function groupCheckInsByMonth(
-  checkIns: CheckIn[]
-): Record<number, number> {
-  return checkIns.reduce((acc, ci) => {
-    const month = new Date(ci.createdAt).getMonth() + 1;
-    acc[month] = (acc[month] || 0) + 1;
-    return acc;
-  }, {} as Record<number, number>);
+function groupCheckInsByMonth(checkIns: CheckIn[]): Record<number, number> {
+  return checkIns.reduce(
+    (acc, ci) => {
+      const month = new Date(ci.createdAt).getMonth() + 1;
+      acc[month] = (acc[month] || 0) + 1;
+      return acc;
+    },
+    {} as Record<number, number>
+  );
 }
 
 function buildYearlyReportPrompt(
   year: number,
   analytics: YearlyAnalytics,
   goals: Goal[],
-  checkIns: CheckIn[]
+  checkIns: CheckIn[],
+  locale: string
 ): string {
+  const outputLang = locale === 'tr' ? 'Turkish' : 'English';
+  const monthNames = getMonthNames('en'); // Always use English month names in prompt
+
   const {
     totalGoals,
     completedGoals,
@@ -103,77 +113,76 @@ function buildYearlyReportPrompt(
     checkInsByMonth,
   } = analytics;
 
-  return `Sen deneyimli bir Türkçe konuşan kişisel gelişim analisti ve koçusun. Görevin, ${year} yılı verilerini okuyup kullanıcının kişisel gelişim yolculuğu hakkında **kısa, öz ve okunması kolay** bir yıllık rapor yazmak.
+  return `You are an experienced personal development analyst and coach. Your task is to analyze the ${year} data and write a **concise, clear, and easy-to-read** yearly report about the user's personal development journey.
 
-ÖZET VERİLER (zaten Türkçe):
-- Yıl: ${year}
-- Toplam hedef: ${totalGoals}
-- Tamamlanan hedefler: ${completedGoals.length} (${completedGoals.filter((g: Goal) => g.isCompleted === true).length} açıkça tamamlandı olarak işaretlenmiş)
-- Aktif hedefler: ${activeGoals.length}
-- Ortalama ilerleme: %${averageProgress.toFixed(1)}
+SUMMARY DATA:
+- Year: ${year}
+- Total goals: ${totalGoals}
+- Completed goals: ${completedGoals.length} (${completedGoals.filter((g: Goal) => g.isCompleted === true).length} explicitly marked as completed)
+- Active goals: ${activeGoals.length}
+- Average progress: ${averageProgress.toFixed(1)}%
 
-Kategoriye göre hedefler:
+Goals by category:
 ${Object.entries(goalsByCategory)
-      .map(([cat, count]) => `- ${cat}: ${count} hedef`)
-      .join('\n')}
+  .map(([cat, count]) => `- ${cat}: ${count} goal${count > 1 ? 's' : ''}`)
+  .join('\n')}
 
-Check-in özeti:
-- Toplam check-in: ${totalCheckIns}
-- Aylık dağılım: ${Object.entries(checkInsByMonth)
-      .map(([month, count]) => `${month}. ay: ${count} check-in`)
-      .join(', ')}
+Check-in summary:
+- Total check-ins: ${totalCheckIns}
+- Monthly distribution: ${Object.entries(checkInsByMonth)
+  .map(([month, count]) => `${monthNames[parseInt(month) - 1]}: ${count} check-in${count > 1 ? 's' : ''}`)
+  .join(', ')}
 
-Hedef detayları:
+Goal details:
 ${goals
-      .map(
-        (g) =>
-          `- "${g.title}" (${g.category}): %${g.progress} ilerleme${g.isCompleted ? ' [TAMAMLANDI]' : ''
-          }${g.description
-            ? `, Açıklama: ${g.description}`
-            : g.motivation
-              ? `, Motivasyon: ${g.motivation}`
-              : ''
-          }`
-      )
-      .join('\n')}
+  .map(
+    (g) =>
+      `- "${g.title}" (${g.category}): ${g.progress}% progress${g.isCompleted ? ' [COMPLETED]' : ''}${
+        g.description
+          ? `, Description: ${g.description}`
+          : g.motivation
+            ? `, Motivation: ${g.motivation}`
+            : ''
+      }`
+  )
+  .join('\n')}
 
-Son 10 check-in notu:
+Last 10 check-in notes:
 ${checkIns
-      .slice(-10)
-      .map((ci) => `- ${ci.note || 'Not yok'} (Puan: ${ci.score}/10)`)
-      .join('\n')}
+  .slice(-10)
+  .map((ci) => `- ${ci.note || 'No note'} (Score: ${ci.score}/10)`)
+  .join('\n')}
 
-Yazım kuralları:
-- ÇIKTI DİLİ MUTLAKA TÜRKÇE OLMALI.
-- Ton: Sıcak, samimi ve destekleyici, ancak aşırı duygusal değil.
-- Format: Markdown başlıkları kullan (#, ##, ###).
-- Uzunluk: Maksimum 300–350 kelime. Gereksiz tekrar ve uzun cümlelerden kaçın, net ve doğrudan yaz.
+Writing rules:
+- ${getLanguageInstruction(locale)}
+- Tone: Warm, friendly and supportive, but not overly emotional.
+- Format: Use Markdown headings (#, ##, ###).
+- Length: Maximum 300–350 words. Avoid unnecessary repetition and long sentences, write clearly and directly.
 
-RAPOR BÖLÜMLERİ (bu sırayla yaz, hepsi Türkçe ve her bölümde en fazla 2–3 cümle olacak şekilde):
+REPORT SECTIONS (write in this order, with a maximum of 2–3 sentences per section):
 
-# ${year} Yıllık Kişisel Gelişim Raporun
+# ${year} Personal Development Report
 
-## 1. Yılın Genel Özeti
-En fazla 2–3 cümlede yılın genel tonunu, ana temaları ve önemli değişimleri özetle. Güçlü yönleri ve gösterilen çabayı takdir et.
+## 1. Year Overview
+Summarize the overall tone of the year, main themes, and significant changes in 2–3 sentences max. Acknowledge strengths and efforts shown.
 
-## 2. Hedeflerdeki İlerleme
-En fazla 2–3 cümlede kategoriye göre ilerlemeyi analiz et; tamamlanan hedefleri kutla (özellikle açıkça tamamlandı olarak işaretlenenler - isCompleted=true), zorlu alanları ve tamamlanmamış hedefleri dürüst ama yapıcı bir şekilde belirt.
+## 2. Goal Progress
+Analyze progress by category in 2–3 sentences max; celebrate completed goals (especially those explicitly marked as completed - isCompleted=true), and honestly but constructively note challenging areas and incomplete goals.
 
-## 3. Duygusal ve Mental Yolculuk
-En fazla 2–3 cümlede motivasyon dalgalanmalarını, zor dönemleri ve toparlanma anlarını özetle; kullanıcının dayanıklılığını vurgula.
+## 3. Emotional and Mental Journey
+Summarize motivation fluctuations, difficult periods, and recovery moments in 2–3 sentences max; highlight the user's resilience.
 
-## 4. En İyi Anlar ve Kilometre Taşları
-En fazla 2–3 cümlede yıl boyunca öne çıkan anları, ilkleri ve küçük ama anlamlı zaferleri anlat.
+## 4. Best Moments and Milestones
+Describe standout moments, firsts, and small but meaningful victories throughout the year in 2–3 sentences max.
 
-## 5. Öğrenilen Dersler
-Bu yıldan çıkarılabilecek 4–5 net dersi ve içgörüyü, kısa bir madde işareti listesi halinde yaz.
+## 5. Lessons Learned
+Write 4–5 clear lessons and insights from this year as a short bullet list.
 
-## 6. ${year + 1} Yılı İçin Öneriler
-En fazla 2–3 cümlede gelecek yıl için 3–4 somut odak alanı, yeni hedef fikirleri ve eyleme dönüştürülebilir öneriler ver, Türkçe.
+## 6. Recommendations for ${year + 1}
+Provide 3–4 concrete focus areas, new goal ideas, and actionable recommendations for the coming year in 2–3 sentences max.
 
-## 7. Kendine Kısa Not
-Kullanıcının kendi çabasını takdir etmesine yardımcı olan, şefkatli ama gerçekçi bir tonda kısa bir not yaz, Türkçe.
+## 7. A Short Note to Yourself
+Write a short note in a compassionate but realistic tone that helps the user appreciate their own efforts.
 
-Metin boyunca okuyucuya doğrudan Türkçe ikinci tekil şahıs ("sen") ile hitap et.`;
+IMPORTANT: Your entire response must be written in ${outputLang}. Address the reader directly using second person ("you" / "sen").`;
 }
-

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/providers/locale_provider.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_radius.dart';
 import '../../../core/theme/app_spacing.dart';
@@ -1542,12 +1543,14 @@ class _CreateReportBottomSheetState
             return;
           }
 
+          final locale = ref.read(localeProvider).languageCode;
           content = await aiService.generateWeeklyReport(
             userId: userId,
             weekStart: periodStart,
             weekEnd: periodEnd,
             goals: goals,
             checkIns: weekCheckIns,
+            locale: locale,
           );
           break;
 
@@ -1580,12 +1583,14 @@ class _CreateReportBottomSheetState
             return;
           }
 
+          final monthLocale = ref.read(localeProvider).languageCode;
           content = await aiService.generateMonthlyReport(
             userId: userId,
             year: now.year,
             month: now.month,
             goals: goals,
             checkIns: monthCheckIns,
+            locale: monthLocale,
           );
           break;
 
@@ -1617,11 +1622,13 @@ class _CreateReportBottomSheetState
             return;
           }
 
+          final yearLocale = ref.read(localeProvider).languageCode;
           content = await aiService.generateYearlyReport(
             userId: userId,
             year: now.year,
             goals: goals,
             checkIns: yearCheckIns,
+            locale: yearLocale,
           );
           break;
       }

@@ -11,6 +11,7 @@ import {
   Goal,
 } from '../types/ai-types';
 import {GeminiClient} from './gemini-client';
+import {getMonthNames, getDateLocale, getLanguageInstruction} from './locale-utils';
 
 interface MonthlyAnalytics {
   completedGoals: Goal[];
@@ -23,26 +24,11 @@ interface MonthlyAnalytics {
   averageCheckInScore: number;
 }
 
-const monthNames = [
-  'Ocak',
-  'Şubat',
-  'Mart',
-  'Nisan',
-  'Mayıs',
-  'Haziran',
-  'Temmuz',
-  'Ağustos',
-  'Eylül',
-  'Ekim',
-  'Kasım',
-  'Aralık',
-];
-
 export async function generateMonthlyReport(
   request: GenerateMonthlyReportRequest,
   geminiClient: GeminiClient
 ): Promise<GenerateMonthlyReportResponse> {
-  const {year, month, goals, checkIns} = request;
+  const {year, month, goals, checkIns, locale = 'tr'} = request;
 
   const analytics = calculateMonthlyAnalytics(goals, checkIns);
   const prompt = buildMonthlyReportPrompt(
@@ -50,7 +36,8 @@ export async function generateMonthlyReport(
     month,
     analytics,
     goals,
-    checkIns
+    checkIns,
+    locale
   );
 
   try {
@@ -98,27 +85,29 @@ function calculateMonthlyAnalytics(
   };
 }
 
-function groupGoalsByCategory(
-  goals: Goal[]
-): Record<string, number> {
-  return goals.reduce((acc, g) => {
-    acc[g.category] = (acc[g.category] || 0) + 1;
-    return acc;
-  }, {} as Record<string, number>);
+function groupGoalsByCategory(goals: Goal[]): Record<string, number> {
+  return goals.reduce(
+    (acc, g) => {
+      acc[g.category] = (acc[g.category] || 0) + 1;
+      return acc;
+    },
+    {} as Record<string, number>
+  );
 }
 
-function groupCheckInsByWeek(
-  checkIns: CheckIn[]
-): Record<number, number> {
-  return checkIns.reduce((acc, ci) => {
-    const date = new Date(ci.createdAt);
-    // Calculate week of month (1-4 or 5)
-    const firstDay = new Date(date.getFullYear(), date.getMonth(), 1);
-    const dayOfMonth = date.getDate();
-    const week = Math.ceil((dayOfMonth + firstDay.getDay()) / 7);
-    acc[week] = (acc[week] || 0) + 1;
-    return acc;
-  }, {} as Record<number, number>);
+function groupCheckInsByWeek(checkIns: CheckIn[]): Record<number, number> {
+  return checkIns.reduce(
+    (acc, ci) => {
+      const date = new Date(ci.createdAt);
+      // Calculate week of month (1-4 or 5)
+      const firstDay = new Date(date.getFullYear(), date.getMonth(), 1);
+      const dayOfMonth = date.getDate();
+      const week = Math.ceil((dayOfMonth + firstDay.getDay()) / 7);
+      acc[week] = (acc[week] || 0) + 1;
+      return acc;
+    },
+    {} as Record<number, number>
+  );
 }
 
 function buildMonthlyReportPrompt(
@@ -126,8 +115,13 @@ function buildMonthlyReportPrompt(
   month: number,
   analytics: MonthlyAnalytics,
   goals: Goal[],
-  checkIns: CheckIn[]
+  checkIns: CheckIn[],
+  locale: string
 ): string {
+  const outputLang = locale === 'tr' ? 'Turkish' : 'English';
+  const monthNames = getMonthNames('en'); // Always use English month names in prompt
+  const dateLocale = getDateLocale(locale);
+
   const {
     totalGoals,
     completedGoals,
@@ -141,86 +135,81 @@ function buildMonthlyReportPrompt(
 
   const monthName = monthNames[month - 1];
 
-  return `Sen deneyimli bir Türkçe konuşan kişisel gelişim analisti ve koçusun. Görevin, ${year} yılının ${monthName} ayı verilerini okuyup kullanıcının kişisel gelişim yolculuğu hakkında **kısa, öz ve okunması kolay** bir aylık rapor yazmak.
+  return `You are an experienced personal development analyst and coach. Your task is to analyze the ${monthName} ${year} data and write a **concise, clear, and easy-to-read** monthly report about the user's personal development journey.
 
-ÖZET VERİLER (zaten Türkçe):
-- Ay: ${monthName} ${year}
-- Toplam hedef: ${totalGoals}
-- Tamamlanan hedefler: ${completedGoals.length} (${
-    completedGoals.filter((g: Goal) => g.isCompleted === true).length
-  } açıkça tamamlandı olarak işaretlenmiş)
-- Aktif hedefler: ${activeGoals.length}
-- Ortalama ilerleme: %${averageProgress.toFixed(1)}
+SUMMARY DATA:
+- Month: ${monthName} ${year}
+- Total goals: ${totalGoals}
+- Completed goals: ${completedGoals.length} (${completedGoals.filter((g: Goal) => g.isCompleted === true).length} explicitly marked as completed)
+- Active goals: ${activeGoals.length}
+- Average progress: ${averageProgress.toFixed(1)}%
 
-Kategoriye göre hedefler:
+Goals by category:
 ${Object.entries(goalsByCategory)
-    .map(([cat, count]) => `- ${cat}: ${count} hedef`)
-    .join('\n')}
+  .map(([cat, count]) => `- ${cat}: ${count} goal${count > 1 ? 's' : ''}`)
+  .join('\n')}
 
-Check-in özeti:
-- Toplam check-in: ${totalCheckIns}
-- Ortalama check-in puanı: ${averageCheckInScore.toFixed(1)}/10
-- Haftalık dağılım: ${Object.entries(checkInsByWeek)
-    .map(([week, count]) => `${week}. hafta: ${count} check-in`)
-    .join(', ')}
+Check-in summary:
+- Total check-ins: ${totalCheckIns}
+- Average check-in score: ${averageCheckInScore.toFixed(1)}/10
+- Weekly distribution: ${Object.entries(checkInsByWeek)
+  .map(([week, count]) => `Week ${week}: ${count} check-in${count > 1 ? 's' : ''}`)
+  .join(', ')}
 
-Hedef detayları:
+Goal details:
 ${goals
-    .map(
-      (g) =>
-        `- "${g.title}" (${g.category}): %${g.progress} ilerleme${
-          g.isCompleted ? ' [TAMAMLANDI]' : ''
-        }${
-          g.description
-            ? `, Açıklama: ${g.description}`
-            : g.motivation
-              ? `, Motivasyon: ${g.motivation}`
-              : ''
-        }`
-    )
-    .join('\n')}
+  .map(
+    (g) =>
+      `- "${g.title}" (${g.category}): ${g.progress}% progress${g.isCompleted ? ' [COMPLETED]' : ''}${
+        g.description
+          ? `, Description: ${g.description}`
+          : g.motivation
+            ? `, Motivation: ${g.motivation}`
+            : ''
+      }`
+  )
+  .join('\n')}
 
-Son 15 check-in notu:
-${checkIns.length > 0
+Last 15 check-in notes:
+${
+  checkIns.length > 0
     ? checkIns
         .slice(-15)
         .map(
           (ci) =>
-            `- ${new Date(ci.createdAt).toLocaleDateString('tr-TR')}: ${
-              ci.note || 'Not yok'
-            } (Puan: ${ci.score}/10, İlerleme: ${ci.progressDelta > 0 ? '+' : ''}${ci.progressDelta}%)`
+            `- ${new Date(ci.createdAt).toLocaleDateString('en-US')}: ${ci.note || 'No note'} (Score: ${ci.score}/10, Progress: ${ci.progressDelta > 0 ? '+' : ''}${ci.progressDelta}%)`
         )
         .join('\n')
-    : 'Bu ay check-in yapılmamış.'}
-
-Yazım kuralları:
-- ÇIKTI DİLİ MUTLAKA TÜRKÇE OLMALI.
-- Ton: Sıcak, samimi ve destekleyici, ancak aşırı duygusal değil.
-- Format: Markdown başlıkları kullan (#, ##, ###).
-- Uzunluk: Maksimum 250–300 kelime. Gereksiz tekrar ve uzun cümlelerden kaçın, net ve doğrudan yaz.
-
-RAPOR BÖLÜMLERİ (bu sırayla yaz, hepsi Türkçe ve her bölümde en fazla 2–3 cümle olacak şekilde):
-
-# ${monthName} ${year} Aylık Kişisel Gelişim Raporun
-
-## 1. Ayın Genel Özeti
-En fazla 2–3 cümlede ayın genel tonunu özetle; temel temaları ve önemli değişiklikleri belirt. Güçlü yönleri ve çabayı takdir et.
-
-## 2. Hedeflerdeki İlerleme
-En fazla 2–3 cümlede kategoriye göre ilerlemeyi analiz et; tamamlanan hedefleri kutla (özellikle açıkça tamamlandı olarak işaretlenenler - isCompleted=true) ve zorlu alanları dürüst ama yapıcı bir şekilde belirt.
-
-## 3. Duygusal ve Mental Yolculuk
-En fazla 2–3 cümlede motivasyon ve duygu dalgalanmalarını, zor dönemleri ve toparlanma anlarını özetle; kullanıcının dayanıklılığını vurgula.
-
-## 4. Ayın En İyi Anları ve Kilometre Taşları
-En fazla 2–3 cümlede ay boyunca öne çıkan anları, ilkleri ve küçük ama anlamlı zaferleri anlat.
-
-## 5. Öğrenilen Dersler
-Bu aydan çıkarılabilecek 3–4 net dersi ve içgörüyü, kısa bir madde işareti listesi halinde yaz.
-
-## 6. Gelecek Ay İçin Öneriler
-En fazla 2–3 cümlede önümüzdeki ay için 2–3 somut odak alanı ve eyleme dönüştürülebilir öneri ver, Türkçe.
-
-Metin boyunca okuyucuya doğrudan Türkçe ikinci tekil şahıs ("sen") ile hitap et.`;
+    : 'No check-ins this month.'
 }
 
+Writing rules:
+- ${getLanguageInstruction(locale)}
+- Tone: Warm, friendly and supportive, but not overly emotional.
+- Format: Use Markdown headings (#, ##, ###).
+- Length: Maximum 250–300 words. Avoid unnecessary repetition and long sentences, write clearly and directly.
+
+REPORT SECTIONS (write in this order, with a maximum of 2–3 sentences per section):
+
+# ${monthName} ${year} Monthly Report
+
+## 1. Month Overview
+Summarize the overall tone of the month in 2–3 sentences max; note main themes and significant changes. Acknowledge strengths and efforts.
+
+## 2. Goal Progress
+Analyze progress by category in 2–3 sentences max; celebrate completed goals (especially those explicitly marked as completed - isCompleted=true) and honestly but constructively note challenging areas.
+
+## 3. Emotional and Mental Journey
+Summarize motivation and emotional fluctuations, difficult periods, and recovery moments in 2–3 sentences max; highlight the user's resilience.
+
+## 4. Best Moments and Milestones of the Month
+Describe standout moments, firsts, and small but meaningful victories throughout the month in 2–3 sentences max.
+
+## 5. Lessons Learned
+Write 3–4 clear lessons and insights from this month as a short bullet list.
+
+## 6. Recommendations for Next Month
+Provide 2–3 concrete focus areas and actionable recommendations for the coming month in 2–3 sentences max.
+
+IMPORTANT: Your entire response must be written in ${outputLang}. Address the reader directly using second person ("you" / "sen").`;
+}

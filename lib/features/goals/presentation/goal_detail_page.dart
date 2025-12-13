@@ -17,6 +17,7 @@ import '../../../core/widgets/index.dart';
 import '../../../shared/models/check_in.dart';
 import '../../../shared/models/goal.dart';
 import '../../../shared/models/note.dart';
+import '../../../core/providers/locale_provider.dart';
 import '../../../shared/providers/ai_providers.dart';
 import '../../../shared/providers/goal_providers.dart';
 
@@ -1770,10 +1771,12 @@ class _SubtasksTabState extends ConsumerState<_SubtasksTab> {
     });
 
     try {
+      final locale = ref.read(localeProvider).languageCode;
       final titles = await aiService.suggestSubGoals(
         goalTitle: widget.goalTitle,
         category: widget.goalCategoryKey,
         description: widget.goalDescription,
+        locale: locale,
       );
 
       if (!mounted) return;

@@ -44,12 +44,14 @@ class AIService {
     required String category,
     String? motivation,
     DateTime? targetDate,
+    String locale = 'tr',
   }) async {
     try {
       final user = await _getAuthenticatedUser();
       final result = await _callOptimizeFunction(user, {
         'goalTitle': goalTitle,
         'category': category,
+        'locale': locale,
         if (motivation != null && motivation.isNotEmpty)
           'motivation': motivation,
         if (targetDate != null) 'targetDate': targetDate.toIso8601String(),
@@ -57,7 +59,7 @@ class AIService {
 
       return _parseOptimizeResponse(result);
     } catch (e) {
-      throw _handleOptimizeError(e, goalTitle);
+      throw _handleOptimizeError(e, goalTitle, locale);
     }
   }
 
@@ -84,6 +86,7 @@ class AIService {
     required String goalTitle,
     required String category,
     String? description,
+    String locale = 'tr',
   }) async {
     try {
       final user = _auth.currentUser;
@@ -97,10 +100,12 @@ class AIService {
       _Logger.debug('  goalTitle: $goalTitle');
       _Logger.debug('  category: $category');
       _Logger.debug('  description: $description');
+      _Logger.debug('  locale: $locale');
 
       final result = await callable.call({
         'goalTitle': goalTitle,
         'category': category,
+        'locale': locale,
         if (description != null && description.isNotEmpty)
           'description': description,
       });
@@ -129,6 +134,7 @@ class AIService {
             goalTitle: goalTitle,
             category: category,
             motivation: description,
+            locale: locale,
           );
 
           final fallbackList = optimized.subGoals
@@ -143,13 +149,17 @@ class AIService {
           _Logger.error(
               'AI Service fallback via optimizeGoal failed: $fallbackError',
               fallbackStackTrace);
-          throw Exception(
-            'Alt görev önerileri alınamadı: ${fallbackError.toString()}',
-          );
+          final errorMsg = locale == 'tr'
+              ? 'Alt görev önerileri alınamadı: ${fallbackError.toString()}'
+              : 'Failed to get sub-goal suggestions: ${fallbackError.toString()}';
+          throw Exception(errorMsg);
         }
       }
 
-      throw Exception('Alt görev önerileri alınamadı: ${e.toString()}');
+      final errorMsg = locale == 'tr'
+          ? 'Alt görev önerileri alınamadı: ${e.toString()}'
+          : 'Failed to get sub-goal suggestions: ${e.toString()}';
+      throw Exception(errorMsg);
     }
   }
 
@@ -165,6 +175,7 @@ class AIService {
     required String userId,
     required List<Goal> goals,
     required List<CheckIn> checkIns,
+    String locale = 'tr',
   }) async {
     try {
       final user = _auth.currentUser;
@@ -183,6 +194,7 @@ class AIService {
         'userId': userId,
         'goals': goals.map((g) => _goalToMap(g)).toList(),
         'checkIns': checkIns.map((ci) => _checkInToMap(ci)).toList(),
+        'locale': locale,
       });
 
       final data = result.data as Map<String, dynamic>;
@@ -198,6 +210,7 @@ class AIService {
     required int year,
     required List<Goal> goals,
     required List<CheckIn> checkIns,
+    String locale = 'tr',
   }) async {
     try {
       final user = _auth.currentUser;
@@ -217,6 +230,7 @@ class AIService {
         'year': year,
         'goals': goals.map((g) => _goalToMap(g)).toList(),
         'checkIns': checkIns.map((ci) => _checkInToMap(ci)).toList(),
+        'locale': locale,
       });
 
       final data = result.data as Map<String, dynamic>;
@@ -233,6 +247,7 @@ class AIService {
     required DateTime weekEnd,
     required List<Goal> goals,
     required List<CheckIn> checkIns,
+    String locale = 'tr',
   }) async {
     try {
       final user = _auth.currentUser;
@@ -253,6 +268,7 @@ class AIService {
         'weekEnd': weekEnd.toIso8601String(),
         'goals': goals.map((g) => _goalToMap(g)).toList(),
         'checkIns': checkIns.map((ci) => _checkInToMap(ci)).toList(),
+        'locale': locale,
       });
 
       final data = result.data as Map<String, dynamic>;
@@ -269,6 +285,7 @@ class AIService {
     required int month,
     required List<Goal> goals,
     required List<CheckIn> checkIns,
+    String locale = 'tr',
   }) async {
     try {
       final user = _auth.currentUser;
@@ -289,6 +306,7 @@ class AIService {
         'month': month,
         'goals': goals.map((g) => _goalToMap(g)).toList(),
         'checkIns': checkIns.map((ci) => _checkInToMap(ci)).toList(),
+        'locale': locale,
       });
 
       final data = result.data as Map<String, dynamic>;
@@ -352,6 +370,7 @@ class AIService {
     _Logger.debug('  goalTitle: ${data['goalTitle']}');
     _Logger.debug('  category: ${data['category']}');
     _Logger.debug('  motivation: ${data['motivation']}');
+    _Logger.debug('  locale: ${data['locale']}');
 
     final result = await callable.call(data);
 
@@ -393,21 +412,36 @@ class AIService {
   }
 
   /// Handle optimize error
-  Exception _handleOptimizeError(Object error, String goalTitle) {
+  Exception _handleOptimizeError(Object error, String goalTitle, String locale) {
     _Logger.error('AI Service Error: $error');
+
+    final isTurkish = locale == 'tr';
 
     // Provide more specific error messages
     if (error.toString().contains('NOT_FOUND')) {
       return Exception(
-          'Cloud Function bulunamadı. Functions deploy edildi mi?');
+        isTurkish
+            ? 'Cloud Function bulunamadı. Functions deploy edildi mi?'
+            : 'Cloud Function not found. Are the functions deployed?',
+      );
     } else if (error.toString().contains('PERMISSION_DENIED')) {
-      return Exception('Yetki hatası. Giriş yaptığınızdan emin olun.');
+      return Exception(
+        isTurkish
+            ? 'Yetki hatası. Giriş yaptığınızdan emin olun.'
+            : 'Permission denied. Please make sure you are logged in.',
+      );
     } else if (error.toString().contains('UNAVAILABLE')) {
       return Exception(
-          'Cloud Function şu anda kullanılamıyor. Lütfen tekrar deneyin.');
+        isTurkish
+            ? 'Cloud Function şu anda kullanılamıyor. Lütfen tekrar deneyin.'
+            : 'Cloud Function is currently unavailable. Please try again.',
+      );
     } else if (error.toString().contains('DEADLINE_EXCEEDED')) {
       return Exception(
-          'İstek zaman aşımına uğradı. Lütfen tekrar deneyin.');
+        isTurkish
+            ? 'İstek zaman aşımına uğradı. Lütfen tekrar deneyin.'
+            : 'Request timed out. Please try again.',
+      );
     }
 
     final message = error.toString();
@@ -416,21 +450,32 @@ class AIService {
     // Hedef çok kısa / anlamsız ise daha açıklayıcı bir mesaj göster
     if (_isGoalTooShort(goalTitle) || _isAiParsingError(normalized)) {
       return Exception(
-        'AI bu hedefi anlamakta zorlandı. '
-        'Hedef başlığını biraz daha açıklayıcı ve net yazmayı dene. '
-        'Örneğin: "İngilizce seviyemi B1\'den B2\'ye çıkarmak" gibi.',
+        isTurkish
+            ? 'AI bu hedefi anlamakta zorlandı. '
+                'Hedef başlığını biraz daha açıklayıcı ve net yazmayı dene. '
+                'Örneğin: "İngilizce seviyemi B1\'den B2\'ye çıkarmak" gibi.'
+            : 'AI had difficulty understanding this goal. '
+                'Try writing the goal title a bit more descriptive and clear. '
+                'For example: "Improve my English level from B1 to B2".',
       );
     }
 
     // AI'den gelen beklenmeyen tarih formatları için kullanıcı dostu mesaj
     if (normalized.contains('invalid date format')) {
       return Exception(
-        'AI tarafından üretilen tarihler işlenemedi. '
-        'Lütfen daha sonra tekrar dene veya hedefi elle düzenle.',
+        isTurkish
+            ? 'AI tarafından üretilen tarihler işlenemedi. '
+                'Lütfen daha sonra tekrar dene veya hedefi elle düzenle.'
+            : 'Could not process dates generated by AI. '
+                'Please try again later or edit the goal manually.',
       );
     }
 
-    return Exception('Hedef optimizasyonu başarısız: $message');
+    return Exception(
+      isTurkish
+          ? 'Hedef optimizasyonu başarısız: $message'
+          : 'Goal optimization failed: $message',
+    );
   }
 
   /// Check if goal title is too short
