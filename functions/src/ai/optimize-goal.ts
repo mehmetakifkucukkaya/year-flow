@@ -26,16 +26,30 @@ function calculateDurationPhrase(
   const diffDays = Math.max(1, Math.round(diffMs / (1000 * 60 * 60 * 24)));
   const diffWeeks = Math.max(1, Math.round(diffDays / 7));
 
+  const isTurkish = locale === 'tr';
+
   if (diffDays <= 45) {
     // roughly up to 1.5 months → use weeks
-    const phrase =
-      diffWeeks === 1 ? 'over 1 week' : `over ${diffWeeks} weeks`;
-    return {phrase, weeks: diffWeeks};
+    if (isTurkish) {
+      const phrase =
+        diffWeeks === 1 ? '1 hafta içinde' : `${diffWeeks} hafta içinde`;
+      return {phrase, weeks: diffWeeks};
+    } else {
+      const phrase =
+        diffWeeks === 1 ? 'over 1 week' : `over ${diffWeeks} weeks`;
+      return {phrase, weeks: diffWeeks};
+    }
   } else {
     const approxMonths = Math.max(1, Math.round(diffDays / 30));
-    const phrase =
-      approxMonths === 1 ? 'over 1 month' : `over ${approxMonths} months`;
-    return {phrase, weeks: diffWeeks};
+    if (isTurkish) {
+      const phrase =
+        approxMonths === 1 ? '1 ay içinde' : `${approxMonths} ay içinde`;
+      return {phrase, weeks: diffWeeks};
+    } else {
+      const phrase =
+        approxMonths === 1 ? 'over 1 month' : `over ${approxMonths} months`;
+      return {phrase, weeks: diffWeeks};
+    }
   }
 }
 

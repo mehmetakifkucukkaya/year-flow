@@ -135,8 +135,11 @@ class _LoginPageState extends ConsumerState<LoginPage> {
           next.errorMessage,
           next.errorCode,
         );
-        if (resolvedMessage != _lastShownError &&
-            resolvedMessage != previous?.errorMessage) {
+        final hasErrorStateChanged =
+            next.errorMessage != previous?.errorMessage ||
+            next.errorCode != previous?.errorCode;
+
+        if (hasErrorStateChanged && resolvedMessage != _lastShownError) {
           _lastShownError = resolvedMessage;
           try {
             AppSnackbar.showError(context, message: resolvedMessage);
@@ -147,7 +150,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       }
       
       // Hata mesajı temizlendiğinde, son gösterilen hatayı da temizle
-      if (next.errorMessage == null && previous?.errorMessage != null) {
+      if (next.errorMessage == null &&
+          next.errorCode == null &&
+          (previous?.errorMessage != null || previous?.errorCode != null)) {
         _lastShownError = null;
       }
       
@@ -591,22 +596,20 @@ class _GoogleSignInButton extends StatelessWidget {
 
 /// Google ikonu widget'ı - Google'ın resmi logosunu kullanır
 class _GoogleIcon extends StatelessWidget {
-  const _GoogleIcon({this.size = 20});
-
-  final double size;
+  const _GoogleIcon();
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: size * 1.7,
-      height: size,
+      width: 34,
+      height: 20,
       child: Builder(
         builder: (context) {
           try {
             return SvgPicture.asset(
               'assets/icons/google_logo.svg',
-              width: size * 1.7,
-              height: size,
+              width: 34,
+              height: 20,
               fit: BoxFit.contain,
               placeholderBuilder: (context) => const Icon(
                 Icons.g_mobiledata,

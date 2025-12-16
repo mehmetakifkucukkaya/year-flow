@@ -247,6 +247,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
           isLoading: false,
           isAuthenticated: true,
           errorMessage: null,
+          errorCode: null,
           currentUser: user,
         );
       } else {
@@ -377,12 +378,15 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 
   /// Şifre değiştir
-  /// NOT: Başarılı olduğunda isPasswordChanging TRUE kalır (logout yapılana kadar)
-  /// Bu sayede router redirect tetiklenmez
+  /// Başarılı olduğunda kısa bir süre için isPasswordChanging TRUE kalır
+  /// Bu sayede router redirect tetiklenmez ve snackbar gösterilebilir
+  /// Ardından flag'ler temizlenir
   Future<void> changePassword({
     required String currentPassword,
     required String newPassword,
   }) async {
+    // Auth listener'ı suppress etmek için flag'i işlem başında set et
+    startPasswordChange();
     state = state.copyWith(
       isPasswordChanging: true,
       errorMessage: null,
@@ -394,18 +398,30 @@ class AuthNotifier extends StateNotifier<AuthState> {
         currentPassword: currentPassword,
         newPassword: newPassword,
       );
-      // BAŞARILI: isPasswordChanging TRUE KALSIN (logout yapılana kadar)
+      // BAŞARILI: Kısa bir süre için isPasswordChanging TRUE kalsın
       // Bu sayede router redirect tetiklenmez ve snackbar gösterilebilir
       state = state.copyWith(
-        isPasswordChanging: true, // TRUE KALMALI!
+        isPasswordChanging: true,
         isAuthenticated: true,
         currentUser: updatedUser,
         errorMessage: null,
         errorCode: null,
       );
-      // _suppressAuthNull TRUE KALSIN (logout yapılana kadar)
+      
+      // Snackbar gösterildikten sonra flag'leri temizle (2 saniye sonra)
+      // Bu süre snackbar'ın gösterilmesi için yeterli
+      Future.delayed(const Duration(seconds: 2), () {
+        // Eğer başka bir şifre değiştirme işlemi başlamışsa flag'i temizleme
+        if (!_isChangePasswordInProgress) return;
+        endPasswordChange();
+        state = state.copyWith(
+          isPasswordChanging: false,
+        );
+        _suppressAuthNull = false;
+      });
     } on FirebaseAuthException catch (e) {
-      // HATA: isPasswordChanging FALSE olsun
+      // HATA: Flag'leri hemen temizle
+      endPasswordChange();
       state = state.copyWith(
         isPasswordChanging: false,
         errorMessage: e.message,
@@ -414,7 +430,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
       _suppressAuthNull = false;
       rethrow;
     } catch (e) {
-      // HATA: isPasswordChanging FALSE olsun
+      // HATA: Flag'leri hemen temizle
+      endPasswordChange();
       state = state.copyWith(
         isPasswordChanging: false,
         errorMessage: e.toString(),

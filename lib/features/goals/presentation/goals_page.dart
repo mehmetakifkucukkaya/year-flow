@@ -888,8 +888,6 @@ class _CompletedGoalCard extends ConsumerWidget {
         return const Color(0xFFFF9800);
       case GoalCategory.personalGrowth:
         return AppColors.primary;
-      default:
-        return AppColors.primary;
     }
   }
 

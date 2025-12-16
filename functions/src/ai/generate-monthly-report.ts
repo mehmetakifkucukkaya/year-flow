@@ -177,7 +177,7 @@ ${
         .slice(-15)
         .map(
           (ci) =>
-            `- ${new Date(ci.createdAt).toLocaleDateString('en-US')}: ${ci.note || 'No note'} (Score: ${ci.score}/10, Progress: ${ci.progressDelta > 0 ? '+' : ''}${ci.progressDelta}%)`
+            `- ${new Date(ci.createdAt).toLocaleDateString(dateLocale)}: ${ci.note || 'No note'} (Score: ${ci.score}/10, Progress: ${ci.progressDelta > 0 ? '+' : ''}${ci.progressDelta}%)`
         )
         .join('\n')
     : 'No check-ins this month.'

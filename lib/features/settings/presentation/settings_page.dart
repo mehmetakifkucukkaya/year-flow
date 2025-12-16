@@ -263,46 +263,43 @@ class _SettingsTile extends ConsumerWidget {
     required this.title,
     this.trailing,
     this.onTap,
-    this.isLanguage = false,
   });
 
   const _SettingsTile.notification()
       : icon = Icons.notifications_rounded,
         title = '', // Will be set in build method
         trailing = const _NotificationSwitch(),
-        onTap = null,
-        isLanguage = false;
+        onTap = null;
 
   const _SettingsTile.language()
       : icon = Icons.language_rounded,
         title = '',
         trailing = null,
-        onTap = null,
-        isLanguage = true;
+        onTap = null;
 
   final IconData icon;
   final String title;
   final Widget? trailing;
   final VoidCallback? onTap;
-  final bool isLanguage;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
-    final currentLocale = isLanguage ? ref.watch(localeProvider) : null;
+    final isLanguageTile = icon == Icons.language_rounded;
+    final currentLocale = isLanguageTile ? ref.watch(localeProvider) : null;
     final currentLanguageLabel = currentLocale != null
         ? (currentLocale.languageCode == 'tr'
             ? l10n.turkish
             : l10n.english)
         : null;
-    final displayTitle = isLanguage
+    final displayTitle = isLanguageTile
         ? l10n.language
         : (title.isEmpty ? l10n.notifications : title);
 
     return InkWell(
       onTap: trailing is _NotificationSwitch
           ? null
-          : isLanguage
+          : isLanguageTile
               ? () => _showLanguageDialog(context, ref)
               : onTap,
       child: Padding(
@@ -481,13 +478,22 @@ class _SecuritySection extends StatelessWidget {
               ),
             ],
           ),
-          child: _SettingsTile._(
-            icon: Icons.shield_rounded,
-            title: context.l10n.privacyAndSecurity,
-            trailing: const _ChevronWithLabel(label: ''),
-            onTap: () {
-              context.push(AppRoutes.privacySecurity);
-            },
+          child: Column(
+            children: [
+              _SettingsTile._(
+                icon: Icons.shield_rounded,
+                title: context.l10n.privacyAndSecurity,
+                trailing: const _ChevronWithLabel(label: ''),
+                onTap: () {
+                  context.push(AppRoutes.privacySecurity);
+                },
+              ),
+              const Divider(height: 1),
+              const Padding(
+                padding: EdgeInsets.all(AppSpacing.md),
+                child: _DangerZoneSection(),
+              ),
+            ],
           ),
         ),
       ],

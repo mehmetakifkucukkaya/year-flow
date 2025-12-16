@@ -1128,41 +1128,6 @@ class _ChallengeCard extends StatelessWidget {
   }
 }
 
-class _IconBulletRow extends StatelessWidget {
-  const _IconBulletRow({
-    required this.icon,
-    required this.iconColor,
-    required this.text,
-  });
-
-  final IconData icon;
-  final Color iconColor;
-  final String text;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Icon(
-          icon,
-          color: iconColor,
-          size: 20,
-        ),
-        const SizedBox(width: AppSpacing.sm),
-        Expanded(
-          child: Text(
-            text,
-            style: AppTextStyles.bodyMedium.copyWith(
-              color: AppColors.gray800,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
 /// AI Önerileri kartı
 class _AiSuggestionsSection extends StatelessWidget {
   const _AiSuggestionsSection();

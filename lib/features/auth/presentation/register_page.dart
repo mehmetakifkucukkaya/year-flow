@@ -607,22 +607,20 @@ class _GoogleSignInButton extends StatelessWidget {
 
 /// Google ikonu widget'ı - Google'ın resmi logosunu kullanır
 class _GoogleIcon extends StatelessWidget {
-  const _GoogleIcon({this.size = 20});
-
-  final double size;
+  const _GoogleIcon();
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: size * 1.7,
-      height: size,
+      width: 34,
+      height: 20,
       child: Builder(
         builder: (context) {
           try {
             return SvgPicture.asset(
               'assets/icons/google_logo.svg',
-              width: size * 1.7,
-              height: size,
+              width: 34,
+              height: 20,
               fit: BoxFit.contain,
               placeholderBuilder: (context) => const Icon(
                 Icons.g_mobiledata,

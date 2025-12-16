@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 
 import '../../../core/constants/app_constants.dart';
 import '../../../shared/models/check_in.dart';
@@ -75,22 +76,24 @@ class FirestoreGoalRepository implements GoalRepository {
                   // isArchived filtresini memory'de yap
                   if (goal.isArchived) return null;
                   return goal;
-                } catch (e) {
-                  print('Error parsing goal ${doc.id}: $e');
+                } catch (e, stackTrace) {
+                  debugPrint('Error parsing goal ${doc.id}: $e');
+                  debugPrint('Stack trace: $stackTrace');
                   return null;
                 }
               })
               .whereType<Goal>()
               .toList();
-        } catch (e) {
-          print('Error parsing goals from Firestore: $e');
+        } catch (e, stackTrace) {
+          debugPrint('Error parsing goals from Firestore: $e');
+          debugPrint('Stack trace: $stackTrace');
           return <Goal>[];
         }
       });
     } catch (e, stackTrace) {
       // Hata detaylarını logla
-      print('Firestore watchGoals error: $e');
-      print('Stack trace: $stackTrace');
+      debugPrint('Firestore watchGoals error: $e');
+      debugPrint('Stack trace: $stackTrace');
       // Hata durumunda boş liste döndür (stream'i kırmamak için)
       yield <Goal>[];
     }
@@ -113,21 +116,23 @@ class FirestoreGoalRepository implements GoalRepository {
                   if (data == null) return null;
                   return _goalFromFirestore(
                       doc.id, data as Map<String, dynamic>);
-                } catch (e) {
-                  print('Error parsing goal ${doc.id}: $e');
+                } catch (e, stackTrace) {
+                  debugPrint('Error parsing goal ${doc.id}: $e');
+                  debugPrint('Stack trace: $stackTrace');
                   return null;
                 }
               })
               .whereType<Goal>()
               .toList();
-        } catch (e) {
-          print('Error parsing goals from Firestore: $e');
+        } catch (e, stackTrace) {
+          debugPrint('Error parsing goals from Firestore: $e');
+          debugPrint('Stack trace: $stackTrace');
           return <Goal>[];
         }
       });
     } catch (e, stackTrace) {
-      print('Firestore watchAllGoals error: $e');
-      print('Stack trace: $stackTrace');
+      debugPrint('Firestore watchAllGoals error: $e');
+      debugPrint('Stack trace: $stackTrace');
       yield <Goal>[];
     }
   }
@@ -292,8 +297,8 @@ class FirestoreGoalRepository implements GoalRepository {
               .whereType<CheckIn>()
               .toList());
     } catch (e, stackTrace) {
-      print('Firestore watchAllCheckIns error: $e');
-      print(stackTrace);
+      debugPrint('Firestore watchAllCheckIns error: $e');
+      debugPrint('Stack trace: $stackTrace');
       return Stream.value(<CheckIn>[]);
     }
   }
@@ -496,7 +501,7 @@ class FirestoreGoalRepository implements GoalRepository {
             .toList();
       });
     } catch (e) {
-      print('Error watching notes: $e');
+      debugPrint('Error watching notes: $e');
       return Stream.value([]);
     }
   }
@@ -514,7 +519,7 @@ class FirestoreGoalRepository implements GoalRepository {
         'content': note.content,
       });
     } catch (e) {
-      print('Error adding note: $e');
+      debugPrint('Error adding note: $e');
       rethrow;
     }
   }
@@ -526,7 +531,7 @@ class FirestoreGoalRepository implements GoalRepository {
           .doc(noteId)
           .delete();
     } catch (e) {
-      print('Error deleting note for user $userId: $e');
+      debugPrint('Error deleting note for user $userId: $e');
       rethrow;
     }
   }

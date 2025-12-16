@@ -11,7 +11,7 @@ import {
   Goal,
 } from '../types/ai-types';
 import {GeminiClient} from './gemini-client';
-import {getDayNames, getLanguageInstruction} from './locale-utils';
+import {getDayNames, getDateLocale, getLanguageInstruction} from './locale-utils';
 
 interface WeeklyAnalytics {
   completedGoals: Goal[];
@@ -125,6 +125,7 @@ function buildWeeklyReportPrompt(
 ): string {
   const outputLang = locale === 'tr' ? 'Turkish' : 'English';
   const dayNames = getDayNames('en'); // Always use English day names in prompt
+  const dateLocale = getDateLocale(locale);
 
   const {
     totalGoals,
@@ -181,7 +182,7 @@ ${
     ? checkIns
         .map(
           (ci) =>
-            `- ${new Date(ci.createdAt).toLocaleDateString('en-US')}: ${ci.note || 'No note'} (Score: ${ci.score}/10, Progress: ${ci.progressDelta > 0 ? '+' : ''}${ci.progressDelta}%)`
+            `- ${new Date(ci.createdAt).toLocaleDateString(dateLocale)}: ${ci.note || 'No note'} (Score: ${ci.score}/10, Progress: ${ci.progressDelta > 0 ? '+' : ''}${ci.progressDelta}%)`
         )
         .join('\n')
     : 'No check-ins this week.'
