@@ -1,3 +1,5 @@
+// ignore: unused_import
+import 'package:intl/intl.dart' as intl;
 import 'app_localizations.dart';
 
 // ignore_for_file: type=lint
@@ -49,7 +51,8 @@ class AppLocalizationsTr extends AppLocalizations {
   String get continueWithGoogle => 'Google ile devam et';
 
   @override
-  String get googleAuthFailed => 'Google ile giriş / kayıt ol işlemi yapılamadı.';
+  String get googleAuthFailed =>
+      'Google ile giriş / kayıt ol işlemi yapılamadı.';
 
   @override
   String get googleAuthCancelled => 'Google ile giriş iptal edildi.';
@@ -124,7 +127,8 @@ class AppLocalizationsTr extends AppLocalizations {
   String get setYourName => 'İsmini belirleyelim';
 
   @override
-  String get setYourNameDescription => 'Sana ekranda adınla hitap edelim. İstemezsen bu adımı her zaman profilinden değiştirebilirsin.';
+  String get setYourNameDescription =>
+      'Sana ekranda adınla hitap edelim. İstemezsen bu adımı her zaman profilinden değiştirebilirsin.';
 
   @override
   String get yearlyPerformanceSummary => 'Yıllık performans özetin';
@@ -183,7 +187,8 @@ class AppLocalizationsTr extends AppLocalizations {
   String get categoryBasedDevelopment => 'Kategori Bazlı Gelişim';
 
   @override
-  String get noAchievementData => 'Henüz başarı hikayesi oluşturacak kadar veri yok. Hedefler ekleyip check-in yaptıkça burada gelişimini göreceksin.';
+  String get noAchievementData =>
+      'Henüz başarı hikayesi oluşturacak kadar veri yok. Hedefler ekleyip check-in yaptıkça burada gelişimini göreceksin.';
 
   @override
   String get language => 'Dil';
@@ -203,7 +208,8 @@ class AppLocalizationsTr extends AppLocalizations {
   String get achievements => 'Başarılar';
 
   @override
-  String thisYearWorkedOnGoals(int totalGoals, int completedGoals, int completionRate) {
+  String thisYearWorkedOnGoals(
+      int totalGoals, int completedGoals, int completionRate) {
     return 'Bu yıl toplam $totalGoals hedef üzerinde çalıştın ve $completedGoals hedefi tamamladın (tamamlanma oranı yaklaşık %$completionRate).';
   }
 
@@ -226,7 +232,8 @@ class AppLocalizationsTr extends AppLocalizations {
   String get aiSuggestions => 'AI Önerileri';
 
   @override
-  String get aiSuggestionExample => 'Kişisel gelişim hedeflerindeki ilerlemen harika! Gelecek yıl, büyük kariyer hedeflerini daha küçük, yönetilebilir adımlara bölerek tamamlanma oranını artırabilirsin. Ayrıca, finansal okuryazarlık üzerine bir hedef eklemek genel başarını destekleyebilir.';
+  String get aiSuggestionExample =>
+      'Kişisel gelişim hedeflerindeki ilerlemen harika! Gelecek yıl, büyük kariyer hedeflerini daha küçük, yönetilebilir adımlara bölerek tamamlanma oranını artırabilirsin. Ayrıca, finansal okuryazarlık üzerine bir hedef eklemek genel başarını destekleyebilir.';
 
   @override
   String get loginRequired => 'Giriş yapmanız gerekiyor';
@@ -247,7 +254,8 @@ class AppLocalizationsTr extends AppLocalizations {
   String get csv => 'CSV';
 
   @override
-  String get atLeastOneGoalRequired => 'Rapor oluşturmak için en az bir hedef gerekli';
+  String get atLeastOneGoalRequired =>
+      'Rapor oluşturmak için en az bir hedef gerekli';
 
   @override
   String errorCreatingReport(String error) {
@@ -275,7 +283,8 @@ class AppLocalizationsTr extends AppLocalizations {
   }
 
   @override
-  String get solutionAddActions => 'Çözüm: Bu alanda haftaya 1–2 küçük, net aksiyon ekleyip check-in sıklığını artırmayı deneyebilirsin.';
+  String get solutionAddActions =>
+      'Çözüm: Bu alanda haftaya 1–2 küçük, net aksiyon ekleyip check-in sıklığını artırmayı deneyebilirsin.';
 
   @override
   String challengeFocusDifficulty(String category, int value) {
@@ -283,16 +292,20 @@ class AppLocalizationsTr extends AppLocalizations {
   }
 
   @override
-  String get solutionBreakDownGoals => 'Çözüm: Bu hedefleri daha küçük adımlara bölmek ve haftalık olarak gözden geçirmek odaklanmayı artırabilir.';
+  String get solutionBreakDownGoals =>
+      'Çözüm: Bu hedefleri daha küçük adımlara bölmek ve haftalık olarak gözden geçirmek odaklanmayı artırabilir.';
 
   @override
-  String get generalStatusHealthy => 'Genel durum: Tüm kategorilerde sağlıklı bir ilerleme var.';
+  String get generalStatusHealthy =>
+      'Genel durum: Tüm kategorilerde sağlıklı bir ilerleme var.';
 
   @override
-  String get solutionReviewPriorities => 'Çözüm: Yine de, motivasyonunu korumak için haftalık olarak önceliklerini gözden geçirmek iyi bir fikir olabilir.';
+  String get solutionReviewPriorities =>
+      'Çözüm: Yine de, motivasyonunu korumak için haftalık olarak önceliklerini gözden geçirmek iyi bir fikir olabilir.';
 
   @override
-  String get goalAndCheckInDataNeeded => 'Hedef ve check-in verilerin oluştukça, zorlandığın alanlar ve iyileştirme önerileri burada görünecek.';
+  String get goalAndCheckInDataNeeded =>
+      'Hedef ve check-in verilerin oluştukça, zorlandığın alanlar ve iyileştirme önerileri burada görünecek.';
 
   @override
   String get january => 'Ocak';
@@ -400,7 +413,8 @@ class AppLocalizationsTr extends AppLocalizations {
   String get noCompletedGoals => 'Henüz tamamlanan hedef yok';
 
   @override
-  String get completedGoalsWillAppear => 'Hedeflerini tamamladıkça burada gözükecekler';
+  String get completedGoalsWillAppear =>
+      'Hedeflerini tamamladıkça burada gözükecekler';
 
   @override
   String get goalsLoadingError => 'Hedefler yüklenirken bir hata oluştu.';
@@ -426,7 +440,8 @@ class AppLocalizationsTr extends AppLocalizations {
   String get moveToActiveTooltip => 'Aktif hedeflere geri al';
 
   @override
-  String get mustSignInToPerformAction => 'Bu işlemi yapmak için giriş yapmalısın.';
+  String get mustSignInToPerformAction =>
+      'Bu işlemi yapmak için giriş yapmalısın.';
 
   @override
   String get notificationsComingSoon => 'Bildirimler yakında eklenecek';
@@ -452,7 +467,8 @@ class AppLocalizationsTr extends AppLocalizations {
   }
 
   @override
-  String get weeklySummaryError => 'Bu haftanın özeti şu an yüklenemedi. Birazdan tekrar dene.';
+  String get weeklySummaryError =>
+      'Bu haftanın özeti şu an yüklenemedi. Birazdan tekrar dene.';
 
   @override
   String get howIsTodayGoing => 'Bugün nasıl geçiyor?';
@@ -480,6 +496,11 @@ class AppLocalizationsTr extends AppLocalizations {
   }
 
   @override
+  String inDays(int days) {
+    return '$days gün sonra';
+  }
+
+  @override
   String reportsLoadingError(String error) {
     return 'Raporlar yüklenirken hata oluştu: $error';
   }
@@ -488,7 +509,8 @@ class AppLocalizationsTr extends AppLocalizations {
   String get noReportsYet => 'Henüz rapor oluşturulmamış';
 
   @override
-  String get createFirstReport => 'Yukarıdaki \"Rapor Oluştur\" butonuna tıklayarak ilk raporunuzu oluşturabilirsiniz.';
+  String get createFirstReport =>
+      'Yukarıdaki \"Rapor Oluştur\" butonuna tıklayarak ilk raporunuzu oluşturabilirsiniz.';
 
   @override
   String get pastReports => 'Geçmiş Raporlar';
@@ -529,7 +551,8 @@ class AppLocalizationsTr extends AppLocalizations {
   String get noGoalsYet => 'Henüz hedef eklemedin';
 
   @override
-  String get startJourneyWithGoal => 'Yeni bir hedef ekleyerek başarı yolculuğuna başla';
+  String get startJourneyWithGoal =>
+      'Yeni bir hedef ekleyerek başarı yolculuğuna başla';
 
   @override
   String get addNewGoal => 'Yeni Hedef Ekle';
@@ -538,7 +561,8 @@ class AppLocalizationsTr extends AppLocalizations {
   String get noGoalCreatedYet => 'Henüz hedef oluşturmadın';
 
   @override
-  String get createFirstGoal => 'İlk hedefini oluştur ve yılını daha planlı, odaklı ve anlamlı hale getir.';
+  String get createFirstGoal =>
+      'İlk hedefini oluştur ve yılını daha planlı, odaklı ve anlamlı hale getir.';
 
   @override
   String get createGoal => 'Hedef Oluştur';
@@ -565,43 +589,52 @@ class AppLocalizationsTr extends AppLocalizations {
   String get onboardingSlide1Title => 'Bu yıl hedeflerini somutlaştır.';
 
   @override
-  String get onboardingSlide1Description => 'YearFlow ile hayallerini gerçeğe dönüştür. Ulaşılabilir adımlarla büyük hedeflerine doğru ilerle.';
+  String get onboardingSlide1Description =>
+      'YearFlow ile hayallerini gerçeğe dönüştür. Ulaşılabilir adımlarla büyük hedeflerine doğru ilerle.';
 
   @override
-  String get onboardingSlide2Title => 'Düzenli ilerlemelerle yolculuğunu takip et.';
+  String get onboardingSlide2Title =>
+      'Düzenli ilerlemelerle yolculuğunu takip et.';
 
   @override
-  String get onboardingSlide2Description => 'Aylık check-in\'lerle hedeflerindeki ilerlemeyi kaydet, motivasyonunu koru ve başarılarını kutla.';
+  String get onboardingSlide2Description =>
+      'Aylık check-in\'lerle hedeflerindeki ilerlemeyi kaydet, motivasyonunu koru ve başarılarını kutla.';
 
   @override
-  String get onboardingSlide3Title => 'Yıl sonunda kişisel gelişim raporunu al.';
+  String get onboardingSlide3Title =>
+      'Yıl sonunda kişisel gelişim raporunu al.';
 
   @override
-  String get onboardingSlide3Description => 'AI destekli raporlarla yıl boyunca kaydettiğin ilerlemeyi gör, somut verilerle gelişimini anla ve yeni hedefler için ilham al.';
+  String get onboardingSlide3Description =>
+      'AI destekli raporlarla yıl boyunca kaydettiğin ilerlemeyi gör, somut verilerle gelişimini anla ve yeni hedefler için ilham al.';
 
   @override
   String get onboardingWelcomeTitle => 'Hedeflerini gerçekleştir.';
 
   @override
-  String get onboardingWelcomeSubtitle => 'Hayallerini gerçeğe dönüştür, adım adım.';
+  String get onboardingWelcomeSubtitle =>
+      'Hayallerini gerçeğe dönüştür, adım adım.';
 
   @override
   String get onboardingFeature1Title => 'Yolculuğunu takip et';
 
   @override
-  String get onboardingFeature1Subtitle => 'Aylık check-in\'lerle ilerlemeni gör ve hedeflerine odaklan.';
+  String get onboardingFeature1Subtitle =>
+      'Aylık check-in\'lerle ilerlemeni gör ve hedeflerine odaklan.';
 
   @override
   String get onboardingFeature2Title => 'Her başarıyı kutla';
 
   @override
-  String get onboardingFeature2Subtitle => 'Görsel ilerleme ve kilometre taşları seni motive etmeye devam eder.';
+  String get onboardingFeature2Subtitle =>
+      'Görsel ilerleme ve kilometre taşları seni motive etmeye devam eder.';
 
   @override
   String get onboardingFeature3Title => 'AI destekli raporlarla büyümeni gör.';
 
   @override
-  String get onboardingFeature3Subtitle => 'Yıllık özetler ve veri odaklı içgörüler.';
+  String get onboardingFeature3Subtitle =>
+      'Yıllık özetler ve veri odaklı içgörüler.';
 
   @override
   String get onboardingEndTitle => 'Yolculuğuna başlamaya hazır mısın?';
@@ -622,7 +655,8 @@ class AppLocalizationsTr extends AppLocalizations {
   String get forgotPasswordTitle => 'Şifreni mi unuttun?';
 
   @override
-  String get forgotPasswordDescription => 'Şifrenizi sıfırlamak için kayıtlı e-posta adresinizi girin.';
+  String get forgotPasswordDescription =>
+      'Şifrenizi sıfırlamak için kayıtlı e-posta adresinizi girin.';
 
   @override
   String get emailAddress => 'E-posta Adresi';
@@ -680,7 +714,8 @@ class AppLocalizationsTr extends AppLocalizations {
   String get pleaseSelectCompletionDate => 'Lütfen tamamlanma tarihi seçin';
 
   @override
-  String get pleaseExplainWhy => 'Lütfen bu hedefi neden istediğinizi açıklayın';
+  String get pleaseExplainWhy =>
+      'Lütfen bu hedefi neden istediğinizi açıklayın';
 
   @override
   String get goalCreated => 'Hedef Oluşturuldu';
@@ -761,7 +796,8 @@ class AppLocalizationsTr extends AppLocalizations {
   String get errorLoadingNotes => 'Notlar Yüklenirken Hata';
 
   @override
-  String get firestoreIndexNotReady => 'Firestore index\'i henüz hazır değil. Lütfen birkaç dakika bekleyin ve tekrar deneyin.';
+  String get firestoreIndexNotReady =>
+      'Firestore index\'i henüz hazır değil. Lütfen birkaç dakika bekleyin ve tekrar deneyin.';
 
   @override
   String tasksLeft(int count) {
@@ -799,7 +835,8 @@ class AppLocalizationsTr extends AppLocalizations {
   }
 
   @override
-  String get createYourFirstReport => 'Yukarıdaki \"Rapor Oluştur\" butonuna tıklayarak ilk raporunuzu oluşturabilirsiniz.';
+  String get createYourFirstReport =>
+      'Yukarıdaki \"Rapor Oluştur\" butonuna tıklayarak ilk raporunuzu oluşturabilirsiniz.';
 
   @override
   String get reportTypeWeekly => 'Haftalık Rapor';
@@ -811,7 +848,8 @@ class AppLocalizationsTr extends AppLocalizations {
   String get reportTypeYearly => 'Yıllık Rapor';
 
   @override
-  String get solutionIncreaseCheckIns => 'Çözüm: Bu alanda haftaya 1–2 küçük, net aksiyon ekleyip check-in sıklığını artırmayı deneyebilirsin.';
+  String get solutionIncreaseCheckIns =>
+      'Çözüm: Bu alanda haftaya 1–2 küçük, net aksiyon ekleyip check-in sıklığını artırmayı deneyebilirsin.';
 
   @override
   String challengeDifficultyFocusing(String category, int value) {
@@ -819,7 +857,8 @@ class AppLocalizationsTr extends AppLocalizations {
   }
 
   @override
-  String get generalStatusHealthyProgress => 'Genel durum: Tüm kategorilerde sağlıklı bir ilerleme var.';
+  String get generalStatusHealthyProgress =>
+      'Genel durum: Tüm kategorilerde sağlıklı bir ilerleme var.';
 
   @override
   String reportTitle(String reportType, String period) {
@@ -842,7 +881,8 @@ class AppLocalizationsTr extends AppLocalizations {
   String get allGoalsCompleted => 'Tüm hedefler tamamlandı! 🎉';
 
   @override
-  String get allGoalsCompletedDescription => 'Bu hafta için tüm hedeflerini tamamladın. Yeni hedefler belirleme veya ilerlemenin tadını çıkarma zamanı!';
+  String get allGoalsCompletedDescription =>
+      'Bu hafta için tüm hedeflerini tamamladın. Yeni hedefler belirleme veya ilerlemenin tadını çıkarma zamanı!';
 
   @override
   String get viewAllGoals => 'Tüm Hedefleri Görüntüle';
@@ -854,13 +894,15 @@ class AppLocalizationsTr extends AppLocalizations {
   String get weeklySummaryDescription => 'Bu haftaki ilerlemen';
 
   @override
-  String get weeklySummaryNoData => 'Bu hafta için henüz veri yok. İlerlemeni görmek için hedefler eklemeye ve check-in yapmaya başla!';
+  String get weeklySummaryNoData =>
+      'Bu hafta için henüz veri yok. İlerlemeni görmek için hedefler eklemeye ve check-in yapmaya başla!';
 
   @override
   String get namePromptTitle => 'İsmini belirleyelim';
 
   @override
-  String get namePromptDescription => 'Sana ekranda adınla hitap edelim. İstemezsen bu adımı her zaman profilinden değiştirebilirsin.';
+  String get namePromptDescription =>
+      'Sana ekranda adınla hitap edelim. İstemezsen bu adımı her zaman profilinden değiştirebilirsin.';
 
   @override
   String get namePromptSave => 'Kaydet';
@@ -878,6 +920,15 @@ class AppLocalizationsTr extends AppLocalizations {
   String get annualReport => 'Yıllık Rapor';
 
   @override
+  String get weeklyReportTitle => 'Haftalık Rapor';
+
+  @override
+  String get monthlyReportTitle => 'Aylık Rapor';
+
+  @override
+  String get yearlyReportTitle => 'Yıllık Rapor';
+
+  @override
   String get accountInformation => 'Hesap Bilgileri';
 
   @override
@@ -887,13 +938,15 @@ class AppLocalizationsTr extends AppLocalizations {
   String get fullName => 'Ad Soyad';
 
   @override
-  String get upcomingCheckInsDescription => '7 günden az kalmış hedeflerin check-in\'lerini yap';
+  String get upcomingCheckInsDescription =>
+      '7 günden az kalmış hedeflerin check-in\'lerini yap';
 
   @override
   String get questionOfTheDay => 'GÜNÜN SORUSU';
 
   @override
-  String get questionOfTheDayText => 'Bugün hedeflerine ulaşmak için seni motive eden en büyük şey neydi?';
+  String get questionOfTheDayText =>
+      'Bugün hedeflerine ulaşmak için seni motive eden en büyük şey neydi?';
 
   @override
   String get writeYourAnswer => 'Yanıtını Yaz';
@@ -929,13 +982,15 @@ class AppLocalizationsTr extends AppLocalizations {
   String get logOutTitle => 'Çıkış Yap';
 
   @override
-  String get logOutConfirmation => 'Hesabınızdan çıkış yapmak istediğinize emin misiniz?';
+  String get logOutConfirmation =>
+      'Hesabınızdan çıkış yapmak istediğinize emin misiniz?';
 
   @override
   String get restoreFromBackupTitle => 'Yedekten Geri Yükle';
 
   @override
-  String get restoreFromBackupWarning => 'Seçtiğin yedek dosyası, şu anki tüm hedef ve rapor verilerini silecek ve yerlerine yedekteki verileri koyacaktır.\n\nBu işlem geri alınamaz. Devam etmek istediğine emin misin?';
+  String get restoreFromBackupWarning =>
+      'Seçtiğin yedek dosyası, şu anki tüm hedef ve rapor verilerini silecek ve yerlerine yedekteki verileri koyacaktır.\n\nBu işlem geri alınamaz. Devam etmek istediğine emin misin?';
 
   @override
   String get yesContinue => 'Evet, devam et';
@@ -965,7 +1020,8 @@ class AppLocalizationsTr extends AppLocalizations {
   String get exportAllData => 'Tüm Verileri Dışa Aktar';
 
   @override
-  String get exportDataFormatQuestion => 'Verilerini hangi formatta kaydetmek istersin?';
+  String get exportDataFormatQuestion =>
+      'Verilerini hangi formatta kaydetmek istersin?';
 
   @override
   String get tableCsv => 'Tablo (CSV)';
@@ -986,10 +1042,12 @@ class AppLocalizationsTr extends AppLocalizations {
   String get passwordsMismatch => 'Şifreler eşleşmiyor';
 
   @override
-  String get backupImportedSuccess => 'Yedek başarıyla içe aktarıldı. Hedefler ekranını yenileyerek kontrol edebilirsin.';
+  String get backupImportedSuccess =>
+      'Yedek başarıyla içe aktarıldı. Hedefler ekranını yenileyerek kontrol edebilirsin.';
 
   @override
-  String get exportCompleted => 'Yedekleme tamamlandı. Dosyalar > İndirilenler klasöründen ulaşabilirsin.';
+  String get exportCompleted =>
+      'Yedekleme tamamlandı. Dosyalar > İndirilenler klasöründen ulaşabilirsin.';
 
   @override
   String get editProfile => 'Profili Düzenle';
@@ -1004,7 +1062,8 @@ class AppLocalizationsTr extends AppLocalizations {
   String get deleteAccount => 'Hesabı Sil';
 
   @override
-  String get deleteAccountConfirmation => 'Hesabınızı silmek istediğinize emin misiniz? Bu işlem geri alınamaz ve tüm verileriniz kalıcı olarak silinecektir.';
+  String get deleteAccountConfirmation =>
+      'Hesabınızı silmek istediğinize emin misiniz? Bu işlem geri alınamaz ve tüm verileriniz kalıcı olarak silinecektir.';
 
   @override
   String get accountDeletedSuccess => 'Hesabınız başarıyla silindi';
@@ -1037,7 +1096,8 @@ class AppLocalizationsTr extends AppLocalizations {
   String get motivationHint => 'Motivasyonunu ve amacını yaz...';
 
   @override
-  String get motivationRequired => 'Lütfen bu hedefi neden istediğinizi açıklayın';
+  String get motivationRequired =>
+      'Lütfen bu hedefi neden istediğinizi açıklayın';
 
   @override
   String get completionDate => 'Tamamlanma Tarihi';
@@ -1089,10 +1149,12 @@ class AppLocalizationsTr extends AppLocalizations {
   String get takeAMomentToReflect => 'Kısa bir yansıma molası ver';
 
   @override
-  String get howDoYouEvaluateThisMonth => 'Bu ayki ilerlemeni nasıl değerlendirirsin?';
+  String get howDoYouEvaluateThisMonth =>
+      'Bu ayki ilerlemeni nasıl değerlendirirsin?';
 
   @override
-  String get scoreDescription => '1 çok düşük ilerleme, 10 mükemmel ilerleme anlamına gelir.';
+  String get scoreDescription =>
+      '1 çok düşük ilerleme, 10 mükemmel ilerleme anlamına gelir.';
 
   @override
   String score(int score) {
@@ -1111,25 +1173,32 @@ class AppLocalizationsTr extends AppLocalizations {
   String get whatDidYouDoThisMonth => 'Bu ay bu hedef için ne yaptın?';
 
   @override
-  String get smallStepsCount => 'Küçük adımlar da sayılır. Kısa yazman yeterli.';
+  String get smallStepsCount =>
+      'Küçük adımlar da sayılır. Kısa yazman yeterli.';
 
   @override
-  String get progressExample => 'Örn: Haftada 3 kez çalıştım, iki bölüm okudum, kelime pratiği yaptım…';
+  String get progressExample =>
+      'Örn: Haftada 3 kez çalıştım, iki bölüm okudum, kelime pratiği yaptım…';
 
   @override
-  String get whatChallengedYouMost => 'Bu süreçte seni en çok ne zorladı? Bununla nasıl başa çıktın?';
+  String get whatChallengedYouMost =>
+      'Bu süreçte seni en çok ne zorladı? Bununla nasıl başa çıktın?';
 
   @override
-  String get youCanWriteOnlyChallenges => 'İstersen sadece zorlandığın kısmı da yazabilirsin.';
+  String get youCanWriteOnlyChallenges =>
+      'İstersen sadece zorlandığın kısmı da yazabilirsin.';
 
   @override
-  String get challengeExample => 'Örn: İş yükü rutinimi bozdu; tekrar toparlanmak için haftalık plan yapmaya başladım…';
+  String get challengeExample =>
+      'Örn: İş yükü rutinimi bozdu; tekrar toparlanmak için haftalık plan yapmaya başladım…';
 
   @override
-  String get leaveNoteForFutureSelf => 'Gelecekteki kendine küçük bir not bırakmak ister misin?';
+  String get leaveNoteForFutureSelf =>
+      'Gelecekteki kendine küçük bir not bırakmak ister misin?';
 
   @override
-  String get noteExample => 'Örn: Harika gidiyorsun. Tutarlı kal ve sürece güven.';
+  String get noteExample =>
+      'Örn: Harika gidiyorsun. Tutarlı kal ve sürece güven.';
 
   @override
   String get optional => 'Opsiyonel';
@@ -1138,10 +1207,12 @@ class AppLocalizationsTr extends AppLocalizations {
   String get note => 'Not:';
 
   @override
-  String get whichGoalForCheckIn => 'Hangi hedef için check-in yapmak istersin?';
+  String get whichGoalForCheckIn =>
+      'Hangi hedef için check-in yapmak istersin?';
 
   @override
-  String get selectGoalFromBelow => 'Aşağıdan bir hedef seç; seni doğrudan check-in ekranına götürelim.';
+  String get selectGoalFromBelow =>
+      'Aşağıdan bir hedef seç; seni doğrudan check-in ekranına götürelim.';
 
   @override
   String get goalsLoading => 'Hedefler yükleniyor...';
@@ -1152,7 +1223,8 @@ class AppLocalizationsTr extends AppLocalizations {
   }
 
   @override
-  String get noGoalsYetCreateFirst => 'Henüz hiç hedefin yok. Önce bir hedef oluşturmalısın.';
+  String get noGoalsYetCreateFirst =>
+      'Henüz hiç hedefin yok. Önce bir hedef oluşturmalısın.';
 
   @override
   String get delete => 'Sil';
@@ -1164,10 +1236,19 @@ class AppLocalizationsTr extends AppLocalizations {
   String get deleteSubtask => 'Alt görevi sil';
 
   @override
-  String get deleteSubtaskConfirmation => 'Bu alt görevi silmek istediğine emin misin?';
+  String get deleteSubtaskConfirmation =>
+      'Bu alt görevi silmek istediğine emin misin?';
 
   @override
   String get deleteReport => 'Raporu sil';
+
+  @override
+  String get reportDeleted => 'Rapor silindi';
+
+  @override
+  String reportDeleteError(String error) {
+    return 'Rapor silinirken bir hata oluştu: $error';
+  }
 
   @override
   String pageNotFound(String path) {
@@ -1178,7 +1259,8 @@ class AppLocalizationsTr extends AppLocalizations {
   String get optimizationResultNotFound => 'Optimizasyon sonucu bulunamadı';
 
   @override
-  String get createFirstReportInstruction => 'Yukarıdaki \"Rapor Oluştur\" butonuna tıklayarak ilk raporunuzu oluşturabilirsiniz.';
+  String get createFirstReportInstruction =>
+      'Yukarıdaki \"Rapor Oluştur\" butonuna tıklayarak ilk raporunuzu oluşturabilirsiniz.';
 
   @override
   String get remove => 'Çıkar';
@@ -1187,52 +1269,74 @@ class AppLocalizationsTr extends AppLocalizations {
   String get close => 'Kapat';
 
   @override
-  String get errorEmailAlreadyInUse => 'Bu e-posta adresi başka bir hesap tarafından kullanılıyor.';
+  String get errorEmailAlreadyInUse =>
+      'Bu e-posta adresi başka bir hesap tarafından kullanılıyor.';
 
   @override
-  String get errorWeakPassword => 'Şifre çok zayıf. Lütfen daha güçlü bir şifre seçin.';
+  String get errorWeakPassword =>
+      'Şifre çok zayıf. Lütfen daha güçlü bir şifre seçin.';
 
   @override
-  String get errorInvalidEmail => 'E-posta adresi geçersiz. Lütfen geçerli bir e-posta adresi girin.';
+  String get errorInvalidEmail =>
+      'E-posta adresi geçersiz. Lütfen geçerli bir e-posta adresi girin.';
 
   @override
-  String get errorUserNotFound => 'Bu e-posta adresi ile kayıtlı hesap bulunamadı. Lütfen e-posta adresinizi kontrol edin veya kayıt olun.';
+  String get errorUserNotFound =>
+      'Bu e-posta adresi ile kayıtlı hesap bulunamadı. Lütfen e-posta adresinizi kontrol edin veya kayıt olun.';
 
   @override
   String get errorWrongPassword => 'Şifre hatalı. Lütfen tekrar deneyin.';
 
   @override
-  String get errorInvalidCredential => 'E-posta veya şifre hatalı. Lütfen tekrar deneyin.';
+  String get errorInvalidCredential =>
+      'E-posta veya şifre hatalı. Lütfen tekrar deneyin.';
 
   @override
-  String get errorWrongCurrentPassword => 'Mevcut şifre yanlış. Lütfen tekrar deneyin.';
+  String get errorWrongCurrentPassword =>
+      'Mevcut şifre yanlış. Lütfen tekrar deneyin.';
 
   @override
-  String get errorUserDisabled => 'Bu hesap devre dışı bırakılmış. Lütfen destek ile iletişime geçin.';
+  String get errorUserDisabled =>
+      'Bu hesap devre dışı bırakılmış. Lütfen destek ile iletişime geçin.';
 
   @override
-  String get errorTooManyRequests => 'Çok fazla başarısız giriş denemesi. Lütfen daha sonra tekrar deneyin.';
+  String get errorTooManyRequests =>
+      'Çok fazla başarısız giriş denemesi. Lütfen daha sonra tekrar deneyin.';
 
   @override
-  String get errorOperationNotAllowed => 'Bu giriş yöntemi şu anda kullanılamıyor. Lütfen daha sonra tekrar deneyin.';
+  String get errorOperationNotAllowed =>
+      'Bu giriş yöntemi şu anda kullanılamıyor. Lütfen daha sonra tekrar deneyin.';
 
   @override
   String get errorNetworkRequestFailed => 'İnternet bağlantınızı kontrol edin.';
 
   @override
-  String get errorRequiresRecentLogin => 'Güvenlik nedeniyle lütfen tekrar giriş yapın.';
+  String get errorRequiresRecentLogin =>
+      'Güvenlik nedeniyle lütfen tekrar giriş yapın.';
 
   @override
-  String get errorSignInFailed => 'Giriş yapılamadı. E-posta veya şifre hatalı olabilir, lütfen tekrar deneyin.';
+  String get errorSignInFailed =>
+      'Giriş yapılamadı. E-posta veya şifre hatalı olabilir, lütfen tekrar deneyin.';
 
   @override
-  String get errorSignUpFailed => 'Kayıt işlemi tamamlanamadı. Lütfen tekrar deneyin.';
+  String get errorSignUpFailed =>
+      'Kayıt işlemi tamamlanamadı. Lütfen tekrar deneyin.';
 
   @override
-  String get errorPasswordResetFailed => 'Şifre sıfırlama sırasında hata oluştu. Lütfen tekrar deneyin.';
+  String get errorPasswordResetFailed =>
+      'Şifre sıfırlama sırasında hata oluştu. Lütfen tekrar deneyin.';
 
   @override
-  String get errorUnexpectedAuth => 'Beklenmeyen bir hata oluştu. Lütfen tekrar deneyin.';
+  String get errorUnexpectedAuth =>
+      'Beklenmeyen bir hata oluştu. Lütfen tekrar deneyin.';
+
+  @override
+  String get accountDeletedSuccessfully => 'Hesabınız başarıyla silindi';
+
+  @override
+  String accountDeleteError(String error) {
+    return 'Hesap silinirken hata oluştu: $error';
+  }
 
   @override
   String get aiOptimization => 'AI Optimizasyonu';

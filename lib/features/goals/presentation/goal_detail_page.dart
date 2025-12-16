@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../../core/constants/app_constants.dart';
+import '../../../core/providers/locale_provider.dart';
 import '../../../core/router/app_routes.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_radius.dart';
@@ -17,7 +18,6 @@ import '../../../core/widgets/index.dart';
 import '../../../shared/models/check_in.dart';
 import '../../../shared/models/goal.dart';
 import '../../../shared/models/note.dart';
-import '../../../core/providers/locale_provider.dart';
 import '../../../shared/providers/ai_providers.dart';
 import '../../../shared/providers/goal_providers.dart';
 
@@ -93,9 +93,11 @@ class _GoalDetailPageState extends ConsumerState<GoalDetailPage>
     if (daysLeft < 0) return context.l10n.expired;
     if (daysLeft == 0) return context.l10n.today;
     if (daysLeft == 1) return context.l10n.tomorrow;
-    if (daysLeft < 7) return '$daysLeft gün sonra';
+    if (daysLeft < 7) return context.l10n.inDays(daysLeft);
 
-    return DateFormat('d MMMM', 'tr_TR').format(target);
+    return DateFormat(
+            'd MMMM', Localizations.localeOf(context).toLanguageTag())
+        .format(target);
   }
 
   @override

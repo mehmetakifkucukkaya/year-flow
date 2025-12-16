@@ -275,7 +275,7 @@ class _SettingsTile extends ConsumerWidget {
 
   const _SettingsTile.language()
       : icon = Icons.language_rounded,
-        title = 'Dil',
+        title = '',
         trailing = null,
         onTap = null,
         isLanguage = true;
@@ -875,7 +875,7 @@ class _LogoutConfirmationDialog extends StatelessWidget {
                       ),
                     ),
                     child: Text(
-                      'İptal',
+                      context.l10n.cancel,
                       style: AppTextStyles.bodyMedium.copyWith(
                         fontWeight: FontWeight.w600,
                         color: AppColors.gray700,
@@ -1057,7 +1057,7 @@ class _DangerZoneSection extends ConsumerWidget {
         if (context.mounted) {
           AppSnackbar.showSuccess(
             context,
-            message: 'Hesabınız başarıyla silindi',
+            message: context.l10n.accountDeletedSuccess,
           );
           await Future.delayed(const Duration(milliseconds: 500));
           if (context.mounted) {
@@ -1068,7 +1068,7 @@ class _DangerZoneSection extends ConsumerWidget {
         if (context.mounted) {
           AppSnackbar.showError(
             context,
-            message: 'Hesap silinirken hata oluştu: $e',
+            message: context.l10n.errorDeletingAccount,
           );
         }
       }
@@ -1309,7 +1309,7 @@ class _ChangePasswordBottomSheetState
                     ),
                   ),
                   child: Text(
-                    'İptal',
+                    context.l10n.cancel,
                     style: AppTextStyles.bodyMedium.copyWith(
                       fontWeight: FontWeight.w600,
                       color: AppColors.gray800,
@@ -1414,7 +1414,7 @@ class _DeleteAccountConfirmationDialog extends StatelessWidget {
             ),
             const SizedBox(height: AppSpacing.lg),
             Text(
-              'Hesabı Sil',
+              context.l10n.deleteAccount,
               style: AppTextStyles.titleLarge.copyWith(
                 fontWeight: FontWeight.w700,
                 color: AppColors.gray900,
@@ -1423,7 +1423,7 @@ class _DeleteAccountConfirmationDialog extends StatelessWidget {
             ),
             const SizedBox(height: AppSpacing.sm),
             Text(
-              'Hesabınızı silmek istediğinize emin misiniz? Bu işlem geri alınamaz ve tüm verileriniz kalıcı olarak silinecektir.',
+              context.l10n.deleteAccountConfirmation,
               style: AppTextStyles.bodyMedium.copyWith(
                 color: AppColors.gray700,
               ),
@@ -1446,7 +1446,7 @@ class _DeleteAccountConfirmationDialog extends StatelessWidget {
                       ),
                     ),
                     child: Text(
-                      'İptal',
+                      context.l10n.cancel,
                       style: AppTextStyles.bodyMedium.copyWith(
                         fontWeight: FontWeight.w600,
                         color: AppColors.gray800,
@@ -1467,7 +1467,7 @@ class _DeleteAccountConfirmationDialog extends StatelessWidget {
                       elevation: 0,
                     ),
                     child: Text(
-                      'Hesabı Sil',
+                      context.l10n.deleteAccount,
                       style: AppTextStyles.bodyMedium.copyWith(
                         fontWeight: FontWeight.w700,
                         color: Colors.white,

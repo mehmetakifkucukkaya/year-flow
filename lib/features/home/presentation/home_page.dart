@@ -57,7 +57,7 @@ class HomePage extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'İsmini belirleyelim',
+                  context.l10n.namePromptTitle,
                   style: AppTextStyles.titleLarge.copyWith(
                     fontWeight: FontWeight.w700,
                     color: AppColors.gray900,
@@ -65,7 +65,7 @@ class HomePage extends ConsumerWidget {
                 ),
                 const SizedBox(height: AppSpacing.sm),
                 Text(
-                  'Sana ekranda adınla hitap edelim. İstemezsen bu adımı her zaman profilinden değiştirebilirsin.',
+                  context.l10n.namePromptDescription,
                   style: AppTextStyles.bodyMedium.copyWith(
                     color: AppColors.gray700,
                     height: 1.4,
@@ -74,7 +74,7 @@ class HomePage extends ConsumerWidget {
                 const SizedBox(height: AppSpacing.lg),
                 AppTextField(
                   controller: controller,
-                  label: 'İsim',
+                  label: context.l10n.name,
                   textInputAction: TextInputAction.done,
                 ),
                 const SizedBox(height: AppSpacing.lg),
@@ -957,12 +957,12 @@ class _UpcomingCheckInsSection extends ConsumerWidget {
     final diff = targetDay.difference(today).inDays;
 
     if (diff < 0) {
-      if (diff == -1) return '1 gün gecikti';
-      return '${-diff} gün gecikti';
+      if (diff == -1) return l10n.oneDayOverdue;
+      return l10n.daysOverdue(-diff);
     }
-    if (diff == 0) return 'Bugün';
-    if (diff == 1) return '1 gün kaldı';
-    return '$diff gün kaldı';
+    if (diff == 0) return l10n.today;
+    if (diff == 1) return l10n.oneDayLeft;
+    return l10n.daysLeft(diff);
   }
 
   @override
@@ -1046,7 +1046,7 @@ class _UpcomingCheckInsSection extends ConsumerWidget {
                           const SizedBox(width: AppSpacing.sm),
                           Expanded(
                             child: Text(
-                              'Hedeflerinin bitmesine 7 gün kalınca burada gözükecekler',
+                              context.l10n.noUpcomingCheckIns,
                               style: AppTextStyles.bodyMedium.copyWith(
                                 color: AppColors.gray700,
                               ),
@@ -1105,7 +1105,7 @@ class _UpcomingCheckInsSection extends ConsumerWidget {
                                           CrossAxisAlignment.start,
                                       children: [
                                         Text(
-                                          'Yaklaşan check-in\'lerin',
+                                          context.l10n.upcomingCheckIns,
                                           style: AppTextStyles.titleSmall
                                               .copyWith(
                                             fontWeight: FontWeight.w700,
@@ -1136,9 +1136,8 @@ class _UpcomingCheckInsSection extends ConsumerWidget {
                                           BorderRadius.circular(999),
                                     ),
                                     child: Text(
-                                      '${upcomingGoals.length} hedef',
-                                      style: AppTextStyles.labelSmall
-                                          .copyWith(
+                                      '${upcomingGoals.length} ${context.l10n.goals.toLowerCase()}',
+                                      style: AppTextStyles.labelSmall.copyWith(
                                         color: AppColors.primary,
                                         fontWeight: FontWeight.w600,
                                       ),

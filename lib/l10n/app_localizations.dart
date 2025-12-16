@@ -62,7 +62,8 @@ import 'app_localizations_tr.dart';
 /// be consistent with the languages listed in the AppLocalizations.supportedLocales
 /// property.
 abstract class AppLocalizations {
-  AppLocalizations(String locale) : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+  AppLocalizations(String locale)
+      : localeName = intl.Intl.canonicalizedLocale(locale.toString());
 
   final String localeName;
 
@@ -70,7 +71,8 @@ abstract class AppLocalizations {
     return Localizations.of<AppLocalizations>(context, AppLocalizations);
   }
 
-  static const LocalizationsDelegate<AppLocalizations> delegate = _AppLocalizationsDelegate();
+  static const LocalizationsDelegate<AppLocalizations> delegate =
+      _AppLocalizationsDelegate();
 
   /// A list of this localizations delegate along with the default localizations
   /// delegates.
@@ -82,7 +84,8 @@ abstract class AppLocalizations {
   /// Additional delegates can be added by appending to this list in
   /// MaterialApp. This list does not have to be used at all if a custom list
   /// of delegates is preferred or required.
-  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates = <LocalizationsDelegate<dynamic>>[
+  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
+      <LocalizationsDelegate<dynamic>>[
     delegate,
     GlobalMaterialLocalizations.delegate,
     GlobalCupertinoLocalizations.delegate,
@@ -483,7 +486,8 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'This year you worked on a total of {totalGoals} goals and completed {completedGoals} goals (completion rate approximately {completionRate}%).'**
-  String thisYearWorkedOnGoals(int totalGoals, int completedGoals, int completionRate);
+  String thisYearWorkedOnGoals(
+      int totalGoals, int completedGoals, int completionRate);
 
   /// Achievement text about average progress
   ///
@@ -988,6 +992,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{days} days left'**
   String daysLeft(int days);
+
+  /// In X days text
+  ///
+  /// In en, this message translates to:
+  /// **'In {days} days'**
+  String inDays(int days);
 
   /// Error message when reports fail to load
   ///
@@ -1697,6 +1707,24 @@ abstract class AppLocalizations {
   /// **'Annual Report'**
   String get annualReport;
 
+  /// Weekly report title
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly Report'**
+  String get weeklyReportTitle;
+
+  /// Monthly report title
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly Report'**
+  String get monthlyReportTitle;
+
+  /// Yearly report title
+  ///
+  /// In en, this message translates to:
+  /// **'Yearly Report'**
+  String get yearlyReportTitle;
+
   /// Account information section title
   ///
   /// In en, this message translates to:
@@ -2261,6 +2289,18 @@ abstract class AppLocalizations {
   /// **'Delete Report'**
   String get deleteReport;
 
+  /// Report deleted success message
+  ///
+  /// In en, this message translates to:
+  /// **'Report deleted'**
+  String get reportDeleted;
+
+  /// Report delete error message
+  ///
+  /// In en, this message translates to:
+  /// **'An error occurred while deleting the report: {error}'**
+  String reportDeleteError(String error);
+
   /// Error message shown when a page is not found
   ///
   /// In en, this message translates to:
@@ -2387,6 +2427,18 @@ abstract class AppLocalizations {
   /// **'An unexpected error occurred. Please try again.'**
   String get errorUnexpectedAuth;
 
+  /// Account deleted success message
+  ///
+  /// In en, this message translates to:
+  /// **'Your account has been deleted successfully.'**
+  String get accountDeletedSuccessfully;
+
+  /// Account delete error message
+  ///
+  /// In en, this message translates to:
+  /// **'An error occurred while deleting the account: {error}'**
+  String accountDeleteError(String error);
+
   /// AI optimization bottom sheet title
   ///
   /// In en, this message translates to:
@@ -2436,7 +2488,8 @@ abstract class AppLocalizations {
   String get apply;
 }
 
-class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
+class _AppLocalizationsDelegate
+    extends LocalizationsDelegate<AppLocalizations> {
   const _AppLocalizationsDelegate();
 
   @override
@@ -2445,25 +2498,25 @@ class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> 
   }
 
   @override
-  bool isSupported(Locale locale) => <String>['en', 'tr'].contains(locale.languageCode);
+  bool isSupported(Locale locale) =>
+      <String>['en', 'tr'].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;
 }
 
 AppLocalizations lookupAppLocalizations(Locale locale) {
-
-
   // Lookup logic when only language code is specified.
   switch (locale.languageCode) {
-    case 'en': return AppLocalizationsEn();
-    case 'tr': return AppLocalizationsTr();
+    case 'en':
+      return AppLocalizationsEn();
+    case 'tr':
+      return AppLocalizationsTr();
   }
 
   throw FlutterError(
-    'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
-    'an issue with the localizations generation tool. Please file an issue '
-    'on GitHub with a reproducible sample app and the gen-l10n configuration '
-    'that was used.'
-  );
+      'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
+      'an issue with the localizations generation tool. Please file an issue '
+      'on GitHub with a reproducible sample app and the gen-l10n configuration '
+      'that was used.');
 }
