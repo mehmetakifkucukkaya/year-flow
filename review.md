@@ -1,463 +1,662 @@
-# YearFlow - Comprehensive Technical Review
+## YearFlow Proje Review
 
-## Critical Issues (Blocking)
-
-### 1. **Inefficient Repository Pattern Implementation**
-**File:** `lib/features/goals/data/firestore_goal_repository.dart:155-183`
-**Issue:** Critical performance anti-pattern where `fetchGoalById`, `archiveGoal`, `completeGoal`, and `deleteGoal` methods iterate through ALL users in Firestore to find a specific goal.
-
-```dart
-// Current inefficient approach
-final usersSnapshot = await _firestore.collection(_FirestoreCollections.users).get();
-for (final userDoc in usersSnapshot.docs) {
-  final goalDoc = await userDoc.reference.collection(_FirestoreCollections.goals).doc(goalId).get();
-  if (goalDoc.exists) { /* found */ }
-}
-```
-
-**Impact:** O(n) database reads where n = total users, severe scalability issue, high Firestore costs.
-
-**Fix Required:**
-```dart
-// Update interface to include userId parameter
-Future<Goal?> fetchGoalById(String goalId, String userId) async {
-  final goalDoc = await _firestore
-      .collection(_FirestoreCollections.users)
-      .doc(userId)
-      .collection(_FirestoreCollections.goals)
-      .doc(goalId)
-      .get();
-  // ... rest of implementation
-}
-```
-
-### 2. **Missing Index Configuration**
-**File:** `firestore.indexes.json:49-87`
-**Issue:** Defined indexes don't match actual query patterns, missing composite indexes for common queries like `(userId, category, isArchived)`.
-
-**Impact:** Queries will fail in production with Firestore requiring indexes error.
-
-**Fix Required:** Add missing indexes:
-```json
-{
-  "collectionGroup": "goals",
-  "queryScope": "COLLECTION",
-  "fields": [
-    { "fieldPath": "userId", "order": "ASCENDING" },
-    { "fieldPath": "category", "order": "ASCENDING" },
-    { "fieldPath": "isArchived", "order": "ASCENDING" }
-  ]
-}
-```
-
-### 3. **Authentication State Management Issue**
-**File:** `lib/core/router/app_router.dart:111-113`
-**Issue:** Router only watches `isAuthenticated` field, ignoring auth errors or loading states which could cause navigation to protected routes during authentication errors.
-
-**Impact:** Users might access protected routes during auth failures.
-
-**Fix Required:**
-```dart
-final authState = ref.watch(authStateProvider);
-final isAuthenticated = authState.isAuthenticated && !authState.isLoading && authState.errorMessage == null;
-```
-
-### 4. **No Offline Persistence Configuration**
-**File:** `lib/main.dart:17-28`
-**Issue:** Firestore offline persistence not configured, app becomes unusable without internet.
-
-**Impact:** Poor user experience, high data usage, no offline functionality.
-
-**Fix Required:**
-```dart
-await FirebaseFirestore.instance.enablePersistence(const PersistenceSettings(synchronizeWrites: true));
-```
-
-## Improvement Suggestions (Non-blocking)
-
-### Architecture
-1. **Mixed Architecture Patterns**: Project shows inconsistent layering - some features use Clean Architecture while others mix data and presentation layers.
-   - **Recommendation**: Standardize on Clean Architecture throughout
-
-2. **Provider Dependencies**: Some providers have circular dependencies or could be better organized with proper dependency injection
-   - **File:** `lib/shared/providers/goal_providers.dart:71-88`
-
-### Code Quality
-1. **Error Handling**: Inconsistent error handling patterns across the codebase
-   - **Good Example**: `lib/features/auth/providers/auth_providers.dart:158-222`
-   - **Needs Improvement**: `lib/features/goals/data/firestore_goal_repository.dart:77-80` uses simple print statements
-
-2. **Magic Numbers**: Hardcoded values scattered throughout
-   - **File:** `lib/features/goals/presentation/goals_page.dart:46` - Background color hardcoded
-   - **Recommendation**: Move to theme system
-
-3. **Duplicate Code**: Similar filtering/sorting logic could be extracted to utilities
-   - **Files:** `lib/features/goals/presentation/goals_page.dart:72-103` and similar patterns in other pages
-
-### Performance
-1. **N+1 Query Problem**: `lib/features/reports/providers/reports_providers.dart:58-60`
-   ```dart
-   for (final goal in goals) {
-     final checkIns = await repository.watchCheckIns(goal.id, userId).first; // N queries!
-   }
-   ```
-   - **Recommendation**: Batch load all check-ins in single query
-
-2. **Unnecessary Rebuilds**: Some widgets rebuild entire lists when single item changes
-   - **File:** `lib/features/goals/presentation/goals_page.dart:131` - Uses `allGoalsStreamProvider` instead of selective updates
-
-3. **Memory Usage**: Large lists not paginated
-   - **File:** `lib/core/constants/app_constants.dart:20` - pageSize defined but not used
-
-### Security
-1. **Server-Side Validation Missing**: While client-side validation exists, no server-side validation for AI service inputs
-   - **File:** `lib/shared/services/ai_service.dart:42-62`
-   - **Recommendation**: Add input sanitization in Cloud Functions
-
-2. **Rate Limiting**: No rate limiting on AI service calls or other expensive operations
-   - **Risk**: Potential abuse, high costs
-
-3. **Exposed API Keys**: Google Sign-In server client ID hardcoded
-   - **File:** `lib/features/auth/providers/auth_providers.dart:23-25`
-   - **Recommendation**: Move to environment variables
-
-## Security Analysis
-
-### Firestore Security Rules Assessment
-**File:** `firestore.rules:1-42`
-
-**Strengths:**
-- Proper authentication checks with `isAuthenticated()` helper
-- User isolation: users can only access their own data
-- Consistent rule application across all subcollections
-
-**Weaknesses:**
-1. **Missing Input Validation**: No validation for data types or required fields
-   ```javascript
-   // Missing validation
-   allow write: if isAuthenticated() && request.auth.uid == userId;
-
-   // Should be:
-   allow write: if isAuthenticated() &&
-     request.auth.uid == userId &&
-     request.resource.data.title is string &&
-     request.resource.data.title.size() > 0;
-   ```
-
-2. **No Rate Limiting**: No protection against rapid writes
-3. **Missing Size Limits**: No limits on document size or array lengths
-
-### Authentication Security
-**Strengths:**
-- Proper Firebase Auth integration
-- Secure password handling
-- Google Sign-In with proper configuration
-
-**Weaknesses:**
-1. **Password Requirements**: No server-side password strength enforcement
-2. **Account Enumeration**: Different error messages could reveal user existence
-   - **File:** `lib/features/auth/providers/auth_providers.dart:163-176`
-
-## Performance Analysis
-
-### Database Performance Issues
-1. **Missing Indexes**: As mentioned in critical issues
-2. **Inefficient Queries**: Multiple round trips where single query would suffice
-3. **Large Result Sets**: No pagination implemented despite `pageSize` constant
-
-### UI Performance
-1. **Rebuild Issues**: Bottom navigation causes full page rebuilds on tab change
-2. **Animation Performance**: Custom transitions but no performance optimization
-   - **File:** `lib/core/router/app_router.dart:25-72`
-
-### Memory Usage
-1. **Stream Leaks**: Some streams not properly disposed
-   - **File:** `lib/features/auth/providers/auth_providers.dart:105-125` - Good example of proper disposal
-2. **Large Objects**: Goals with many sub-goals could be memory intensive
-
-## Architecture Evaluation
-
-### Strengths
-1. **Clean Architecture Foundation**: Proper separation of concerns in most areas
-2. **State Management**: Good use of Riverpod with proper provider organization
-3. **Navigation**: Well-structured routing with GoRouter
-
-### Weaknesses
-1. **Inconsistent Patterns**: Some areas don't follow Clean Architecture strictly
-2. **Feature Organization**: Could be improved with better feature-first structure
-3. **Dependency Management**: Some circular dependencies between providers
-
-### Recommendations
-1. **Standardize Architecture**: Ensure all features follow same Clean Architecture pattern
-2. **Improve Separation**: Move business logic out of UI layer completely
-3. **Better Error Boundaries**: Implement comprehensive error handling strategy
-
-## UI/UX Evaluation
-
-### Navigation Architecture
-**Strengths:**
-- Clear navigation hierarchy with bottom navigation
-- Proper route definitions and deep linking support
-- Smooth transitions between pages
-
-**Areas for Improvement:**
-1. **Loading States**: Inconsistent loading indicator patterns
-2. **Error States**: Some pages lack proper error handling UI
-3. **Empty States**: Not all lists have meaningful empty states
-
-### Form Validation
-**Good Examples:**
-- Auth forms have proper validation
-- Goal creation has comprehensive form validation
-
-**Missing:**
-- Real-time validation feedback
-- Consistent validation error styling
-
-### Accessibility
-- Missing semantic labels in some areas
-- Color contrast needs verification
-- No support for screen readers in custom components
-
-## Missing Test Scenarios
-
-### Unit Tests Needed
-1. **Repository Layer**: All Firestore operations need mocking and testing
-2. **Providers**: State management logic needs coverage
-3. **Models**: Data transformation and validation logic
-4. **AI Service**: Error handling and response parsing
-
-### Widget Tests Needed
-1. **Authentication Flow**: Login, registration, password reset
-2. **Goal Management**: CRUD operations, filtering, sorting
-3. **Navigation**: Route changes, deep linking
-4. **Form Validation**: All forms with edge cases
-
-### Integration Tests Needed
-1. **Full User Journey**: From registration to goal completion
-2. **Offline/Online Sync**: Data synchronization
-3. **Cross-Device Sync**: Multiple devices scenario
-4. **Error Recovery**: Network failures, auth errors
-
-## Recommended Refactors
-
-### High Priority
-1. **Fix Repository Pattern**: Add userId parameters to repository methods
-2. **Implement Pagination**: Add proper pagination for large datasets
-3. **Add Offline Support**: Configure Firestore offline persistence
-4. **Fix Security Rules**: Add input validation and rate limiting
-
-### Medium Priority
-1. **Standardize Error Handling**: Create consistent error handling patterns
-2. **Improve Performance**: Fix N+1 queries and unnecessary rebuilds
-3. **Add Comprehensive Testing**: Implement proper test coverage
-4. **Improve Architecture**: Standardize Clean Architecture across all features
-
-### Low Priority
-1. **Code Organization**: Minor refactoring for better maintainability
-2. **UI Polish**: Improve animations and transitions
-3. **Documentation**: Add comprehensive code documentation
-4. **Accessibility**: Improve accessibility support
-
-## Prioritized Roadmap
-
-### 1. Urgent (Fix before production)
-- [ ] Fix repository pattern inefficiencies (blocking)
-- [ ] Configure Firestore indexes (blocking)
-- [ ] Fix authentication state management (blocking)
-- [ ] Add offline persistence (blocking)
-- [ ] Fix security rules validation (critical)
-
-### 2. Important (Next sprint)
-- [ ] Implement pagination
-- [ ] Fix N+1 query problems
-- [ ] Add comprehensive error handling
-- [ ] Implement rate limiting
-- [ ] Add input validation to Cloud Functions
-
-### 3. Medium (Next month)
-- [ ] Add comprehensive test coverage
-- [ ] Improve performance optimizations
-- [ ] Standardize architecture patterns
-- [ ] Add accessibility features
-- [ ] Implement caching strategies
-
-### 4. Low (Future improvements)
-- [ ] Code documentation
-- [ ] Advanced UI animations
-- [ ] Advanced offline features
-- [ ] Performance monitoring
-- [ ] A/B testing framework
+**Tarih:** 2025  
+**Proje:** YearFlow - Yıllık Hedef ve Kişisel Gelişim Uygulaması  
+**Platform:** Flutter (Android, iOS, Web)
 
 ---
 
-## Verification Checklist
+## 📋 İçindekiler
 
-### Critical Issues
-- [ ] Repository methods accept userId parameter
-- [ ] All Firestore queries have corresponding indexes
-- [ ] Authentication state properly handles loading/error states
-- [ ] Offline persistence enabled and tested
-- [ ] Security rules include input validation
+1. [Genel Bakış](#genel-bakış)
+2. [Proje Yapısı](#proje-yapısı)
+3. [Kod Kalitesi ve Standartlar](#kod-kalitesi-ve-standartlar)
+4. [Mimari ve Tasarım Desenleri](#mimari-ve-tasarım-desenleri)
+5. [State Management](#state-management)
+6. [UI/UX ve Tema](#uiux-ve-tema)
+7. [Hata Yönetimi](#hata-yönetimi)
+8. [Performans](#performans)
+9. [Test Coverage](#test-coverage)
+10. [Güvenlik](#güvenlik)
+11. [Linter Hataları](#linter-hataları)
+12. [İyileştirme Önerileri](#iyileştirme-önerileri)
 
-### Performance
-- [ ] No N+1 queries in production
-- [ ] Pagination implemented for large datasets
-- [ ] Widgets properly optimized to prevent unnecessary rebuilds
-- [ ] Memory usage within acceptable limits
-- [ ] Database queries optimized with proper indexing
+---
 
-### Security
-- [ ] All user inputs validated on client and server
-- [ ] Rate limiting implemented for expensive operations
-- [ ] API keys and secrets properly secured
-- [ ] User data isolation verified
-- [ ] Proper error handling that doesn't leak information
+## Genel Bakış
 
-### Testing
-- [ ] Unit tests for business logic
-- [ ] Widget tests for UI components
-- [ ] Integration tests for critical user flows
-- [ ] Performance benchmarks
-- [ ] Security penetration testing
+YearFlow, kullanıcıların yıllık hedeflerini takip edebileceği ve kişisel gelişimlerini izleyebileceği bir Flutter uygulamasıdır. Proje Firebase (Auth, Firestore, Functions) kullanarak backend servisleri sağlamaktadır.
+
+### Güçlü Yönler ✅
+
+- **Temiz Mimari:** Feature-based klasör yapısı ve katmanlı mimari (presentation, data, providers)
+- **Modern Stack:** Flutter 3.5.4, Riverpod 2.x, GoRouter, Material 3
+- **İyi Organize Edilmiş Tema:** Merkezi tema yönetimi (AppTheme, AppColors, AppTextStyles)
+- **Lokalizasyon Desteği:** Türkçe ve İngilizce dil desteği
+- **Firebase Entegrasyonu:** Güvenli auth ve Firestore kullanımı
+
+### İyileştirme Gereken Alanlar ⚠️
+
+- **Test Coverage:** Çok düşük test coverage (%0'a yakın)
+- **Const Widget Kullanımı:** Bazı yerlerde const widget'lar eksik
+- **Error Handling:** Bazı yerlerde hata yönetimi tutarsız
+- **Dokümantasyon:** Kod içi dokümantasyon eksik
+- **Linter Uyarıları:** 13 linter uyarısı mevcut
+
+---
+
+## Proje Yapısı
+
+### Klasör Organizasyonu
+
+```
+lib/
+├── core/              # Çekirdek bileşenler
+│   ├── constants/     # Sabitler
+│   ├── providers/     # Global provider'lar
+│   ├── router/        # Navigation
+│   ├── theme/         # Tema sistemi
+│   ├── utils/         # Yardımcı fonksiyonlar
+│   └── widgets/       # Ortak widget'lar
+├── features/          # Feature-based modüller
+│   ├── auth/
+│   ├── goals/
+│   ├── home/
+│   ├── checkin/
+│   ├── reports/
+│   ├── settings/
+│   └── onboarding/
+├── shared/            # Paylaşılan modeller ve servisler
+│   ├── models/
+│   ├── providers/
+│   └── services/
+└── main.dart
+```
+
+**Değerlendirme:** ✅ İyi organize edilmiş, feature-based yapı workspace kurallarına uygun.
+
+---
+
+## Kod Kalitesi ve Standartlar
+
+### İsimlendirme Kuralları
+
+#### ✅ Uyumlu Olanlar
+
+- **Sınıflar:** `UpperCamelCase` → `AuthNotifier`, `GoalRepository`
+- **Dosyalar:** `snake_case` → `auth_providers.dart`, `goal_repository.dart`
+- **Widget'lar:** `SomethingPage`, `SomethingCard` → `LoginPage`, `GoalCard`
+- **Provider'lar:** `authControllerProvider`, `goalListProvider`
+
+#### ⚠️ İyileştirme Gerekenler
+
+- Bazı widget'larda `const` eksik (performans için önemli)
+- Bazı yerlerde magic number'lar kullanılmış (AppSpacing/AppRadius kullanılmalı)
+
+### Import Sırası
+
+**Durum:** ✅ Genel olarak doğru sıralama:
+
+1. `dart:` core
+2. `package:flutter/...`
+3. Üçüncü parti paketler
+4. Proje içi importlar
+
+**Örnek İyi Import:**
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+
+import '../../../core/theme/app_colors.dart';
+```
+
+---
+
+## Mimari ve Tasarım Desenleri
+
+### Repository Pattern ✅
+
+**İyi Uygulama:**
+
+- `GoalRepository` abstract class ile interface tanımı
+- `FirestoreGoalRepository` implementasyonu
+- Dependency injection ile provider'lardan sağlanıyor
+
+**Örnek:**
+
+```dart
+abstract class GoalRepository {
+  Stream<List<Goal>> watchGoals(String userId);
+  Future<Goal> createGoal(Goal goal);
+  // ...
+}
+
+class FirestoreGoalRepository implements GoalRepository {
+  // Implementation
+}
+```
+
+### Provider Pattern ✅
+
+**İyi Uygulama:**
+
+- Riverpod 2.x kullanımı
+- Provider tipleri doğru seçilmiş:
+  - `Provider` → Immutable değerler
+  - `StateNotifierProvider` → State yönetimi
+  - `StreamProvider` → Firestore stream'leri
+  - `FutureProvider` → Async işlemler
+
+**Örnek:**
+
+```dart
+final goalRepositoryProvider = Provider<GoalRepository>((ref) {
+  final firestore = ref.watch(firestoreProvider);
+  return FirestoreGoalRepository(firestore: firestore);
+});
+```
+
+### ⚠️ İyileştirme Önerileri
+
+1. **Use Case Pattern:** Business logic için use case katmanı eklenebilir
+2. **DTO Pattern:** API response'ları için DTO kullanımı düşünülebilir (şu an direkt model kullanılıyor)
+
+---
+
+## State Management
+
+### Riverpod Kullanımı ✅
+
+**Güçlü Yönler:**
+
+1. **Select ile Optimizasyon:**
+
+```dart
+final isEmailLoading = ref.watch(authStateProvider.select((s) => s.isEmailLoading));
+```
+
+✅ Sadece gerekli state değişikliklerinde rebuild
+
+2. **Listen ile Side Effects:**
+
+```dart
+ref.listen<AuthState>(authStateProvider, (previous, next) {
+  if (next.isAuthenticated && !(previous?.isAuthenticated ?? false)) {
+    context.go(AppRoutes.home);
+  }
+});
+```
+
+✅ Navigation ve snackbar gibi side effect'ler doğru yönetiliyor
+
+3. **StreamProvider ile Firestore:**
+
+```dart
+final goalsStreamProvider = StreamProvider<List<Goal>>((ref) {
+  final repo = ref.watch(goalRepositoryProvider);
+  final userId = ref.watch(currentUserIdProvider);
+  if (userId == null) return Stream.value([]);
+  return repo.watchGoals(userId);
+});
+```
+
+✅ Reactive data akışı doğru kurulmuş
+
+### ⚠️ İyileştirme Önerileri
+
+1. **State Modelleme:** `AuthState` class-based, `freezed` kullanılabilir
+2. **Error State:** Bazı provider'larda error state yönetimi eksik
+3. **Loading State:** Bazı yerlerde loading state tutarsız
+
+---
+
+## UI/UX ve Tema
+
+### Material 3 ✅
+
+**Güçlü Yönler:**
+
+1. **Tema Sistemi:**
+
+   - `AppTheme.lightTheme` ve `AppTheme.darkTheme` tanımlı
+   - `ColorScheme.fromSeed` kullanılmamış ama manuel renkler tutarlı
+   - Component theme override'ları doğru yapılmış
+
+2. **Design Tokens:**
+
+   - `AppColors` → Renk paleti
+   - `AppSpacing` → Spacing sistemi
+   - `AppRadius` → Border radius değerleri
+   - `AppTextStyles` → Typography sistemi
+
+3. **Responsive Design:**
+   - `MediaQuery` kullanımı mevcut
+   - Küçük ekranlar için özel kontroller var
+
+**Örnek İyi Uygulama:**
+
+```dart
+final screenWidth = MediaQuery.of(context).size.width;
+final isSmallScreen = screenWidth < 360;
+final fontSize = isSmallScreen ? 11 : 12;
+```
+
+### ⚠️ İyileştirme Önerileri
+
+1. **Const Widget'lar:** Birçok widget `const` olabilir ama değil
+2. **Breakpoint Sistemi:** Responsive için breakpoint sistemi eklenebilir
+3. **Adaptive Widget'lar:** iOS için Cupertino widget'ları düşünülebilir
+
+---
+
+## Hata Yönetimi
+
+### ✅ İyi Uygulamalar
+
+1. **Auth Error Handler:**
+
+   - `AuthErrorHandler` sınıfı ile merkezi hata yönetimi
+   - Lokalize edilmiş hata mesajları
+   - Account enumeration koruması
+
+2. **Try-Catch Kullanımı:**
+
+   - Repository katmanında try-catch blokları mevcut
+   - UI katmanında error state handling var
+
+3. **Error State Gösterimi:**
+
+```dart
+goalsAsync.when(
+  loading: () => const CircularProgressIndicator(),
+  error: (error, stackTrace) => ErrorView(error: error),
+  data: (goals) => GoalsList(goals: goals),
+);
+```
+
+### ⚠️ İyileştirme Önerileri
+
+1. **Global Error Handler:** Sentry veya Firebase Crashlytics entegrasyonu eksik
+2. **Error Logging:** Bazı yerlerde `print` kullanılmış, `debugPrint` veya logger kullanılmalı
+3. **Error Recovery:** Bazı hatalarda retry mekanizması yok
+
+**Örnek Sorun:**
+
+```dart
+// lib/features/goals/data/firestore_goal_repository.dart:79
+print('Error parsing goal ${doc.id}: $e'); // print yerine logger kullanılmalı
+```
+
+---
+
+## Performans
+
+### ✅ İyi Uygulamalar
+
+1. **Stream Optimization:**
+
+   - Firestore query'lerinde limit kullanımı
+   - Memory'de filtreleme (index gerektirmemek için)
+
+2. **Widget Optimization:**
+
+   - `select` ile ince-grain rebuild
+   - Bazı widget'larda `const` kullanımı
+
+3. **Image Optimization:**
+   - `cached_network_image` kullanımı
+   - `cacheWidth` ve `cacheHeight` kullanımı
+
+### ⚠️ İyileştirme Önerileri
+
+1. **Const Widget'lar:** Birçok widget `const` olabilir
+2. **Lazy Loading:** Büyük listelerde lazy loading eksik
+3. **Memory Management:** Bazı controller'lar dispose edilmemiş olabilir
+
+**Örnek İyileştirme:**
+
+   ```dart
+// Şu an:
+Widget build(BuildContext context) {
+  return Container(
+    child: Text('Hello'),
+  );
+}
+
+// Olmalı:
+Widget build(BuildContext context) {
+  return const Container(
+    child: Text('Hello'),
+  );
+}
+```
+
+---
+
+## Test Coverage
+
+### ❌ Kritik Durum
+
+**Mevcut Durum:**
+
+- Sadece bir smoke test var (`test/widget_test.dart`)
+- Unit test yok
+- Widget test yok
+- Integration test yok
+
+**Örnek Mevcut Test:**
+
+```dart
+testWidgets('App smoke test', (WidgetTester tester) async {
+  // TODO: Add proper widget tests after UI development
+  expect(true, isTrue);
+});
+```
+
+### 📋 Test Stratejisi Önerileri
+
+1. **Unit Testler:**
+
+   - Repository testleri (mock Firestore)
+   - Provider testleri
+   - Utility fonksiyon testleri
+
+2. **Widget Testleri:**
+
+   - Kritik widget'lar (LoginPage, GoalsPage)
+   - Form validation testleri
+   - Navigation testleri
+
+3. **Integration Testleri:**
+   - Auth flow
+   - Goal creation flow
+   - Check-in flow
+
+**Öncelikli Test Senaryoları:**
+
+1. Auth flow (login, register, logout)
+2. Goal CRUD işlemleri
+3. Check-in işlemleri
+4. Error handling senaryoları
+
+---
+
+## Güvenlik
+
+### ✅ İyi Uygulamalar
+
+1. **Firebase Security Rules:** Firestore rules tanımlı (`firestore.rules`)
+2. **Auth State Management:** Güvenli auth state kontrolü
+3. **Error Message Security:** Account enumeration koruması
+
+### ⚠️ İyileştirme Önerileri
+
+1. **API Keys:** Google Sign-In için `GOOGLE_SERVER_CLIENT_ID` environment variable kullanılıyor ✅
+2. **Sensitive Data:** Hardcoded secret yok ✅
+3. **Input Validation:** Form validation mevcut ✅
+
+**Güvenlik Kontrol Listesi:**
+
+- ✅ Firebase Security Rules tanımlı
+- ✅ Auth token yönetimi güvenli
+- ✅ Input validation mevcut
+- ⚠️ Error logging'de sensitive data leak kontrolü yapılmalı
+
+---
+
+## Linter Hataları
+
+### Mevcut Uyarılar (13 adet)
+
+#### 1. Unused Parameters
+
+**Dosya:** `lib/features/auth/presentation/login_page.dart:594`
+
+```dart
+const _GoogleIcon({this.size = 20}); // size parametresi kullanılmıyor
+```
+
+**Çözüm:** Kullanılmıyorsa kaldır veya kullan.
+
+#### 2. Unused Parameters
+
+**Dosya:** `lib/features/auth/presentation/register_page.dart:610`
+
+```dart
+const _GoogleIcon({this.size = 20}); // Aynı sorun
+```
+
+#### 3. Unreachable Default Clause
+
+**Dosya:** `lib/features/goals/presentation/goals_archive_page.dart:221`
+
+```dart
+switch (category) {
+  case GoalCategory.health:
+    return Color(0xFF4CAF50);
+  // ... diğer case'ler
+  default: // Bu default clause gereksiz
+    return AppColors.primary;
+}
+```
+
+**Çözüm:** Tüm enum değerleri kapsanıyorsa default clause kaldırılmalı.
+
+#### 4. Unused Declarations
+
+**Dosya:** `lib/features/onboarding/presentation/onboarding_page.dart`
+
+- `_ProgressStep` (line 917)
+- `_BadgeIcon` (line 960)
+- `_DreamsRealityIllustration` (line 993)
+- `_TrackJourneyIllustration` (line 1123)
+- `_CelebrateWinIllustration` (line 1254)
+
+**Çözüm:** Kullanılmayan widget'ları kaldır veya kullan.
+
+#### 5. Diğer Unused Declarations
+
+- `lib/features/reports/presentation/reports_page.dart:1131` → `_IconBulletRow`
+- `lib/features/settings/presentation/privacy_security_page.dart:327` → `_PrivacyOptionTile`
+- `lib/features/settings/presentation/settings_page.dart:916` → `_DangerZoneSection`
+
+**Öncelik:** Orta - Kod temizliği için önemli ama kritik değil.
+
+---
+
+## İyileştirme Önerileri
+
+### 🔴 Yüksek Öncelik
+
+1. **Test Coverage Artırılmalı**
+
+   - En az %60 test coverage hedefi
+   - Kritik flow'lar için test yazılmalı
+   - Repository ve provider testleri öncelikli
+
+2. **Const Widget Kullanımı**
+
+   - Tüm stateless widget'lar `const` olmalı
+   - Performans için kritik
+
+3. **Linter Hatalarının Düzeltilmesi**
+   - Unused code'lar temizlenmeli
+   - Kod kalitesi için önemli
+
+### 🟡 Orta Öncelik
+
+4. **Error Logging Sistemi**
+
+   - `print` yerine logger kullanılmalı
+   - Sentry veya Firebase Crashlytics entegrasyonu
+
+5. **Dokümantasyon**
+
+   - Kod içi dokümantasyon (dartdoc)
+   - README güncellemesi
+   - API dokümantasyonu
+
+6. **Performance Optimization**
+   - Lazy loading implementasyonu
+   - Image optimization kontrolü
+   - Memory leak kontrolü
+
+### 🟢 Düşük Öncelik
+
+7. **Use Case Pattern**
+
+   - Business logic için use case katmanı
+   - Repository'den UI'a daha fazla soyutlama
+
+8. **Breakpoint Sistemi**
+
+   - Responsive design için breakpoint sistemi
+   - Adaptive widget'lar
+
+9. **Accessibility**
+   - Semantics widget'ları
+   - Screen reader desteği
+   - Contrast ratio kontrolü
+
+---
+
+## Kod Örnekleri ve Öneriler
+
+### 1. Const Widget Kullanımı
+
+**Şu an:**
+
+```dart
+class _LogoHeader extends StatelessWidget {
+  const _LogoHeader({
+    required this.logoPath,
+    required this.appName,
+  });
+  // ...
+}
+```
+
+**İyileştirme:** Zaten const ✅
+
+### 2. Error Handling
+
+**Şu an:**
+
+```dart
+catch (e) {
+  print('Error parsing goal ${doc.id}: $e');
+  return null;
+}
+```
+
+**Olmalı:**
+
+```dart
+catch (e, stackTrace) {
+  _Logger.error('Error parsing goal ${doc.id}', error: e, stackTrace: stackTrace);
+  return null;
+}
+```
+
+### 3. State Management
+
+**Şu an:**
+
+```dart
+class AuthState {
+  const AuthState({
+    this.isLoading = false,
+    this.isAuthenticated = false,
+    // ...
+  });
+  // ...
+}
+```
+
+**İyileştirme (freezed ile):**
+
+```dart
+@freezed
+class AuthState with _$AuthState {
+  const factory AuthState({
+    @Default(false) bool isLoading,
+    @Default(false) bool isAuthenticated,
+    // ...
+  }) = _AuthState;
+}
+```
+
+---
+
+## Sonuç ve Genel Değerlendirme
+
+### Genel Skor: 7.5/10
+
+**Güçlü Yönler:**
+
+- ✅ Temiz mimari ve kod organizasyonu
+- ✅ Modern Flutter stack kullanımı
+- ✅ İyi tema sistemi
+- ✅ Güvenli Firebase entegrasyonu
+
+**İyileştirme Alanları:**
+
+- ❌ Test coverage çok düşük
+- ⚠️ Const widget kullanımı eksik
+- ⚠️ Linter uyarıları mevcut
+- ⚠️ Dokümantasyon eksik
+
+### Öncelikli Aksiyonlar
+
+1. **Test yazımına başlanmalı** (En kritik)
+2. **Const widget'lar eklenmeli** (Performans)
+3. **Linter hataları düzeltilmeli** (Kod kalitesi)
+4. **Error logging sistemi kurulmalı** (Debugging)
+
+### Bu Review Sonrasında Yapılan Önemli Düzeltmeler
+
+- **Auth hata yönetimi:**
+
+  - Firebase Auth hata kodları artık `AuthErrorHandler` üzerinden tam lokalize ediliyor.
+  - Login/Register sayfalarında Google ve email/password hataları için tek bir merkezî çözümleyici (`_resolveAuthError`) kullanılıyor.
+  - Başarılı kayıt sonrasında `errorCode` alanı da `null`’lanarak navigation koşulları ile uyumlu hale getirildi.
+
+- **Şifre değiştirme akışı:**
+
+  - `AuthNotifier.changePassword` içinde `_isChangePasswordInProgress` ve `isPasswordChanging` bayraklarının yaşam döngüsü düzeltildi.
+  - Şifre değişimi sırasında auth listener olayları güvenli şekilde bastırılıyor, işlem sonrası flag’ler otomatik temizleniyor.
+
+- **AI & Lokalizasyon:**
+  - AI servisleri (hedef optimizasyonu, raporlar ve öneriler) için `locale` parametresi uçtan uca taşındı.
+  - Süre ifadeleri (`calculateDurationPhrase`) ve tarih formatları artık locale duyarlı çalışıyor.
+  - AI prompt’larında dil talimatları (`getLanguageInstruction`) ve metinler TR/EN’ye göre doğru üretiliyor.
 
 ---
 
 ## Review-Based Action Items (TODO Checklist)
 
-### 🔴 Critical Fixes (Must Complete Before Production)
+### Yüksek Öncelik
 
-#### Repository Pattern Fixes
-- [ ] Update `GoalRepository` interface to include `userId` parameter for:
-  - `fetchGoalById(String goalId, String userId)`
-  - `archiveGoal(String goalId, String userId)`
-  - `completeGoal(String goalId, String userId)`
-  - `deleteGoal(String goalId, String userId)`
-  - `deleteNote(String noteId, String userId)`
-- [ ] Refactor `FirestoreGoalRepository` implementation to use direct user document access
-- [ ] Update all callers of these methods to pass `userId`
-- [ ] Add unit tests for refactored repository methods
-- [ ] Performance test with large datasets
+- [ ] Test coverage %60'a çıkarılmalı
+- [ ] Const widget'lar eklenmeli
+- [ ] Linter hataları düzeltilmeli (13 adet)
+- [ ] Error logging sistemi kurulmalı
 
-#### Database Index Configuration
-- [ ] Add missing composite indexes for goals: `(userId, category, isArchived, createdAt)`
-- [ ] Add missing composite indexes for checkIns: `(userId, goalId, createdAt)`
-- [ ] Add missing composite indexes for reports: `(userId, reportType, generatedAt)`
-- [ ] Deploy indexes to Firestore
-- [ ] Test all queries with new indexes
-- [ ] Update `firestore.indexes.json` with complete index definitions
+### Orta Öncelik
 
-#### Authentication State Management
-- [ ] Update router provider to handle loading and error states
-- [ ] Add authentication error boundary handling
-- [ ] Test navigation flows during auth failures
-- [ ] Add proper error state redirects
-- [ ] Verify protected route access during auth states
+- [ ] Dokümantasyon eklenmeli
+- [ ] Performance optimization yapılmalı
+- [ ] Memory leak kontrolü yapılmalı
 
-#### Offline Persistence
-- [ ] Configure Firestore offline persistence in main.dart
-- [ ] Add offline connectivity checks
-- [ ] Implement offline queue for write operations
-- [ ] Add offline state indicators in UI
-- [ ] Test offline/online synchronization scenarios
-- [ ] Handle offline conflicts and resolution strategies
+### Düşük Öncelik
 
-### 🟡 High Priority Improvements (Next Sprint)
-
-#### Performance Optimizations
-- [ ] Fix N+1 query in reports provider
-- [ ] Implement pagination for goals and check-ins lists
-- [ ] Add query result caching where appropriate
-- [ ] Optimize widget rebuilds with selective providers
-- [ ] Add performance monitoring and metrics
-- [ ] Implement lazy loading for large datasets
-
-#### Security Enhancements
-- [ ] Add input validation to all Cloud Functions
-- [ ] Implement rate limiting for AI service calls
-- [ ] Move sensitive configuration to environment variables
-- [ ] Add request size limits to Firestore security rules
-- [ ] Implement audit logging for sensitive operations
-- [ ] Add CSRF protection for web platform
-
-#### Error Handling Standardization
-- [ ] Create consistent error handling utility classes
-- [ ] Standardize error message formats
-- [ ] Implement proper error logging strategy
-- [ ] Add user-friendly error messages
-- [ ] Create error recovery mechanisms
-- [ ] Add error reporting/crashlytics integration
-
-### 🟢 Medium Priority Improvements (Next Month)
-
-#### Testing Implementation
-- [ ] Set up test infrastructure and mocking
-- [ ] Write unit tests for all repository methods
-- [ ] Write unit tests for all providers
-- [ ] Write widget tests for all major screens
-- [ ] Write integration tests for critical user flows
-- [ ] Set up automated testing pipeline
-
-#### Architecture Standardization
-- [ ] Review and standardize Clean Architecture implementation
-- [ ] Extract common UI components to shared layer
-- [ ] Implement proper dependency injection
-- [ ] Create architectural decision documentation
-- [ ] Add code generation for boilerplate reduction
-- [ ] Standardize naming conventions and patterns
-
-#### Accessibility Features
-- [ ] Add semantic labels to all interactive elements
-- [ ] Verify and fix color contrast ratios
-- [ ] Add screen reader support
-- [ ] Implement keyboard navigation
-- [ ] Add high contrast theme option
-- [ ] Test with accessibility tools
-
-### 🔵 Low Priority Improvements (Future)
-
-#### Documentation & Code Quality
-- [ ] Add comprehensive code documentation
-- [ ] Create API documentation
-- [ ] Add architecture diagrams and explanations
-- [ ] Create contributor guidelines
-- [ ] Add inline comments for complex logic
-- [ ] Create user-facing documentation
-
-#### Advanced Features
-- [ ] Implement advanced offline features
-- [ ] Add real-time collaboration features
-- [ ] Implement push notifications
-- [ ] Add data analytics and insights
-- [ ] Create advanced export/import options
-- [ ] Add themes and customization options
-
-#### Performance Monitoring
-- [ ] Implement comprehensive performance monitoring
-- [ ] Add user behavior analytics
-- [ ] Create performance dashboards
-- [ ] Implement A/B testing framework
-- [ ] Add crash reporting and analysis
-- [ ] Create performance regression testing
-
-### 📋 Verification & Testing Checklist
-
-#### Pre-Production Validation
-- [ ] All critical fixes implemented and tested
-- [ ] Security audit completed
-- [ ] Performance benchmarks meet requirements
-- [ ] Accessibility testing passed
-- [ ] Cross-platform compatibility verified
-- [ ] Data backup and recovery tested
-
-#### Production Readiness
-- [ ] Error monitoring configured
-- [ ] Logging and analytics implemented
-- [ ] Performance monitoring active
-- [ ] Security scanning completed
-- [ ] Load testing performed
-- [ ] User acceptance testing completed
+- [ ] Use case pattern implementasyonu
+- [ ] Breakpoint sistemi eklenmeli
+- [ ] Accessibility iyileştirmeleri
 
 ---
 
-This review identifies critical issues that must be addressed before production deployment, along with improvement suggestions to enhance the overall quality, performance, and maintainability of the YearFlow application. The prioritized checklist provides a clear action plan for the development team.
+**Review Hazırlayan:** AI Code Reviewer  
+**Son Güncelleme:** 2024

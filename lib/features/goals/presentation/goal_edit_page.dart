@@ -7,7 +7,9 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_radius.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_text_styles.dart';
+import '../../../core/utils/error_handler.dart';
 import '../../../core/utils/extensions.dart';
+import '../../../core/utils/feedback_helper.dart';
 import '../../../core/widgets/index.dart';
 import '../../../shared/models/goal.dart';
 import '../../../shared/providers/goal_providers.dart';
@@ -34,9 +36,7 @@ class _GoalEditPageState extends ConsumerState<GoalEditPage> {
   GoalCategory? _selectedCategory;
   DateTime? _completionDate;
   List<SubGoal> _subGoals = const [];
-
-  // Premium background color
-  static const Color _premiumBackground = Color(0xFFF9FAFB);
+  bool _isSaving = false; // Prevent multiple saves
 
   @override
   void initState() {
@@ -97,11 +97,18 @@ class _GoalEditPageState extends ConsumerState<GoalEditPage> {
   }
 
   Future<void> _handleSave() async {
+    // Prevent multiple saves
+    if (_isSaving) return;
+
     if (!_formKey.currentState!.validate()) {
       return;
     }
 
     if (!mounted) return;
+
+    setState(() {
+      _isSaving = true;
+    });
 
     try {
       final repository = ref.read(goalRepositoryProvider);
@@ -110,7 +117,11 @@ class _GoalEditPageState extends ConsumerState<GoalEditPage> {
 
       if (currentGoal == null) {
         if (mounted) {
-          AppSnackbar.showError(context, message: context.l10n.goalNotFound);
+          setState(() {
+            _isSaving = false;
+          });
+          AppSnackbar.showError(context,
+              message: context.l10n.goalNotFound);
         }
         return;
       }
@@ -133,14 +144,29 @@ class _GoalEditPageState extends ConsumerState<GoalEditPage> {
         // Goal detail'i de invalidate et
         ref.invalidate(goalDetailProvider(widget.goalId));
 
-        AppSnackbar.showSuccess(context, message: context.l10n.goalUpdatedSuccess);
-        context.pop();
-      }
-    } catch (e) {
-      if (mounted) {
-        AppSnackbar.showError(
+        // Önce kullanıcıyı bilgilendir
+        FeedbackHelper.showSuccess(
           context,
-          message: context.l10n.errorUpdatingGoal(e.toString()),
+          context.l10n.goalUpdatedSuccess,
+        );
+
+        // Snackbar görünsün diye kısa bekle, sonra sayfayı kapat
+        await Future.delayed(const Duration(milliseconds: 500));
+
+        if (mounted) {
+          context.pop();
+        }
+      }
+    } catch (e, stackTrace) {
+      if (mounted) {
+        setState(() {
+          _isSaving = false;
+        });
+
+        final appError = ErrorHandler.handle(e, stackTrace);
+        FeedbackHelper.showAppError(
+          context,
+          appError,
         );
       }
     }
@@ -157,7 +183,8 @@ class _GoalEditPageState extends ConsumerState<GoalEditPage> {
     }
 
     if (_selectedCategory == null) {
-      AppSnackbar.showError(context, message: context.l10n.pleaseSelectCategory);
+      AppSnackbar.showError(context,
+          message: context.l10n.pleaseSelectCategory);
       return;
     }
 
@@ -212,7 +239,7 @@ class _GoalEditPageState extends ConsumerState<GoalEditPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: _premiumBackground,
+      backgroundColor: AppColors.premiumBackground,
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
@@ -316,14 +343,24 @@ class _GoalEditPageState extends ConsumerState<GoalEditPage> {
                 const SizedBox(height: AppSpacing.md),
                 AppButton(
                   variant: AppButtonVariant.filled,
-                  onPressed: _handleSave,
+                  onPressed: _isSaving ? null : _handleSave,
                   minHeight: 60,
-                  child: Text(
-                    context.l10n.update,
-                    style: AppTextStyles.bodyMedium.copyWith(
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
+                  child: _isSaving
+                      ? const SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                                Colors.white),
+                          ),
+                        )
+                      : Text(
+                          context.l10n.update,
+                          style: AppTextStyles.bodyMedium.copyWith(
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
                 ),
               ],
             ),

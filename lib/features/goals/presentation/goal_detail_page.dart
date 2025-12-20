@@ -13,7 +13,9 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_radius.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_text_styles.dart';
+import '../../../core/utils/error_handler.dart';
 import '../../../core/utils/extensions.dart';
+import '../../../core/utils/feedback_helper.dart';
 import '../../../core/widgets/index.dart';
 import '../../../shared/models/check_in.dart';
 import '../../../shared/models/goal.dart';
@@ -37,8 +39,6 @@ class _GoalDetailPageState extends ConsumerState<GoalDetailPage>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
-  // Premium background color
-  static const Color _premiumBackground = Color(0xFFF9FAFB);
   static const Color _statusTextColor = Color(0xFF4B5563);
 
   @override
@@ -106,7 +106,7 @@ class _GoalDetailPageState extends ConsumerState<GoalDetailPage>
     final checkInsAsync = ref.watch(checkInsStreamProvider(widget.goalId));
 
     return Scaffold(
-      backgroundColor: _premiumBackground,
+      backgroundColor: AppColors.premiumBackground,
       body: goalAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, _) => Center(
@@ -279,7 +279,7 @@ class _GoalDetailPageState extends ConsumerState<GoalDetailPage>
                   Flexible(
                     flex: 45,
                     child: Container(
-                      color: _premiumBackground,
+                      color: AppColors.premiumBackground,
                       child: TabBarView(
                         controller: _tabController,
                         physics: const AlwaysScrollableScrollPhysics(),
@@ -506,9 +506,9 @@ class _PremiumAppBar extends ConsumerWidget {
 
                         if (goal == null) {
                           if (context.mounted) {
-                            AppSnackbar.showError(
+                            FeedbackHelper.showError(
                               context,
-                              message: context.l10n.goalNotFound,
+                              context.l10n.goalNotFound,
                             );
                           }
                           return;
@@ -520,24 +520,34 @@ class _PremiumAppBar extends ConsumerWidget {
                             .collection('users')
                             .doc(goal.userId)
                             .collection('goals')
-                            .doc(goalId)
+                            .doc(goalId) 
                             .delete();
 
                         if (context.mounted) {
                           ref.invalidate(goalsStreamProvider);
                           ref.invalidate(goalDetailProvider(goalId));
-                          AppSnackbar.showSuccess(
-                            context,
-                            message: context.l10n.goalDeletedSuccess,
-                          );
-                          context.pop();
+
+                          // Önce Goals sayfasına dön
+                          context.go(AppRoutes.goals);
+
+                          // Sonra kullanıcıyı bilgilendir (navigation sonrası)
+                          Future.delayed(const Duration(milliseconds: 300),
+                              () {
+                            if (context.mounted) {
+                              FeedbackHelper.showSuccess(
+                                context,
+                                context.l10n.goalDeletedSuccess,
+                              );
+                            }
+                          });
                         }
-                      } catch (e) {
+                      } catch (e, stackTrace) {
                         if (context.mounted) {
-                          AppSnackbar.showError(
+                          final appError =
+                              ErrorHandler.handle(e, stackTrace);
+                          FeedbackHelper.showAppError(
                             context,
-                            message: context.l10n
-                                .errorDeletingGoal(e.toString()),
+                            appError,
                           );
                         }
                       }
@@ -594,7 +604,7 @@ class _PremiumHeaderSection extends StatelessWidget {
         isVerySmallScreen ? 2.0 : (isSmallScreen ? 4.0 : 6.0);
 
     return Container(
-      color: _GoalDetailPageState._premiumBackground,
+      color: AppColors.premiumBackground,
       padding: EdgeInsets.symmetric(
         horizontal: screenWidth < 360 ? AppSpacing.md : AppSpacing.lg,
         vertical: verticalPadding,
@@ -919,7 +929,7 @@ class _PremiumTabBar extends StatelessWidget {
     final isVerySmallScreen = screenWidth < 340;
 
     return Container(
-      color: _GoalDetailPageState._premiumBackground,
+      color: AppColors.premiumBackground,
       padding: EdgeInsets.symmetric(
         horizontal: isVerySmallScreen
             ? AppSpacing.sm
@@ -2949,7 +2959,7 @@ class _PremiumBottomButton extends StatelessWidget {
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            _GoalDetailPageState._premiumBackground.withOpacity(0),
+            AppColors.premiumBackground.withOpacity(0),
             Colors.white,
           ],
           stops: const [0.0, 0.4],

@@ -5,6 +5,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_radius.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_text_styles.dart';
+import '../../../../core/utils/error_handler.dart';
 import '../../../../core/utils/extensions.dart';
 import '../../../../core/widgets/index.dart';
 import '../../../../shared/models/goal.dart';
@@ -125,7 +126,8 @@ class _AIOptimizeBottomSheetState
                         return const _EmptyStateSection();
                       }
                       if (_titleController.text.isEmpty) {
-                        _titleController.text = _shortenGoalTitle(result.optimizedTitle);
+                        _titleController.text =
+                            _shortenGoalTitle(result.optimizedTitle);
                       }
                       return _ContentSection(
                         result: result,
@@ -133,7 +135,8 @@ class _AIOptimizeBottomSheetState
                       );
                     },
                     loading: () => const _LoadingSection(),
-                    error: (error, stackTrace) => _ErrorSection(error: error),
+                    error: (error, stackTrace) =>
+                        _ErrorSection(error: error),
                   ),
                 ],
               ),
@@ -249,9 +252,34 @@ class _ErrorSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var message = error.toString();
-    if (message.startsWith('Exception:')) {
-      message = message.substring('Exception:'.length).trim();
+    // Convert error to AppError for user-friendly messages
+    final appError = ErrorHandler.handle(error);
+
+    // Get localized error messages
+    String userMessage;
+    String? hint;
+
+    if (appError is NetworkError) {
+      // Network-specific error messages with localization
+      final isEnglish =
+          Localizations.localeOf(context).languageCode == 'en';
+
+      if (error.toString().contains('unavailable') ||
+          error.toString().contains('UNAVAILABLE')) {
+        userMessage = isEnglish
+            ? 'No internet connection. Please check your connection.'
+            : 'İnternet bağlantısı yok. Lütfen bağlantınızı kontrol edin.';
+        hint = isEnglish
+            ? 'This feature requires an internet connection.'
+            : 'Bu özellik internet bağlantısı gerektirir.';
+      } else {
+        userMessage = isEnglish
+            ? 'An unexpected error occurred. Please try again.'
+            : 'Beklenmeyen bir hata oluştu. Lütfen tekrar deneyin.';
+      }
+    } else {
+      // Fallback to original message
+      userMessage = appError.userMessage;
     }
 
     return Padding(
@@ -279,12 +307,23 @@ class _ErrorSection extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.sm),
           Text(
-            message,
-            style: AppTextStyles.bodySmall.copyWith(
-              color: AppColors.gray600,
+            userMessage,
+            style: AppTextStyles.bodyMedium.copyWith(
+              color: AppColors.gray700,
             ),
             textAlign: TextAlign.center,
           ),
+          if (hint != null) ...[
+            const SizedBox(height: AppSpacing.xs),
+            Text(
+              hint,
+              style: AppTextStyles.bodySmall.copyWith(
+                color: AppColors.gray600,
+                fontStyle: FontStyle.italic,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
           const SizedBox(height: AppSpacing.lg),
           AppButton(
             variant: AppButtonVariant.outlined,

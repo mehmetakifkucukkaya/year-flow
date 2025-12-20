@@ -18,9 +18,6 @@ final _namePromptShownProvider = StateProvider<bool>((ref) => false);
 class HomePage extends ConsumerWidget {
   const HomePage({super.key});
 
-  // Premium background color
-  static const Color _premiumBackground = Color(0xFFF9FAFB);
-
   void _maybeShowNamePrompt(BuildContext context, WidgetRef ref) {
     final authState = ref.read(authStateProvider);
     final user = authState.currentUser;
@@ -138,7 +135,7 @@ class HomePage extends ConsumerWidget {
     _maybeShowNamePrompt(context, ref);
 
     return Container(
-      color: _premiumBackground,
+      color: AppColors.premiumBackground,
       child: CustomScrollView(
         slivers: [
           // SafeArea for status bar
@@ -174,11 +171,12 @@ class HomePage extends ConsumerWidget {
                 top: AppSpacing.xl,
                 bottom: AppSpacing.md,
               ),
-              child:               Text(
+              child: Text(
                 context.l10n.yourGoals,
                 style: AppTextStyles.headlineMedium.copyWith(
                   fontWeight: FontWeight.bold,
-                  fontSize: MediaQuery.of(context).size.width < 360 ? 22 : null,
+                  fontSize:
+                      MediaQuery.of(context).size.width < 360 ? 22 : null,
                 ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
@@ -763,7 +761,8 @@ class _GoalCard extends ConsumerWidget {
                       Expanded(
                         child: _DetailItem(
                           icon: Icons.checklist_rounded,
-                          text: context.l10n.tasksRemaining(_getRemainingTasksCount()),
+                          text: context.l10n
+                              .tasksRemaining(_getRemainingTasksCount()),
                           color: AppColors.gray700,
                         ),
                       ),
@@ -990,7 +989,8 @@ class _UpcomingCheckInsSection extends ConsumerWidget {
                 context.l10n.upcomingCheckIns,
                 style: AppTextStyles.headlineMedium.copyWith(
                   fontWeight: FontWeight.bold,
-                  fontSize: MediaQuery.of(context).size.width < 360 ? 22 : null,
+                  fontSize:
+                      MediaQuery.of(context).size.width < 360 ? 22 : null,
                 ),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
@@ -1113,7 +1113,8 @@ class _UpcomingCheckInsSection extends ConsumerWidget {
                                         ),
                                         const SizedBox(height: 2),
                                         Text(
-                                          context.l10n.upcomingCheckInsDescription,
+                                          context.l10n
+                                              .upcomingCheckInsDescription,
                                           style: AppTextStyles.bodySmall
                                               .copyWith(
                                             color: AppColors.gray600,
@@ -1137,7 +1138,8 @@ class _UpcomingCheckInsSection extends ConsumerWidget {
                                     ),
                                     child: Text(
                                       '${upcomingGoals.length} ${context.l10n.goals.toLowerCase()}',
-                                      style: AppTextStyles.labelSmall.copyWith(
+                                      style: AppTextStyles.labelSmall
+                                          .copyWith(
                                         color: AppColors.primary,
                                         fontWeight: FontWeight.w600,
                                       ),
@@ -1191,7 +1193,8 @@ class _UpcomingCheckInsSection extends ConsumerWidget {
                                                       height: 2),
                                                   Text(
                                                     _formatRemaining(
-                                                        context, goal.targetDate),
+                                                        context,
+                                                        goal.targetDate),
                                                     style: AppTextStyles
                                                         .bodySmall
                                                         .copyWith(
@@ -1315,7 +1318,8 @@ class _DailyQuestionCard extends ConsumerWidget {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
                           content: Text(
-                            context.l10n.errorLoadingGoals(error.toString()),
+                            context.l10n
+                                .errorLoadingGoals(error.toString()),
                           ),
                         ),
                       );
@@ -1388,7 +1392,9 @@ class _DailyQuestionCard extends ConsumerWidget {
                                             ),
                                           ),
                                           subtitle: Text(
-                                            goal.category.getLocalizedLabel(context),
+                                            goal.category
+                                                .getLocalizedLabel(
+                                                    context),
                                             style: AppTextStyles.bodySmall
                                                 .copyWith(
                                               color: AppColors.gray600,
