@@ -705,6 +705,10 @@
   "optimizedGoalHint": "Kısa bir hedef adı yazın…",
   "explanation": "Açıklama",
   "suggestedSubTasks": "Önerilen Alt Görevler",
-  "apply": "Uygula"
+  "apply": "Uygula",
+  "jsonCsv": "JSON / CSV",
+  "noInternetConnection": "İnternet bağlantısı yok. Lütfen bağlantınızı kontrol edin.",
+  "requiresConnection": "Bu özellik internet bağlantısı gerektirir.",
+  "unexpectedError": "Beklenmeyen bir hata oluştu. Lütfen tekrar deneyin."
 }
 

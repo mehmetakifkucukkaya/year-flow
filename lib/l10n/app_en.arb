@@ -1888,6 +1888,22 @@
   "apply": "Apply",
   "@apply": {
     "description": "Apply button text"
+  },
+  "jsonCsv": "JSON / CSV",
+  "@jsonCsv": {
+    "description": "JSON and CSV formats label"
+  },
+  "noInternetConnection": "No internet connection. Please check your connection.",
+  "@noInternetConnection": {
+    "description": "Network error message when offline"
+  },
+  "requiresConnection": "This feature requires an internet connection.",
+  "@requiresConnection": {
+    "description": "Hint message that feature needs internet"
+  },
+  "unexpectedError": "An unexpected error occurred. Please try again.",
+  "@unexpectedError": {
+    "description": "Generic error message"
   }
 }
 

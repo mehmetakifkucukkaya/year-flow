@@ -12,21 +12,37 @@ import '../../../../shared/models/goal.dart';
 import '../../../../shared/providers/ai_providers.dart';
 import '../../../../shared/services/ai_service.dart';
 
-String _shortenGoalTitle(String input) {
+String _shortenGoalTitle(String input, [String locale = 'tr']) {
   var text = input.trim();
   if (text.isEmpty) return text;
 
   var words = text.split(RegExp(r'\s+'));
 
+  // Locale-aware time units and prepositions
+  final timeUnits = locale == 'tr'
+      ? ['gün', 'hafta', 'ay', 'yıl']
+      : [
+          'day',
+          'days',
+          'week',
+          'weeks',
+          'month',
+          'months',
+          'year',
+          'years'
+        ];
+  final prepositions =
+      locale == 'tr' ? ['içinde', 'boyunca'] : ['in', 'for', 'within'];
+
   // Çok kelimeli süre ifadelerini baştan kırp (örn. "3 ay içinde", "6 ay boyunca")
+  // Trim multi-word time expressions from the beginning (e.g., "3 months in", "6 weeks for")
   if (words.length > 3) {
     final lower = words.map((w) => w.toLowerCase()).toList();
     final isNumber = RegExp(r'^\d+$').hasMatch(lower[0]);
-    final isTimeUnit = ['gün', 'hafta', 'ay', 'yıl'].contains(lower[1]);
+    final isTimeUnit = timeUnits.contains(lower[1]);
     if (isNumber && isTimeUnit) {
       var start = 2;
-      if (lower.length > 2 &&
-          (lower[2] == 'içinde' || lower[2] == 'boyunca')) {
+      if (lower.length > 2 && prepositions.contains(lower[2])) {
         start = 3;
       }
       words = words.sublist(start);
@@ -126,8 +142,9 @@ class _AIOptimizeBottomSheetState
                         return const _EmptyStateSection();
                       }
                       if (_titleController.text.isEmpty) {
-                        _titleController.text =
-                            _shortenGoalTitle(result.optimizedTitle);
+                        _titleController.text = _shortenGoalTitle(
+                            result.optimizedTitle,
+                            context.l10n.localeName);
                       }
                       return _ContentSection(
                         result: result,
@@ -260,26 +277,14 @@ class _ErrorSection extends StatelessWidget {
     String? hint;
 
     if (appError is NetworkError) {
-      // Network-specific error messages with localization
-      final isEnglish =
-          Localizations.localeOf(context).languageCode == 'en';
-
-      if (error.toString().contains('unavailable') ||
-          error.toString().contains('UNAVAILABLE')) {
-        userMessage = isEnglish
-            ? 'No internet connection. Please check your connection.'
-            : 'İnternet bağlantısı yok. Lütfen bağlantınızı kontrol edin.';
-        hint = isEnglish
-            ? 'This feature requires an internet connection.'
-            : 'Bu özellik internet bağlantısı gerektirir.';
-      } else {
-        userMessage = isEnglish
-            ? 'An unexpected error occurred. Please try again.'
-            : 'Beklenmeyen bir hata oluştu. Lütfen tekrar deneyin.';
-      }
+      // Use existing localized network fallback
+      userMessage = context.l10n.errorNetworkRequestFailed;
+      hint = null;
     } else {
-      // Fallback to original message
-      userMessage = appError.userMessage;
+      // Fallback to original message or a generic localized error
+      userMessage = appError.userMessage.isNotEmpty
+          ? appError.userMessage
+          : context.l10n.errorUnexpectedAuth;
     }
 
     return Padding(

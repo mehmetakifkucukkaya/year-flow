@@ -723,7 +723,7 @@ class _DataAndPrivacySection extends ConsumerWidget {
               _SettingsTile._(
                 icon: Icons.file_download_rounded,
                 title: context.l10n.downloadAllMyData,
-                trailing: const _ChevronWithLabel(label: 'JSON / CSV'),
+                trailing: _ChevronWithLabel(label: context.l10n.json),
                 onTap: () {
                   _showExportOptionsDialog(context, 'all_data');
                 },
@@ -732,7 +732,7 @@ class _DataAndPrivacySection extends ConsumerWidget {
               _SettingsTile._(
                 icon: Icons.upload_rounded,
                 title: context.l10n.restoreFromBackup,
-                trailing: const _ChevronWithLabel(label: 'JSON'),
+                trailing: _ChevronWithLabel(label: context.l10n.json),
                 onTap: () {
                   _importBackup(context, ref);
                 },
@@ -991,7 +991,7 @@ class _DangerZoneSection extends ConsumerWidget {
                 color: Colors.white,
               ),
               label: Text(
-                'Hesabı Sil',
+                context.l10n.deleteAccount,
                 style: AppTextStyles.bodyMedium.copyWith(
                   fontWeight: FontWeight.w700,
                   color: Colors.white,

@@ -60,7 +60,7 @@ class _GoalDetailPageState extends ConsumerState<GoalDetailPage>
     if (goal != null) {
       // Goal created item
       final createdDate =
-          DateFormat('d MMMM', 'tr_TR').format(goal.createdAt);
+          DateFormat('d MMMM', context.l10n.localeName).format(goal.createdAt);
       items.add(_TimelineItem(
         title: context.l10n.goalCreated,
         date: createdDate,
@@ -70,7 +70,7 @@ class _GoalDetailPageState extends ConsumerState<GoalDetailPage>
       // Check-in items
       for (final checkIn in checkIns) {
         final checkInDate =
-            DateFormat('d MMMM', 'tr_TR').format(checkIn.createdAt);
+            DateFormat('d MMMM', context.l10n.localeName).format(checkIn.createdAt);
         items.add(_TimelineItem(
           title: context.l10n.checkInCompleted(checkIn.score),
           date: checkInDate,
@@ -232,7 +232,7 @@ class _GoalDetailPageState extends ConsumerState<GoalDetailPage>
                                 title: sg.title,
                                 isCompleted: sg.isCompleted,
                                 dueDate: sg.dueDate != null
-                                    ? DateFormat('d MMMM', 'tr_TR')
+                                    ? DateFormat('d MMMM', context.l10n.localeName)
                                         .format(sg.dueDate!)
                                     : null,
                               ))
@@ -1273,7 +1273,7 @@ class _PremiumTimelineItem extends StatelessWidget {
     if (item.checkIn == null) return;
 
     final checkIn = item.checkIn!;
-    final formattedDate = DateFormat('d MMMM yyyy, HH:mm', 'tr_TR')
+    final formattedDate = DateFormat('d MMMM yyyy, HH:mm', context.l10n.localeName)
         .format(checkIn.createdAt);
 
     showDialog(
@@ -1875,7 +1875,7 @@ class _NoteCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final dateFormat = DateFormat('d MMMM yyyy, HH:mm', 'tr_TR');
+    final dateFormat = DateFormat('d MMMM yyyy, HH:mm', context.l10n.localeName);
 
     return GestureDetector(
       onTap: onTap,
