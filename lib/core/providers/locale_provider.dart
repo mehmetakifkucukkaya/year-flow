@@ -1,11 +1,11 @@
 import 'dart:ui';
 
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// Locale provider - uygulama dilini yönetir
-final localeProvider = StateNotifierProvider<LocaleNotifier, Locale>((ref) {
+final localeProvider =
+    StateNotifierProvider<LocaleNotifier, Locale>((ref) {
   final notifier = LocaleNotifier();
   // Başlangıçta locale'yi yükle
   notifier.initialize();
@@ -36,7 +36,7 @@ class LocaleNotifier extends StateNotifier<Locale> {
 
       // Kaydedilmiş locale yoksa cihazın dilini kontrol et
       final deviceLocale = PlatformDispatcher.instance.locale;
-      final supportedLocales = const [
+      const supportedLocales = [
         Locale('tr', 'TR'),
         Locale('en', 'US'),
       ];
@@ -98,4 +98,3 @@ class LocaleNotifier extends StateNotifier<Locale> {
   /// Mevcut dil kodunu döndür
   String get currentLanguageCode => state.languageCode;
 }
-

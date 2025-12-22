@@ -1,9 +1,8 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
-
-import 'package:firebase_auth/firebase_auth.dart';
 
 import '../../../core/constants/app_assets.dart';
 import '../../../core/router/app_routes.dart';
@@ -28,7 +27,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   bool _obscurePassword = true;
   String? _lastShownError; // Son gösterilen hata mesajını takip et
 
-  String _resolveAuthError(BuildContext context, String? errorMessage, String? errorCode) {
+  String _resolveAuthError(
+      BuildContext context, String? errorMessage, String? errorCode) {
     // Google auth özel kodları
     if (errorMessage == AuthNotifier.googleAuthFailedCode) {
       return context.l10n.googleAuthFailed;
@@ -36,18 +36,20 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     if (errorMessage == AuthNotifier.googleAuthCancelledCode) {
       return context.l10n.googleAuthCancelled;
     }
-    
+
     // Firebase Auth hata kodu varsa lokalize et
     if (errorCode != null) {
       try {
-        final exception = FirebaseAuthException(code: errorCode, message: errorMessage);
-        return AuthErrorHandler.getLocalizedSignInMessage(context, exception);
+        final exception =
+            FirebaseAuthException(code: errorCode, message: errorMessage);
+        return AuthErrorHandler.getLocalizedSignInMessage(
+            context, exception);
       } catch (_) {
         // Hata kodu parse edilemezse ham mesajı döndür
         return errorMessage ?? context.l10n.errorUnexpectedAuth;
       }
     }
-    
+
     // Fallback: ham mesajı döndür
     return errorMessage ?? context.l10n.errorUnexpectedAuth;
   }
@@ -120,14 +122,16 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   @override
   Widget build(BuildContext context) {
     // Sadece loading state'ini watch et, böylece form state'i korunur
-    final isEmailLoading = ref.watch(authStateProvider.select((s) => s.isEmailLoading));
-    final isGoogleLoading = ref.watch(authStateProvider.select((s) => s.isGoogleLoading));
-    
+    final isEmailLoading =
+        ref.watch(authStateProvider.select((s) => s.isEmailLoading));
+    final isGoogleLoading =
+        ref.watch(authStateProvider.select((s) => s.isGoogleLoading));
+
     // State değişikliklerini dinle - ref.listen otomatik olarak dispose edilir
     // NOT: ref.listen build içinde güvenli bir şekilde kullanılabilir (Riverpod 2.x)
     ref.listen<AuthState>(authStateProvider, (previous, next) {
       if (!mounted) return;
-      
+
       // Hata mesajı varsa ve daha önce gösterilmemişse göster
       if (next.errorMessage != null || next.errorCode != null) {
         final resolvedMessage = _resolveAuthError(
@@ -137,7 +141,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
         );
         final hasErrorStateChanged =
             next.errorMessage != previous?.errorMessage ||
-            next.errorCode != previous?.errorCode;
+                next.errorCode != previous?.errorCode;
 
         if (hasErrorStateChanged && resolvedMessage != _lastShownError) {
           _lastShownError = resolvedMessage;
@@ -148,14 +152,15 @@ class _LoginPageState extends ConsumerState<LoginPage> {
           }
         }
       }
-      
+
       // Hata mesajı temizlendiğinde, son gösterilen hatayı da temizle
       if (next.errorMessage == null &&
           next.errorCode == null &&
-          (previous?.errorMessage != null || previous?.errorCode != null)) {
+          (previous?.errorMessage != null ||
+              previous?.errorCode != null)) {
         _lastShownError = null;
       }
-      
+
       // Başarılı giriş yapıldıysa yönlendir
       if (next.isAuthenticated && !(previous?.isAuthenticated ?? false)) {
         try {
@@ -188,17 +193,22 @@ class _LoginPageState extends ConsumerState<LoginPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  SizedBox(height: MediaQuery.of(context).size.height * 0.06),
+                  SizedBox(
+                      height: MediaQuery.of(context).size.height * 0.06),
                   // Logo + App Name Header Component
                   _LogoHeader(
                     logoPath: AppAssets.appLogo,
                     appName: context.l10n.appName,
                   ),
-                  SizedBox(height: MediaQuery.of(context).size.height * 0.08),
+                  SizedBox(
+                      height: MediaQuery.of(context).size.height * 0.08),
                   // Welcome Back Title
                   Text(
                     context.l10n.welcomeBack,
-                    style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+                    style: Theme.of(context)
+                        .textTheme
+                        .headlineLarge
+                        ?.copyWith(
                           color: AppColors.gray900,
                           fontWeight: FontWeight.w700,
                           fontSize: 28,
@@ -273,7 +283,10 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       ),
                       child: Text(
                         context.l10n.forgotPassword,
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        style: Theme.of(context)
+                            .textTheme
+                            .bodyMedium
+                            ?.copyWith(
                               color: AppColors.primary,
                               fontWeight: FontWeight.w500,
                             ),
@@ -307,10 +320,14 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                         ),
                       ),
                       Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: AppSpacing.sm),
                         child: Text(
                           context.l10n.or,
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodySmall
+                              ?.copyWith(
                                 color: AppColors.gray500,
                                 fontWeight: FontWeight.w500,
                               ),
@@ -333,14 +350,18 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     isLoading: isGoogleLoading,
                     text: context.l10n.continueWithGoogle,
                   ),
-                  SizedBox(height: MediaQuery.of(context).size.height * 0.04),
+                  SizedBox(
+                      height: MediaQuery.of(context).size.height * 0.04),
                   // Register link
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
                         context.l10n.noAccount,
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        style: Theme.of(context)
+                            .textTheme
+                            .bodyMedium
+                            ?.copyWith(
                               color: AppColors.gray600,
                             ),
                       ),
@@ -364,7 +385,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       ),
                     ],
                   ),
-                  SizedBox(height: MediaQuery.of(context).padding.bottom + AppSpacing.md),
+                  SizedBox(
+                      height: MediaQuery.of(context).padding.bottom +
+                          AppSpacing.md),
                 ],
               ),
             ),
@@ -503,7 +526,8 @@ class _PremiumButton extends StatelessWidget {
                     height: 24,
                     child: CircularProgressIndicator(
                       strokeWidth: 2.5,
-                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      valueColor:
+                          AlwaysStoppedAnimation<Color>(Colors.white),
                     ),
                   )
                 : DefaultTextStyle(
@@ -568,18 +592,22 @@ class _GoogleSignInButton extends StatelessWidget {
                     height: 24,
                     child: CircularProgressIndicator(
                       strokeWidth: 2.5,
-                      valueColor: AlwaysStoppedAnimation<Color>(AppColors.gray600),
+                      valueColor:
+                          AlwaysStoppedAnimation<Color>(AppColors.gray600),
                     ),
                   )
                 : Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      _GoogleIcon(),
+                      const _GoogleIcon(),
                       const SizedBox(width: AppSpacing.sm),
                       Text(
                         text,
-                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                        style: Theme.of(context)
+                            .textTheme
+                            .bodyLarge
+                            ?.copyWith(
                               color: AppColors.gray900,
                               fontWeight: FontWeight.w600,
                               fontSize: 16,

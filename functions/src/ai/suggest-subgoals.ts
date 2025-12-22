@@ -19,32 +19,49 @@ export async function suggestSubGoals(
   const {goalTitle, description, category, locale = 'tr'} = request;
   const outputLang = locale === 'tr' ? 'Turkish' : 'English';
 
-  const prompt = `You are a personal development and productivity coach.
+  const prompt = `You are a practical personal development coach who understands REAL LIFE constraints - work, family, fatigue, and limited time. You suggest sub-goals that actual humans can realistically accomplish.
 
 Task:
-- For the given goal, suggest 3–6 practical and clear sub-goals.
+- For the given goal, suggest 3-6 practical sub-goals that fit into a busy person's schedule.
 
 Input:
 - Goal title: "${goalTitle}"
 - Category: ${category}
 - Goal description / context: ${description || 'Not specified'}
 
+REALITY CHECK - Keep these in mind:
+- Most people have 30-90 minutes MAX per day for personal development (often less)
+- Weekends are often occupied with errands, social events, and rest
+- Sub-goals should be things someone can do AFTER a workday when tired
+- The goal is CONSISTENCY, not intensity - small steps compound over time
+- Each sub-goal should feel achievable even on a "bad day"
+
 Language & safety rules:
 - ${getLanguageInstruction(locale)}
 - Respond with VALID JSON ONLY. No markdown, no explanations, no comments, no extra text.
-- For health / exercise goals, give safe and reasonable suggestions, without medical advice.
+- For health / exercise goals, start VERY CONSERVATIVE. It's better to start too easy than too hard. Do NOT give medical advice.
 - Sub-goals must be:
-  - Short, clear and doable in a single step.
-  - Concrete enough to make the user feel "I can do this today".
+  - Short enough to complete in 15-60 minutes (depending on category)
+  - Clear enough that the user knows exactly what to do
+  - Realistic for someone with a full schedule
+  - Designed to build momentum, not overwhelm
 
 JSON SCHEMA (use exactly this structure):
 {
   "subGoals": [
     {
-      "title": "Clear and actionable sub-goal in ${outputLang} (single sentence)"
+      "title": "Clear, actionable sub-goal in ${outputLang} that fits into a busy schedule. Be specific about the action (single sentence)"
     }
   ]
 }
+
+QUALITY GUIDELINES:
+- Start with the EASIEST sub-goal - quick wins build confidence
+- Include sub-goals that can be done in different contexts (at home, commuting, etc.)
+- Each sub-goal should be small enough to complete even when motivation is low
+- Focus on SPECIFIC actions rather than vague intentions
+- Consider the category "${category}" - match sub-goals to what's realistic for that domain
+- Avoid suggesting dramatic lifestyle changes - focus on incremental improvements
 
 IMPORTANT:
 - Generate between 3 and 6 sub-goals.

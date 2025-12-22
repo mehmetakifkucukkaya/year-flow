@@ -286,7 +286,8 @@ class _SettingsTile extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
     final isLanguageTile = icon == Icons.language_rounded;
-    final currentLocale = isLanguageTile ? ref.watch(localeProvider) : null;
+    final currentLocale =
+        isLanguageTile ? ref.watch(localeProvider) : null;
     final currentLanguageLabel = currentLocale != null
         ? (currentLocale.languageCode == 'tr'
             ? l10n.turkish

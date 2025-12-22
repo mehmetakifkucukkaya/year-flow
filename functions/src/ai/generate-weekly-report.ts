@@ -141,7 +141,14 @@ function buildWeeklyReportPrompt(
   const startDate = formatDate(new Date(weekStart));
   const endDate = formatDate(new Date(weekEnd));
 
-  return `You are an experienced personal development analyst and coach. Your task is to analyze the weekly data from ${startDate} to ${endDate} and write a **concise, clear, and easy-to-read** weekly report about the user's personal development journey.
+  return `You are a practical personal development analyst who understands that weeks vary wildly, energy levels fluctuate, and that's completely normal. Your task is to analyze the weekly data from ${startDate} to ${endDate} and write an honest, balanced weekly report.
+
+REALITY CHECK - Remember:
+- One week is very short - meaningful progress is often invisible at this timeframe
+- Some weeks are productive, some are survival weeks - both are valid
+- Check-in gaps over a week often mean life got busy, not that the user failed
+- A week with no visible progress doesn't mean no effort was made
+- Weekly reports should help identify patterns, not create guilt
 
 SUMMARY DATA:
 - Week: ${startDate} - ${endDate}
@@ -190,25 +197,25 @@ ${
 
 Writing rules:
 - ${getLanguageInstruction(locale)}
-- Tone: Warm, friendly and supportive, but not overly emotional.
+- Tone: Honest, balanced, and constructive. Keep perspective - one week is a small data point. Avoid guilt-tripping.
 - Format: Use Markdown headings (#, ##, ###).
-- Length: Maximum 200–250 words. Avoid unnecessary repetition and long sentences, write clearly and directly.
+- Length: Maximum 200–250 words. Write clearly and directly.
 
 REPORT SECTIONS (write in this order, with a maximum of 2–3 sentences per section):
 
 # Weekly Report: ${startDate} - ${endDate}
 
 ## 1. Week Overview
-Summarize the overall tone of the week in 2–3 sentences max; note main themes and significant changes. Acknowledge strengths and efforts.
+What kind of week was this? A productive week? A building week? A challenging week? Keep it brief and honest.
 
-## 2. Goal Progress
-Analyze progress by category in 2–3 sentences max; celebrate completed goals (especially those explicitly marked as completed - isCompleted=true) and honestly but constructively note challenging areas.
+## 2. Progress Snapshot
+Note any completed goals or meaningful progress. For stalled goals, briefly note if this seems like a pattern or just a slow week.
 
-## 3. Challenges & Solutions
-Summarize the main challenges during the week and the solutions or strategies developed to address them in 2–3 sentences max.
+## 3. Observations
+Based on check-in patterns (or lack thereof), what do you observe? Low engagement might mean the system needs tweaking, not that the user needs to "try harder."
 
-## 4. AI Recommendations
-Provide 2–3 concrete focus areas and actionable recommendations for the coming week in 2–3 sentences max.
+## 4. Focus for Next Week
+Provide 2–3 specific, realistic actions for the coming week. These should be small enough to actually complete - focus on one priority, not everything at once.
 
 IMPORTANT: Your entire response must be written in ${outputLang}. Address the reader directly using second person ("you" / "sen").`;
 }

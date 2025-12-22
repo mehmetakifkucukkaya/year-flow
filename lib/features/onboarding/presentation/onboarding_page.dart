@@ -21,7 +21,8 @@ class OnboardingPage extends ConsumerStatefulWidget {
 class _OnboardingPageState extends ConsumerState<OnboardingPage> {
   final PageController _pageController = PageController();
   int _currentPage = 0;
-  final int _totalPages = 3; // 3 slides: Make goals, Track journey, Stay motivated
+  final int _totalPages =
+      3; // 3 slides: Make goals, Track journey, Stay motivated
 
   @override
   void dispose() {
@@ -40,7 +41,7 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
 
   Future<void> _handleContinue() async {
     if (!mounted) return;
-    
+
     if (_currentPage < _totalPages - 1) {
       _pageController.animateToPage(
         _currentPage + 1,
@@ -49,8 +50,10 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
       );
     } else {
       // Onboarding tamamlandı - await ile state güncellenmesini bekle
-      await ref.read(onboardingCompletedProvider.notifier).setCompleted(true);
-      
+      await ref
+          .read(onboardingCompletedProvider.notifier)
+          .setCompleted(true);
+
       // Navigation'ı güvenli bir şekilde yap
       _navigateToRegister();
     }
@@ -58,26 +61,28 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
 
   Future<void> _handleSkip() async {
     if (!mounted) return;
-    
+
     // State'i güncelle - await ile state güncellenmesini bekle
-    await ref.read(onboardingCompletedProvider.notifier).setCompleted(true);
-    
+    await ref
+        .read(onboardingCompletedProvider.notifier)
+        .setCompleted(true);
+
     // Navigation'ı güvenli bir şekilde yap
     _navigateToRegister();
   }
 
   void _navigateToRegister() {
     if (!mounted) return;
-    
+
     // State güncellendikten sonra router'ın yeniden hesaplaması için bekle
     // Router provider watch edildiği için state değişikliği router'ı otomatik refresh edecek
     Future.delayed(const Duration(milliseconds: 200), () {
       if (!mounted) return;
-      
+
       // Widget tree hazır olduktan sonra navigation yap
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
-        
+
         try {
           // Router'ı direkt kullan
           final router = ref.read(routerProvider);
@@ -85,7 +90,7 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
         } catch (e, stackTrace) {
           debugPrint('Router navigation error: $e');
           debugPrint('Stack trace: $stackTrace');
-          
+
           // Fallback: context.go kullan
           if (mounted) {
             try {
@@ -134,9 +139,8 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
                   child: Text(
                     context.l10n.skip,
                     style: AppTextStyles.bodyMedium.copyWith(
-                      color: isDark
-                          ? AppColors.gray300
-                          : AppColors.gray600,
+                      color:
+                          isDark ? AppColors.gray300 : AppColors.gray600,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -170,10 +174,10 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
               ),
               child: Container(
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(
+                  gradient: const LinearGradient(
                     colors: [
                       AppColors.primary,
-                      const Color(0xFF1976D2), // Slightly darker blue
+                      Color(0xFF1976D2), // Slightly darker blue
                     ],
                   ),
                   borderRadius: BorderRadius.circular(16),
@@ -209,7 +213,9 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
                 ),
               ),
             ),
-            SizedBox(height: MediaQuery.of(context).padding.bottom + AppSpacing.md),
+            SizedBox(
+                height:
+                    MediaQuery.of(context).padding.bottom + AppSpacing.md),
           ],
         ),
       ),
@@ -298,7 +304,7 @@ class _WelcomeScreen extends StatelessWidget {
                 final screenHeight = constraints.maxHeight;
                 final screenWidth = constraints.maxWidth;
                 final isSmallScreen = screenHeight < 700;
-                
+
                 return SingleChildScrollView(
                   physics: const ClampingScrollPhysics(),
                   child: ConstrainedBox(
@@ -306,12 +312,16 @@ class _WelcomeScreen extends StatelessWidget {
                     child: Padding(
                       padding: EdgeInsets.symmetric(
                         horizontal: AppSpacing.lg,
-                        vertical: isSmallScreen ? AppSpacing.md : AppSpacing.lg,
+                        vertical:
+                            isSmallScreen ? AppSpacing.md : AppSpacing.lg,
                       ),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          SizedBox(height: isSmallScreen ? AppSpacing.md : AppSpacing.lg),
+                          SizedBox(
+                              height: isSmallScreen
+                                  ? AppSpacing.md
+                                  : AppSpacing.lg),
                           // Illustration - Turn Dreams Into Reality
                           _FadeInWidget(
                             delay: 0,
@@ -320,7 +330,9 @@ class _WelcomeScreen extends StatelessWidget {
                                 borderRadius: BorderRadius.circular(24),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: (isDark ? Colors.black : Colors.blue)
+                                    color: (isDark
+                                            ? Colors.black
+                                            : Colors.blue)
                                         .withOpacity(0.08),
                                     blurRadius: 20,
                                     offset: const Offset(0, 6),
@@ -338,15 +350,18 @@ class _WelcomeScreen extends StatelessWidget {
                                     minHeight: 200,
                                   ),
                                   child: SizedBox(
-                                    width: screenWidth * (isSmallScreen ? 0.7 : 0.75),
-                                    height: isSmallScreen 
-                                        ? screenHeight * 0.28 
+                                    width: screenWidth *
+                                        (isSmallScreen ? 0.7 : 0.75),
+                                    height: isSmallScreen
+                                        ? screenHeight * 0.28
                                         : screenHeight * 0.32,
                                     child: Image.asset(
                                       AppAssets.onboardingWelcome,
                                       fit: BoxFit.contain,
-                                      errorBuilder: (context, error, stackTrace) {
-                                        return const Icon(Icons.image_not_supported);
+                                      errorBuilder:
+                                          (context, error, stackTrace) {
+                                        return const Icon(
+                                            Icons.image_not_supported);
                                       },
                                     ),
                                   ),
@@ -354,16 +369,23 @@ class _WelcomeScreen extends StatelessWidget {
                               ),
                             ),
                           ),
-                          SizedBox(height: isSmallScreen ? AppSpacing.lg : AppSpacing.xl),
+                          SizedBox(
+                              height: isSmallScreen
+                                  ? AppSpacing.lg
+                                  : AppSpacing.xl),
                           // Headline
                           _FadeInWidget(
                             delay: 100,
                             child: Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: AppSpacing.md),
                               child: Text(
                                 context.l10n.onboardingWelcomeTitle,
-                                style: AppTextStyles.headlineLarge.copyWith(
-                                  color: isDark ? AppColors.white : AppColors.gray900,
+                                style:
+                                    AppTextStyles.headlineLarge.copyWith(
+                                  color: isDark
+                                      ? AppColors.white
+                                      : AppColors.gray900,
                                   fontWeight: FontWeight.w800,
                                   letterSpacing: -0.6,
                                   height: 1.2,
@@ -375,12 +397,16 @@ class _WelcomeScreen extends StatelessWidget {
                               ),
                             ),
                           ),
-                          SizedBox(height: isSmallScreen ? AppSpacing.md : AppSpacing.lg),
+                          SizedBox(
+                              height: isSmallScreen
+                                  ? AppSpacing.md
+                                  : AppSpacing.lg),
                           // Subtitle
                           _FadeInWidget(
                             delay: 200,
                             child: Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: AppSpacing.lg),
                               child: Text(
                                 context.l10n.onboardingWelcomeSubtitle,
                                 style: AppTextStyles.bodyLarge.copyWith(
@@ -398,7 +424,10 @@ class _WelcomeScreen extends StatelessWidget {
                               ),
                             ),
                           ),
-                          SizedBox(height: isSmallScreen ? AppSpacing.md : AppSpacing.lg),
+                          SizedBox(
+                              height: isSmallScreen
+                                  ? AppSpacing.md
+                                  : AppSpacing.lg),
                         ],
                       ),
                     ),
@@ -448,7 +477,7 @@ class _FeatureSlide1 extends StatelessWidget {
                 final screenHeight = constraints.maxHeight;
                 final screenWidth = constraints.maxWidth;
                 final isSmallScreen = screenHeight < 700;
-                
+
                 return SingleChildScrollView(
                   physics: const ClampingScrollPhysics(),
                   child: ConstrainedBox(
@@ -456,12 +485,16 @@ class _FeatureSlide1 extends StatelessWidget {
                     child: Padding(
                       padding: EdgeInsets.symmetric(
                         horizontal: AppSpacing.lg,
-                        vertical: isSmallScreen ? AppSpacing.md : AppSpacing.lg,
+                        vertical:
+                            isSmallScreen ? AppSpacing.md : AppSpacing.lg,
                       ),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          SizedBox(height: isSmallScreen ? AppSpacing.md : AppSpacing.lg),
+                          SizedBox(
+                              height: isSmallScreen
+                                  ? AppSpacing.md
+                                  : AppSpacing.lg),
                           // Illustration - Track Your Journey
                           _FadeInWidget(
                             delay: 0,
@@ -470,7 +503,9 @@ class _FeatureSlide1 extends StatelessWidget {
                                 borderRadius: BorderRadius.circular(24),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: (isDark ? Colors.black : Colors.blue)
+                                    color: (isDark
+                                            ? Colors.black
+                                            : Colors.blue)
                                         .withOpacity(0.08),
                                     blurRadius: 20,
                                     offset: const Offset(0, 6),
@@ -488,15 +523,18 @@ class _FeatureSlide1 extends StatelessWidget {
                                     minHeight: 200,
                                   ),
                                   child: SizedBox(
-                                    width: screenWidth * (isSmallScreen ? 0.7 : 0.75),
-                                    height: isSmallScreen 
-                                        ? screenHeight * 0.28 
+                                    width: screenWidth *
+                                        (isSmallScreen ? 0.7 : 0.75),
+                                    height: isSmallScreen
+                                        ? screenHeight * 0.28
                                         : screenHeight * 0.32,
                                     child: Image.asset(
                                       AppAssets.onboardingTrackJourney,
                                       fit: BoxFit.contain,
-                                      errorBuilder: (context, error, stackTrace) {
-                                        return const Icon(Icons.image_not_supported);
+                                      errorBuilder:
+                                          (context, error, stackTrace) {
+                                        return const Icon(
+                                            Icons.image_not_supported);
                                       },
                                     ),
                                   ),
@@ -504,16 +542,23 @@ class _FeatureSlide1 extends StatelessWidget {
                               ),
                             ),
                           ),
-                          SizedBox(height: isSmallScreen ? AppSpacing.lg : AppSpacing.xl),
+                          SizedBox(
+                              height: isSmallScreen
+                                  ? AppSpacing.lg
+                                  : AppSpacing.xl),
                           // Title
                           _FadeInWidget(
                             delay: 100,
                             child: Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: AppSpacing.md),
                               child: Text(
                                 context.l10n.onboardingFeature1Title,
-                                style: AppTextStyles.headlineLarge.copyWith(
-                                  color: isDark ? AppColors.white : AppColors.gray900,
+                                style:
+                                    AppTextStyles.headlineLarge.copyWith(
+                                  color: isDark
+                                      ? AppColors.white
+                                      : AppColors.gray900,
                                   fontWeight: FontWeight.w800,
                                   letterSpacing: -0.6,
                                   height: 1.2,
@@ -525,12 +570,16 @@ class _FeatureSlide1 extends StatelessWidget {
                               ),
                             ),
                           ),
-                          SizedBox(height: isSmallScreen ? AppSpacing.md : AppSpacing.lg),
+                          SizedBox(
+                              height: isSmallScreen
+                                  ? AppSpacing.md
+                                  : AppSpacing.lg),
                           // Subtitle
                           _FadeInWidget(
                             delay: 200,
                             child: Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: AppSpacing.lg),
                               child: Text(
                                 context.l10n.onboardingFeature1Subtitle,
                                 style: AppTextStyles.bodyLarge.copyWith(
@@ -548,7 +597,10 @@ class _FeatureSlide1 extends StatelessWidget {
                               ),
                             ),
                           ),
-                          SizedBox(height: isSmallScreen ? AppSpacing.md : AppSpacing.lg),
+                          SizedBox(
+                              height: isSmallScreen
+                                  ? AppSpacing.md
+                                  : AppSpacing.lg),
                         ],
                       ),
                     ),
@@ -598,7 +650,7 @@ class _FeatureSlide2 extends StatelessWidget {
                 final screenHeight = constraints.maxHeight;
                 final screenWidth = constraints.maxWidth;
                 final isSmallScreen = screenHeight < 700;
-                
+
                 return SingleChildScrollView(
                   physics: const ClampingScrollPhysics(),
                   child: ConstrainedBox(
@@ -606,12 +658,16 @@ class _FeatureSlide2 extends StatelessWidget {
                     child: Padding(
                       padding: EdgeInsets.symmetric(
                         horizontal: AppSpacing.lg,
-                        vertical: isSmallScreen ? AppSpacing.md : AppSpacing.lg,
+                        vertical:
+                            isSmallScreen ? AppSpacing.md : AppSpacing.lg,
                       ),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          SizedBox(height: isSmallScreen ? AppSpacing.md : AppSpacing.lg),
+                          SizedBox(
+                              height: isSmallScreen
+                                  ? AppSpacing.md
+                                  : AppSpacing.lg),
                           // Illustration - Celebrate Every Win
                           _FadeInWidget(
                             delay: 0,
@@ -620,7 +676,9 @@ class _FeatureSlide2 extends StatelessWidget {
                                 borderRadius: BorderRadius.circular(24),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: (isDark ? Colors.black : Colors.orange)
+                                    color: (isDark
+                                            ? Colors.black
+                                            : Colors.orange)
                                         .withOpacity(0.08),
                                     blurRadius: 20,
                                     offset: const Offset(0, 6),
@@ -638,15 +696,18 @@ class _FeatureSlide2 extends StatelessWidget {
                                     minHeight: 200,
                                   ),
                                   child: SizedBox(
-                                    width: screenWidth * (isSmallScreen ? 0.7 : 0.75),
-                                    height: isSmallScreen 
-                                        ? screenHeight * 0.28 
+                                    width: screenWidth *
+                                        (isSmallScreen ? 0.7 : 0.75),
+                                    height: isSmallScreen
+                                        ? screenHeight * 0.28
                                         : screenHeight * 0.32,
                                     child: Image.asset(
                                       AppAssets.onboardingCelebrateWin,
                                       fit: BoxFit.contain,
-                                      errorBuilder: (context, error, stackTrace) {
-                                        return const Icon(Icons.image_not_supported);
+                                      errorBuilder:
+                                          (context, error, stackTrace) {
+                                        return const Icon(
+                                            Icons.image_not_supported);
                                       },
                                     ),
                                   ),
@@ -654,16 +715,23 @@ class _FeatureSlide2 extends StatelessWidget {
                               ),
                             ),
                           ),
-                          SizedBox(height: isSmallScreen ? AppSpacing.lg : AppSpacing.xl),
+                          SizedBox(
+                              height: isSmallScreen
+                                  ? AppSpacing.lg
+                                  : AppSpacing.xl),
                           // Title
                           _FadeInWidget(
                             delay: 100,
                             child: Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: AppSpacing.md),
                               child: Text(
                                 context.l10n.onboardingFeature2Title,
-                                style: AppTextStyles.headlineLarge.copyWith(
-                                  color: isDark ? AppColors.white : AppColors.gray900,
+                                style:
+                                    AppTextStyles.headlineLarge.copyWith(
+                                  color: isDark
+                                      ? AppColors.white
+                                      : AppColors.gray900,
                                   fontWeight: FontWeight.w800,
                                   letterSpacing: -0.6,
                                   height: 1.2,
@@ -675,12 +743,16 @@ class _FeatureSlide2 extends StatelessWidget {
                               ),
                             ),
                           ),
-                          SizedBox(height: isSmallScreen ? AppSpacing.md : AppSpacing.lg),
+                          SizedBox(
+                              height: isSmallScreen
+                                  ? AppSpacing.md
+                                  : AppSpacing.lg),
                           // Subtitle
                           _FadeInWidget(
                             delay: 200,
                             child: Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: AppSpacing.lg),
                               child: Text(
                                 context.l10n.onboardingFeature2Subtitle,
                                 style: AppTextStyles.bodyLarge.copyWith(
@@ -698,7 +770,10 @@ class _FeatureSlide2 extends StatelessWidget {
                               ),
                             ),
                           ),
-                          SizedBox(height: isSmallScreen ? AppSpacing.md : AppSpacing.lg),
+                          SizedBox(
+                              height: isSmallScreen
+                                  ? AppSpacing.md
+                                  : AppSpacing.lg),
                         ],
                       ),
                     ),
@@ -836,7 +911,7 @@ class _SoftPatternPainter extends CustomPainter {
 
     // Additional subtle circles
     paint.maskFilter = const MaskFilter.blur(BlurStyle.normal, 50);
-    
+
     // Small mint circle
     paint.color = mint;
     canvas.drawCircle(
@@ -910,7 +985,6 @@ class _SoftPatternPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
-
 
 /// Fade-in animation widget
 class _FadeInWidget extends StatefulWidget {

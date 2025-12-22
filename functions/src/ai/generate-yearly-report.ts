@@ -113,7 +113,14 @@ function buildYearlyReportPrompt(
     checkInsByMonth,
   } = analytics;
 
-  return `You are an experienced personal development analyst and coach. Your task is to analyze the ${year} data and write a **concise, clear, and easy-to-read** yearly report about the user's personal development journey.
+  return `You are a practical personal development analyst who understands that real progress is rarely linear, life happens, and perfection is not a realistic standard. Your task is to analyze the ${year} data and write an honest, balanced, and insightful yearly report.
+
+REALITY CHECK - Remember:
+- Incomplete goals don't mean failure - circumstances change, priorities shift, and that's okay
+- Low progress percentage doesn't always mean lack of effort - some goals take longer than expected
+- Check-in gaps are normal - people get busy, sick, or distracted
+- A year with many started but unfinished goals still shows ambition and growth
+- Honest reflection is more valuable than false positivity
 
 SUMMARY DATA:
 - Year: ${year}
@@ -155,34 +162,34 @@ ${checkIns
 
 Writing rules:
 - ${getLanguageInstruction(locale)}
-- Tone: Warm, friendly and supportive, but not overly emotional.
+- Tone: Honest, balanced, and constructive. Celebrate genuine wins AND acknowledge real challenges. Avoid toxic positivity.
 - Format: Use Markdown headings (#, ##, ###).
-- Length: Maximum 300–350 words. Avoid unnecessary repetition and long sentences, write clearly and directly.
+- Length: Maximum 300–350 words. Write clearly and directly.
 
 REPORT SECTIONS (write in this order, with a maximum of 2–3 sentences per section):
 
 # ${year} Personal Development Report
 
 ## 1. Year Overview
-Summarize the overall tone of the year, main themes, and significant changes in 2–3 sentences max. Acknowledge strengths and efforts shown.
+Summarize the year honestly - what was the overall character? Was it a building year, a challenging year, a transitional year? Acknowledge both efforts made and outcomes achieved.
 
 ## 2. Goal Progress
-Analyze progress by category in 2–3 sentences max; celebrate completed goals (especially those explicitly marked as completed - isCompleted=true), and honestly but constructively note challenging areas and incomplete goals.
+Analyze by category. Celebrate completed goals genuinely. For incomplete goals, provide honest context - was the goal too ambitious? Did priorities shift? Was it a timing issue? Be specific about which categories worked and which didn't.
 
 ## 3. Emotional and Mental Journey
-Summarize motivation fluctuations, difficult periods, and recovery moments in 2–3 sentences max; highlight the user's resilience.
+Reflect on motivation patterns visible in check-ins. Note periods of high engagement and periods of disengagement. Acknowledge that fluctuation is human, not failure.
 
 ## 4. Best Moments and Milestones
-Describe standout moments, firsts, and small but meaningful victories throughout the year in 2–3 sentences max.
+Highlight specific achievements - completed goals, high check-in scores, progress breakthroughs. Even in a challenging year, there were bright spots.
 
 ## 5. Lessons Learned
-Write 4–5 clear lessons and insights from this year as a short bullet list.
+Write 4–5 clear insights from this year. Include lessons about what worked, what didn't, and what this reveals about the user's patterns and realistic capacity.
 
 ## 6. Recommendations for ${year + 1}
-Provide 3–4 concrete focus areas, new goal ideas, and actionable recommendations for the coming year in 2–3 sentences max.
+Based on the ACTUAL data from ${year}, provide 3–4 realistic recommendations. If the user struggled with many goals, suggest fewer commitments. If check-ins were inconsistent, suggest a more sustainable system. Be honest, not idealistic.
 
-## 7. A Short Note to Yourself
-Write a short note in a compassionate but realistic tone that helps the user appreciate their own efforts.
+## 7. A Note to Yourself
+Write a brief note that balances appreciation for efforts made with honest acknowledgment of where things didn't go as planned. Self-compassion includes honesty, not just encouragement.
 
 IMPORTANT: Your entire response must be written in ${outputLang}. Address the reader directly using second person ("you" / "sen").`;
 }
