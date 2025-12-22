@@ -76,6 +76,7 @@ class _GoalDetailPageState extends ConsumerState<GoalDetailPage>
           date: checkInDate,
           type: _TimelineItemType.checkIn,
           note: checkIn.note,
+          checkIn: checkIn,
         ));
       }
     }
@@ -520,7 +521,7 @@ class _PremiumAppBar extends ConsumerWidget {
                             .collection('users')
                             .doc(goal.userId)
                             .collection('goals')
-                            .doc(goalId) 
+                            .doc(goalId)
                             .delete();
 
                         if (context.mounted) {
@@ -1029,12 +1030,14 @@ class _TimelineItem {
     required this.date,
     required this.type,
     this.note,
+    this.checkIn,
   });
 
   final String title;
   final String date;
   final _TimelineItemType type;
   final String? note;
+  final CheckIn? checkIn;
 }
 
 enum _TimelineItemType {
@@ -1192,70 +1195,276 @@ class _PremiumTimelineItem extends StatelessWidget {
         SizedBox(width: isSmallScreen ? AppSpacing.sm : AppSpacing.md),
         // Content with card-like wrapper (Küçültüldü)
         Expanded(
-          child: Container(
-            padding: EdgeInsets.all(
-                isSmallScreen ? AppSpacing.sm : AppSpacing.md),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(14),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.03),
-                  offset: const Offset(0, 2),
-                  blurRadius: 8,
-                  spreadRadius: 0,
-                ),
-              ],
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  item.title,
-                  style: AppTextStyles.bodyMedium.copyWith(
-                    fontWeight: FontWeight.w600,
-                    fontSize: isSmallScreen ? 13 : 14,
-                    height: 1.3,
-                  ),
-                ),
-                SizedBox(height: isSmallScreen ? 2 : AppSpacing.xs),
-                Text(
-                  item.date,
-                  style: AppTextStyles.bodySmall.copyWith(
-                    color: AppColors.gray600,
-                    fontSize: isSmallScreen ? 11 : 12,
-                  ),
-                ),
-                if (item.note != null) ...[
-                  SizedBox(
-                      height:
-                          isSmallScreen ? AppSpacing.xs : AppSpacing.sm),
-                  Container(
-                    padding: EdgeInsets.all(
-                        isSmallScreen ? AppSpacing.xs : AppSpacing.sm),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFF9FAFB), // Pastel background
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(
-                        color: AppColors.gray200.withOpacity(0.5),
-                        width: 1,
-                      ),
-                    ),
-                    child: Text(
-                      item.note!,
-                      style: AppTextStyles.bodySmall.copyWith(
-                        color: AppColors.gray700,
-                        fontSize: isSmallScreen ? 11 : 12,
-                        height: 1.4,
-                      ),
-                    ),
+          child: InkWell(
+            onTap: item.type == _TimelineItemType.checkIn
+                ? () => _showCheckInDetails(context)
+                : null,
+            borderRadius: BorderRadius.circular(14),
+            child: Container(
+              padding: EdgeInsets.all(
+                  isSmallScreen ? AppSpacing.sm : AppSpacing.md),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(14),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.03),
+                    offset: const Offset(0, 2),
+                    blurRadius: 8,
+                    spreadRadius: 0,
                   ),
                 ],
-              ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    item.title,
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      fontWeight: FontWeight.w600,
+                      fontSize: isSmallScreen ? 13 : 14,
+                      height: 1.3,
+                    ),
+                  ),
+                  SizedBox(height: isSmallScreen ? 2 : AppSpacing.xs),
+                  Text(
+                    item.date,
+                    style: AppTextStyles.bodySmall.copyWith(
+                      color: AppColors.gray600,
+                      fontSize: isSmallScreen ? 11 : 12,
+                    ),
+                  ),
+                  if (item.note != null) ...[
+                    SizedBox(
+                        height:
+                            isSmallScreen ? AppSpacing.xs : AppSpacing.sm),
+                    Container(
+                      padding: EdgeInsets.all(
+                          isSmallScreen ? AppSpacing.xs : AppSpacing.sm),
+                      decoration: BoxDecoration(
+                        color:
+                            const Color(0xFFF9FAFB), // Pastel background
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                          color: AppColors.gray200.withOpacity(0.5),
+                          width: 1,
+                        ),
+                      ),
+                      child: Text(
+                        item.note!,
+                        style: AppTextStyles.bodySmall.copyWith(
+                          color: AppColors.gray700,
+                          fontSize: isSmallScreen ? 11 : 12,
+                          height: 1.4,
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
             ),
           ),
         ),
       ],
+    );
+  }
+
+  void _showCheckInDetails(BuildContext context) {
+    if (item.checkIn == null) return;
+
+    final checkIn = item.checkIn!;
+    final formattedDate = DateFormat('d MMMM yyyy, HH:mm', 'tr_TR')
+        .format(checkIn.createdAt);
+
+    showDialog(
+      context: context,
+      barrierColor: Colors.black.withOpacity(0.5),
+      builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(24),
+        ),
+        child: Container(
+          padding: const EdgeInsets.all(AppSpacing.lg),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(AppSpacing.sm),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF5A623).withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(
+                      Icons.add_task,
+                      color: Color(0xFFF5A623),
+                      size: 24,
+                    ),
+                  ),
+                  const SizedBox(width: AppSpacing.md),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Check-in Detayları',
+                          style: AppTextStyles.titleMedium.copyWith(
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          formattedDate,
+                          style: AppTextStyles.bodySmall.copyWith(
+                            color: AppColors.gray600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close),
+                    onPressed: () => Navigator.of(context).pop(),
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                  ),
+                ],
+              ),
+              const SizedBox(height: AppSpacing.lg),
+              const Divider(),
+              const SizedBox(height: AppSpacing.md),
+
+              // Score
+              Row(
+                children: [
+                  Text(
+                    'Puan:',
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.gray700,
+                    ),
+                  ),
+                  const SizedBox(width: AppSpacing.sm),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.md,
+                      vertical: AppSpacing.xs,
+                    ),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF5A623).withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      '${checkIn.score}/10',
+                      style: AppTextStyles.bodyMedium.copyWith(
+                        fontWeight: FontWeight.w700,
+                        color: const Color(0xFFF5A623),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: AppSpacing.md),
+
+              // Progress Delta
+              Row(
+                children: [
+                  Text(
+                    'İlerleme Değişimi:',
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.gray700,
+                    ),
+                  ),
+                  const SizedBox(width: AppSpacing.sm),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.md,
+                      vertical: AppSpacing.xs,
+                    ),
+                    decoration: BoxDecoration(
+                      color: checkIn.progressDelta >= 0
+                          ? AppColors.success.withOpacity(0.1)
+                          : AppColors.error.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      '${checkIn.progressDelta >= 0 ? '+' : ''}${checkIn.progressDelta}%',
+                      style: AppTextStyles.bodyMedium.copyWith(
+                        fontWeight: FontWeight.w700,
+                        color: checkIn.progressDelta >= 0
+                            ? AppColors.success
+                            : AppColors.error,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+
+              // Note
+              if (checkIn.note != null && checkIn.note!.isNotEmpty) ...[
+                const SizedBox(height: AppSpacing.lg),
+                Text(
+                  'Not:',
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.gray700,
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(AppSpacing.md),
+                  decoration: BoxDecoration(
+                    color: AppColors.gray50,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: AppColors.gray200,
+                      width: 1,
+                    ),
+                  ),
+                  child: Text(
+                    checkIn.note!,
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      color: AppColors.gray700,
+                      height: 1.5,
+                    ),
+                  ),
+                ),
+              ],
+
+              const SizedBox(height: AppSpacing.lg),
+
+              // Close button
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    padding: const EdgeInsets.symmetric(
+                      vertical: AppSpacing.md,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: Text(
+                    'Kapat',
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
@@ -1774,7 +1983,6 @@ class _SubtasksTabState extends ConsumerState<_SubtasksTab> {
   }
 
   Future<void> _suggestSubGoalsWithAI() async {
-    if (widget.isGoalCompleted) return;
     if (widget.goalId.isEmpty) return;
     final aiService = ref.read(aiServiceProvider);
 
@@ -2046,11 +2254,12 @@ class _SubtasksTabState extends ConsumerState<_SubtasksTab> {
   }
 
   Future<void> _saveSubGoals() async {
-    if (widget.isGoalCompleted) return;
     if (widget.goalId.isEmpty) return;
     final current =
         await ref.read(goalDetailProvider(widget.goalId).future);
     if (current == null) return;
+    // Güncel state'ten kontrol et
+    if (current.isCompleted) return;
 
     final repository = ref.read(goalRepositoryProvider);
 
@@ -2078,7 +2287,6 @@ class _SubtasksTabState extends ConsumerState<_SubtasksTab> {
   }
 
   Future<void> _toggleCompleted(SubGoal subGoal) async {
-    if (widget.isGoalCompleted) return;
     setState(() {
       _subGoals = _subGoals
           .map(
@@ -2097,7 +2305,6 @@ class _SubtasksTabState extends ConsumerState<_SubtasksTab> {
   }
 
   Future<void> _deleteSubGoal(SubGoal subGoal) async {
-    if (widget.isGoalCompleted) return;
     final shouldDelete = await showDialog<bool>(
       context: context,
       barrierColor: Colors.black.withOpacity(0.5),
@@ -2129,7 +2336,6 @@ class _SubtasksTabState extends ConsumerState<_SubtasksTab> {
   }
 
   Future<void> _showEditDialog({SubGoal? existing}) async {
-    if (widget.isGoalCompleted) return;
     final controller = TextEditingController(text: existing?.title ?? '');
     final result = await showModalBottomSheet<String>(
       context: context,

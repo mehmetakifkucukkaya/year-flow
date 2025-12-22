@@ -117,9 +117,13 @@ class AIService {
         throw Exception('No data received from Cloud Function');
       }
 
-      final data = result.data as Map<String, dynamic>;
-      final list = (data['subGoals'] as List<dynamic>? ?? [])
-          .map((e) => (e as Map<String, dynamic>)['title'] as String)
+      final data = Map<String, dynamic>.from(result.data as Map);
+      final subGoalsList = data['subGoals'] as List<dynamic>? ?? [];
+      final list = subGoalsList
+          .map((e) {
+            final subGoal = Map<String, dynamic>.from(e as Map);
+            return subGoal['title'] as String;
+          })
           .where((title) => title.trim().isNotEmpty)
           .toList();
 
@@ -197,7 +201,7 @@ class AIService {
         'locale': locale,
       });
 
-      final data = result.data as Map<String, dynamic>;
+      final data = Map<String, dynamic>.from(result.data as Map);
       return data['suggestions'] as String;
     } catch (e) {
       throw Exception('Failed to generate suggestions: ${e.toString()}');
@@ -233,7 +237,7 @@ class AIService {
         'locale': locale,
       });
 
-      final data = result.data as Map<String, dynamic>;
+      final data = Map<String, dynamic>.from(result.data as Map);
       return data['content'] as String;
     } catch (e) {
       throw Exception('Failed to generate yearly report: ${e.toString()}');
@@ -271,7 +275,7 @@ class AIService {
         'locale': locale,
       });
 
-      final data = result.data as Map<String, dynamic>;
+      final data = Map<String, dynamic>.from(result.data as Map);
       return data['content'] as String;
     } catch (e) {
       throw Exception('Failed to generate weekly report: ${e.toString()}');
@@ -309,7 +313,7 @@ class AIService {
         'locale': locale,
       });
 
-      final data = result.data as Map<String, dynamic>;
+      final data = Map<String, dynamic>.from(result.data as Map);
       return data['content'] as String;
     } catch (e) {
       throw Exception(
@@ -380,7 +384,7 @@ class AIService {
       throw Exception('No data received from Cloud Function');
     }
 
-    return result.data as Map<String, dynamic>;
+    return Map<String, dynamic>.from(result.data as Map);
   }
 
   /// Parse optimize response
@@ -394,11 +398,12 @@ class AIService {
     final response = OptimizeGoalResponse(
       optimizedTitle: data['optimizedTitle'] as String,
       subGoals: (data['subGoals'] as List<dynamic>).map((sg) {
+        final subGoalMap = Map<String, dynamic>.from(sg as Map);
         return SubGoal(
-          id: sg['id'] as String,
-          title: sg['title'] as String,
-          isCompleted: sg['isCompleted'] as bool? ?? false,
-          dueDate: _parseAiDueDate(sg['dueDate']),
+          id: subGoalMap['id'] as String,
+          title: subGoalMap['title'] as String,
+          isCompleted: subGoalMap['isCompleted'] as bool? ?? false,
+          dueDate: _parseAiDueDate(subGoalMap['dueDate']),
         );
       }).toList(),
       explanation: data['explanation'] as String,
@@ -412,7 +417,8 @@ class AIService {
   }
 
   /// Handle optimize error
-  Exception _handleOptimizeError(Object error, String goalTitle, String locale) {
+  Exception _handleOptimizeError(
+      Object error, String goalTitle, String locale) {
     _Logger.error('AI Service Error: $error');
 
     final isTurkish = locale == 'tr';

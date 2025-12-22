@@ -13,7 +13,7 @@ service cloud.firestore {
     }
 
     function isOptionalString(value, maxLen) {
-      return !(value is string) || value.size() <= maxLen;
+      return value == null || (value is string && value.size() <= maxLen);
     }
 
     function isOptionalTimestamp(value) {
@@ -21,17 +21,17 @@ service cloud.firestore {
     }
 
     function isOptionalBoolean(value) {
-      return !(value is bool) || value in [true, false];
+      return value == null || value is bool;
     }
 
     function isOptionalNumber(value, min, max) {
-      return !(value is int || value is float) ||
-        (value >= min && value <= max);
+      return value == null || ((value is int || value is float) && value >= min && value <= max);
     }
 
     // Goal dokümanı için alan validasyonu
     function isValidGoal(data) {
       return
+        isNonEmptyString(data.userId, 128) &&
         isNonEmptyString(data.title, 200) &&
         isNonEmptyString(data.category, 50) &&
         isOptionalString(data.description, 2000) &&
@@ -41,18 +41,9 @@ service cloud.firestore {
         isOptionalTimestamp(data.completedAt) &&
         isOptionalBoolean(data.isArchived) &&
         isOptionalBoolean(data.isCompleted) &&
-        isOptionalNumber(data.progress, 0, 100) &&
-        // subGoals dizi boyutu ve alanları sınırla
-        (!('subGoals' in data) ||
-          (data.subGoals is list &&
-            data.subGoals.size() <= 50 &&
-            data.subGoals.every(subGoal =>
-              isNonEmptyString(subGoal.title, 200) &&
-              isOptionalTimestamp(subGoal.dueDate) &&
-              isOptionalBoolean(subGoal.isCompleted)
-            )
-          )
-        );
+        (data.progress is int && data.progress >= 0 && data.progress <= 100) &&
+        // subGoals dizisi olmalı ve boyutu sınırlı olmalı
+        (!('subGoals' in data) || (data.subGoals is list && data.subGoals.size() <= 50));
     }
 
     // Check-in dokümanı için alan validasyonu
@@ -61,8 +52,8 @@ service cloud.firestore {
         isNonEmptyString(data.goalId, 128) &&
         isNonEmptyString(data.userId, 128) &&
         data.createdAt is timestamp &&
-        isOptionalNumber(data.score, 1, 10) &&
-        isOptionalNumber(data.progressDelta, -100, 100) &&
+        (data.score is int && data.score >= 1 && data.score <= 10) &&
+        (data.progressDelta is int && data.progressDelta >= -100 && data.progressDelta <= 100) &&
         isOptionalString(data.note, 2000);
     }
 
@@ -86,18 +77,20 @@ service cloud.firestore {
         isNonEmptyString(data.content, 20000);
     }
 
-    // Users collection - kullanıcılar kendi bilgilerini okuyabilir, herkes yazabilir (auth sırasında)
+    // Users collection - kullanıcılar kendi bilgilerini okuyabilir ve yazabilir
     match /users/{userId} {
       allow read: if isAuthenticated() && request.auth.uid == userId;
-      allow write: if isAuthenticated(); // Auth sırasında kayıt için
+      // Sadece kendi user dokümanını yazabilir
+      allow write: if isAuthenticated() && request.auth.uid == userId;
       
       // Goals subcollection - kullanıcıya özel hedefler
       match /goals/{goalId} {
         allow read: if isAuthenticated() && request.auth.uid == userId;
 
-        // Yazma işlemlerinde alan validasyonu uygula
+        // Validasyon ile güvenli yazma
         allow create, update: if isAuthenticated() &&
           request.auth.uid == userId &&
+          request.resource.data.userId == userId &&
           isValidGoal(request.resource.data);
 
         // Silme sadece sahibi tarafından
