@@ -709,6 +709,21 @@
   "jsonCsv": "JSON / CSV",
   "noInternetConnection": "İnternet bağlantısı yok. Lütfen bağlantınızı kontrol edin.",
   "requiresConnection": "Bu özellik internet bağlantısı gerektirir.",
-  "unexpectedError": "Beklenmeyen bir hata oluştu. Lütfen tekrar deneyin."
+  "unexpectedError": "Beklenmeyen bir hata oluştu. Lütfen tekrar deneyin.",
+  "addGoal": "Hedef ekle",
+  "sortBy": "Sırala",
+  "filterBy": "Filtrele",
+  "sortNewest": "En yeni",
+  "sortOldest": "En eski",
+  "sortProgressHigh": "İlerleme: yüksekten düşüğe",
+  "sortProgressLow": "İlerleme: düşükten yükseğe",
+  "sortTitleAsc": "Başlık A–Z",
+  "sortTitleDesc": "Başlık Z–A",
+  "confirm": "Onayla",
+  "uncompleteGoalTitle": "Hedefi tekrar aktifleştir",
+  "uncompleteGoalMessage": "Bu hedefi tekrar aktif hale getirmek istediğine emin misin?",
+  "noGoalsYetSubtitle": "Hedef ekleyerek ilerlemeye başlayabilirsin.",
+  "noCompletedGoalsYet": "Henüz tamamlanan hedef yok",
+  "noCompletedGoalsYetSubtitle": "Hedeflerini tamamladığında burada göreceksin."
 }
 

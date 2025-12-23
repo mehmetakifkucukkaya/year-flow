@@ -1904,6 +1904,21 @@
   "unexpectedError": "An unexpected error occurred. Please try again.",
   "@unexpectedError": {
     "description": "Generic error message"
-  }
+  },
+  "addGoal": "Add goal",
+  "sortBy": "Sort by",
+  "filterBy": "Filter by",
+  "sortNewest": "Newest first",
+  "sortOldest": "Oldest first",
+  "sortProgressHigh": "Progress: high to low",
+  "sortProgressLow": "Progress: low to high",
+  "sortTitleAsc": "Title A–Z",
+  "sortTitleDesc": "Title Z–A",
+  "confirm": "Confirm",
+  "uncompleteGoalTitle": "Mark goal as active",
+  "uncompleteGoalMessage": "Are you sure you want to make this goal active again?",
+  "noGoalsYetSubtitle": "Start by adding a goal to track your progress.",
+  "noCompletedGoalsYet": "No completed goals yet",
+  "noCompletedGoalsYetSubtitle": "You'll see completed goals here."
 }
 

@@ -1361,4 +1361,66 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get apply => 'Uygula';
+
+  @override
+  String get jsonCsv => 'JSON / CSV';
+
+  @override
+  String get noInternetConnection =>
+      'İnternet bağlantısı yok. Lütfen bağlantınızı kontrol edin.';
+
+  @override
+  String get requiresConnection => 'Bu özellik internet bağlantısı gerektirir.';
+
+  @override
+  String get unexpectedError =>
+      'Beklenmeyen bir hata oluştu. Lütfen tekrar deneyin.';
+
+  @override
+  String get addGoal => 'Hedef ekle';
+
+  @override
+  String get sortBy => 'Sırala';
+
+  @override
+  String get filterBy => 'Filtrele';
+
+  @override
+  String get sortNewest => 'En yeni';
+
+  @override
+  String get sortOldest => 'En eski';
+
+  @override
+  String get sortProgressHigh => 'İlerleme: yüksekten düşüğe';
+
+  @override
+  String get sortProgressLow => 'İlerleme: düşükten yükseğe';
+
+  @override
+  String get sortTitleAsc => 'Başlık A–Z';
+
+  @override
+  String get sortTitleDesc => 'Başlık Z–A';
+
+  @override
+  String get confirm => 'Onayla';
+
+  @override
+  String get uncompleteGoalTitle => 'Hedefi tekrar aktifleştir';
+
+  @override
+  String get uncompleteGoalMessage =>
+      'Bu hedefi tekrar aktif hale getirmek istediğine emin misin?';
+
+  @override
+  String get noGoalsYetSubtitle =>
+      'Hedef ekleyerek ilerlemeye başlayabilirsin.';
+
+  @override
+  String get noCompletedGoalsYet => 'Henüz tamamlanan hedef yok';
+
+  @override
+  String get noCompletedGoalsYetSubtitle =>
+      'Hedeflerini tamamladığında burada göreceksin.';
 }

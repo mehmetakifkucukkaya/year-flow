@@ -2486,6 +2486,120 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Apply'**
   String get apply;
+
+  /// JSON and CSV formats label
+  ///
+  /// In en, this message translates to:
+  /// **'JSON / CSV'**
+  String get jsonCsv;
+
+  /// Network error message when offline
+  ///
+  /// In en, this message translates to:
+  /// **'No internet connection. Please check your connection.'**
+  String get noInternetConnection;
+
+  /// Hint message that feature needs internet
+  ///
+  /// In en, this message translates to:
+  /// **'This feature requires an internet connection.'**
+  String get requiresConnection;
+
+  /// Generic error message
+  ///
+  /// In en, this message translates to:
+  /// **'An unexpected error occurred. Please try again.'**
+  String get unexpectedError;
+
+  /// No description provided for @addGoal.
+  ///
+  /// In en, this message translates to:
+  /// **'Add goal'**
+  String get addGoal;
+
+  /// No description provided for @sortBy.
+  ///
+  /// In en, this message translates to:
+  /// **'Sort by'**
+  String get sortBy;
+
+  /// No description provided for @filterBy.
+  ///
+  /// In en, this message translates to:
+  /// **'Filter by'**
+  String get filterBy;
+
+  /// No description provided for @sortNewest.
+  ///
+  /// In en, this message translates to:
+  /// **'Newest first'**
+  String get sortNewest;
+
+  /// No description provided for @sortOldest.
+  ///
+  /// In en, this message translates to:
+  /// **'Oldest first'**
+  String get sortOldest;
+
+  /// No description provided for @sortProgressHigh.
+  ///
+  /// In en, this message translates to:
+  /// **'Progress: high to low'**
+  String get sortProgressHigh;
+
+  /// No description provided for @sortProgressLow.
+  ///
+  /// In en, this message translates to:
+  /// **'Progress: low to high'**
+  String get sortProgressLow;
+
+  /// No description provided for @sortTitleAsc.
+  ///
+  /// In en, this message translates to:
+  /// **'Title A–Z'**
+  String get sortTitleAsc;
+
+  /// No description provided for @sortTitleDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Title Z–A'**
+  String get sortTitleDesc;
+
+  /// No description provided for @confirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm'**
+  String get confirm;
+
+  /// No description provided for @uncompleteGoalTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark goal as active'**
+  String get uncompleteGoalTitle;
+
+  /// No description provided for @uncompleteGoalMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to make this goal active again?'**
+  String get uncompleteGoalMessage;
+
+  /// No description provided for @noGoalsYetSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Start by adding a goal to track your progress.'**
+  String get noGoalsYetSubtitle;
+
+  /// No description provided for @noCompletedGoalsYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No completed goals yet'**
+  String get noCompletedGoalsYet;
+
+  /// No description provided for @noCompletedGoalsYetSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'ll see completed goals here.'**
+  String get noCompletedGoalsYetSubtitle;
 }
 
 class _AppLocalizationsDelegate

@@ -1365,4 +1365,66 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get apply => 'Apply';
+
+  @override
+  String get jsonCsv => 'JSON / CSV';
+
+  @override
+  String get noInternetConnection =>
+      'No internet connection. Please check your connection.';
+
+  @override
+  String get requiresConnection =>
+      'This feature requires an internet connection.';
+
+  @override
+  String get unexpectedError =>
+      'An unexpected error occurred. Please try again.';
+
+  @override
+  String get addGoal => 'Add goal';
+
+  @override
+  String get sortBy => 'Sort by';
+
+  @override
+  String get filterBy => 'Filter by';
+
+  @override
+  String get sortNewest => 'Newest first';
+
+  @override
+  String get sortOldest => 'Oldest first';
+
+  @override
+  String get sortProgressHigh => 'Progress: high to low';
+
+  @override
+  String get sortProgressLow => 'Progress: low to high';
+
+  @override
+  String get sortTitleAsc => 'Title A–Z';
+
+  @override
+  String get sortTitleDesc => 'Title Z–A';
+
+  @override
+  String get confirm => 'Confirm';
+
+  @override
+  String get uncompleteGoalTitle => 'Mark goal as active';
+
+  @override
+  String get uncompleteGoalMessage =>
+      'Are you sure you want to make this goal active again?';
+
+  @override
+  String get noGoalsYetSubtitle =>
+      'Start by adding a goal to track your progress.';
+
+  @override
+  String get noCompletedGoalsYet => 'No completed goals yet';
+
+  @override
+  String get noCompletedGoalsYetSubtitle => 'You\'ll see completed goals here.';
 }

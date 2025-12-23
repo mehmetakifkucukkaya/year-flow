@@ -1657,7 +1657,7 @@ class _CreateReportBottomSheetState
           Row(
             children: [
               Text(
-                'Rapor Oluştur',
+                context.l10n.createReport,
                 style: AppTextStyles.titleLarge.copyWith(
                   fontWeight: FontWeight.w700,
                 ),
@@ -1772,7 +1772,7 @@ class _CreateReportBottomSheetState
                       ),
                     )
                   : Text(
-                      'Rapor Oluştur',
+                      context.l10n.createReport,
                       style: AppTextStyles.bodyLarge.copyWith(
                         fontWeight: FontWeight.w700,
                         color: Colors.white,
@@ -1905,7 +1905,7 @@ class _ReportsHistorySection extends ConsumerWidget {
                 ),
                 const SizedBox(height: AppSpacing.md),
                 Text(
-                  'Henüz rapor oluşturulmamış',
+                  context.l10n.noReportsYet,
                   style: AppTextStyles.bodyLarge.copyWith(
                     color: AppColors.gray600,
                   ),
