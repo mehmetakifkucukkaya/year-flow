@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
+import 'package:year_flow/core/utils/connectivity_helper.dart';
 
 import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_colors.dart';
@@ -136,27 +136,25 @@ class _GoalEditPageState extends ConsumerState<GoalEditPage> {
         subGoals: _subGoals,
       );
 
+      // Fire-and-forget: Repository hemen döner, arka planda sync olur
       await repository.updateGoal(updatedGoal);
 
-      if (mounted) {
-        // Stream'i yeniden başlatmak için invalidate et
-        ref.invalidate(goalsStreamProvider);
-        // Goal detail'i de invalidate et
-        ref.invalidate(goalDetailProvider(widget.goalId));
+      if (!mounted) return;
 
-        // Önce kullanıcıyı bilgilendir
-        FeedbackHelper.showSuccess(
-          context,
-          context.l10n.goalUpdatedSuccess,
-        );
+      // Stream'i yeniden başlatmak için invalidate et
+      // Bu, local cache'den yeni veriyi hemen gösterir
+      ref.invalidate(goalsStreamProvider);
+      // Goal detail'i de invalidate et
+      ref.invalidate(goalDetailProvider(widget.goalId));
 
-        // Snackbar görünsün diye kısa bekle, sonra sayfayı kapat
-        await Future.delayed(const Duration(milliseconds: 500));
+      // Başarı mesajı göster
+      FeedbackHelper.showSuccess(
+        context,
+        context.l10n.goalUpdatedSuccess,
+      );
 
-        if (mounted) {
-          context.pop();
-        }
-      }
+      // Sayfayı güvenli şekilde kapat
+      Navigator.of(context).pop();
     } catch (e, stackTrace) {
       if (mounted) {
         setState(() {
@@ -173,6 +171,15 @@ class _GoalEditPageState extends ConsumerState<GoalEditPage> {
   }
 
   Future<void> _handleAIOptimize() async {
+    // Önce internet kontrolü
+    final isOnline = await ConnectivityHelper.isOnline();
+    if (!isOnline) {
+      FeedbackHelper.showWarning(
+        context,
+        context.l10n.requiresConnection,
+      );
+      return;
+    }
     // Validate all required fields before AI optimization
     if (!_formKey.currentState!.validate()) {
       AppSnackbar.showError(

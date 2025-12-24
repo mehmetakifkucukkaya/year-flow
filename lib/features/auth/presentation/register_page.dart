@@ -6,6 +6,7 @@ import 'package:year_flow/core/theme/app_colors.dart';
 import '../../../core/constants/app_assets.dart';
 import '../../../core/router/app_routes.dart';
 import '../../../core/theme/app_spacing.dart';
+import '../../../core/utils/connectivity_helper.dart';
 import '../../../core/utils/extensions.dart';
 import '../../../core/widgets/index.dart';
 import '../../../shared/utils/auth_utils.dart';
@@ -41,6 +42,19 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
 
     if (!mounted) return;
 
+    // İnternet bağlantısını kontrol et
+    final isOnline = await ConnectivityHelper.isOnline();
+    if (!isOnline) {
+      if (mounted) {
+        AppSnackbar.showWarning(
+          context,
+          message:
+              'Kayıt olmak için internet bağlantısı gereklidir. Lütfen bağlantınızı kontrol edip tekrar deneyin.',
+        );
+      }
+      return;
+    }
+
     await ref.read(authStateProvider.notifier).signUpWithEmail(
           email: _emailController.text.trim(),
           password: _passwordController.text,
@@ -50,6 +64,19 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
 
   Future<void> _handleGoogleSignIn() async {
     if (!mounted) return;
+
+    // İnternet bağlantısını kontrol et
+    final isOnline = await ConnectivityHelper.isOnline();
+    if (!isOnline) {
+      if (mounted) {
+        AppSnackbar.showWarning(
+          context,
+          message:
+              'Giriş yapmak için internet bağlantısı gereklidir. Lütfen bağlantınızı kontrol edip tekrar deneyin.',
+        );
+      }
+      return;
+    }
 
     await ref.read(authStateProvider.notifier).signInWithGoogle();
 

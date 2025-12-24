@@ -85,7 +85,8 @@ class AuthErrorHandler {
       case 'operation-not-allowed':
         return l10n.errorOperationNotAllowed;
       case 'network-request-failed':
-        return l10n.errorNetworkRequestFailed;
+        // Network hatası için daha açıklayıcı mesaj
+        return '${l10n.errorNetworkRequestFailed} Giriş yapmak için internet bağlantısı gereklidir. Lütfen bağlantınızı kontrol edip tekrar deneyin.';
       case 'requires-recent-login':
         return l10n.errorRequiresRecentLogin;
       case 'email-already-in-use':

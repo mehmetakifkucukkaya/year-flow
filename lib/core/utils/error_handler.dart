@@ -120,7 +120,9 @@ class DatabaseError extends AppError {
         case 'already-exists':
           return 'Bu veri zaten mevcut.';
         case 'unavailable':
-          return 'Veritabanı şu anda kullanılamıyor. Lütfen daha sonra tekrar deneyin.';
+          // Firestore offline durumunda, gRPC UNAVAILABLE hataları görülebilir.
+          // Kullanıcıya daha açıklayıcı bir mesaj verelim.
+          return 'İnternet bağlantısı yok veya geçici olarak kullanılamıyor. Değişiklikler bağlantı sağlanınca senkronize edilecek.';
         default:
           return 'Veri işlemi sırasında bir hata oluştu.';
       }

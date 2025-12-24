@@ -59,8 +59,8 @@ class _GoalDetailPageState extends ConsumerState<GoalDetailPage>
 
     if (goal != null) {
       // Goal created item
-      final createdDate =
-          DateFormat('d MMMM', context.l10n.localeName).format(goal.createdAt);
+      final createdDate = DateFormat('d MMMM', context.l10n.localeName)
+          .format(goal.createdAt);
       items.add(_TimelineItem(
         title: context.l10n.goalCreated,
         date: createdDate,
@@ -69,8 +69,8 @@ class _GoalDetailPageState extends ConsumerState<GoalDetailPage>
 
       // Check-in items
       for (final checkIn in checkIns) {
-        final checkInDate =
-            DateFormat('d MMMM', context.l10n.localeName).format(checkIn.createdAt);
+        final checkInDate = DateFormat('d MMMM', context.l10n.localeName)
+            .format(checkIn.createdAt);
         items.add(_TimelineItem(
           title: context.l10n.checkInCompleted(checkIn.score),
           date: checkInDate,
@@ -232,7 +232,8 @@ class _GoalDetailPageState extends ConsumerState<GoalDetailPage>
                                 title: sg.title,
                                 isCompleted: sg.isCompleted,
                                 dueDate: sg.dueDate != null
-                                    ? DateFormat('d MMMM', context.l10n.localeName)
+                                    ? DateFormat('d MMMM',
+                                            context.l10n.localeName)
                                         .format(sg.dueDate!)
                                     : null,
                               ))
@@ -497,7 +498,7 @@ class _PremiumAppBar extends ConsumerWidget {
 
                     if (shouldDelete == true && context.mounted) {
                       try {
-                        // Goal'u al ve userId'yi kullanarak direkt sil
+                        // Goal'u al ve userId'yi kullanarak sil
                         final goalAsync =
                             ref.read(goalDetailProvider(goalId));
                         final goal = goalAsync.maybeWhen(
@@ -515,33 +516,25 @@ class _PremiumAppBar extends ConsumerWidget {
                           return;
                         }
 
-                        // userId ile direkt sil (yeni Firestore yapısı: users/{userId}/goals/{goalId})
-                        final firestore = ref.read(firestoreProvider);
-                        await firestore
-                            .collection('users')
-                            .doc(goal.userId)
-                            .collection('goals')
-                            .doc(goalId)
-                            .delete();
+                        // Repository üzerinden sil (fire-and-forget)
+                        final repository =
+                            ref.read(goalRepositoryProvider);
+                        await repository.deleteGoal(goalId, goal.userId);
 
-                        if (context.mounted) {
-                          ref.invalidate(goalsStreamProvider);
-                          ref.invalidate(goalDetailProvider(goalId));
+                        if (!context.mounted) return;
 
-                          // Önce Goals sayfasına dön
-                          context.go(AppRoutes.goals);
+                        // Stream'leri invalidate et
+                        ref.invalidate(goalsStreamProvider);
+                        ref.invalidate(goalDetailProvider(goalId));
 
-                          // Sonra kullanıcıyı bilgilendir (navigation sonrası)
-                          Future.delayed(const Duration(milliseconds: 300),
-                              () {
-                            if (context.mounted) {
-                              FeedbackHelper.showSuccess(
-                                context,
-                                context.l10n.goalDeletedSuccess,
-                              );
-                            }
-                          });
-                        }
+                        // Başarı mesajı göster
+                        FeedbackHelper.showSuccess(
+                          context,
+                          context.l10n.goalDeletedSuccess,
+                        );
+
+                        // Goals sayfasına dön
+                        context.go(AppRoutes.goals);
                       } catch (e, stackTrace) {
                         if (context.mounted) {
                           final appError =
@@ -1273,8 +1266,9 @@ class _PremiumTimelineItem extends StatelessWidget {
     if (item.checkIn == null) return;
 
     final checkIn = item.checkIn!;
-    final formattedDate = DateFormat('d MMMM yyyy, HH:mm', context.l10n.localeName)
-        .format(checkIn.createdAt);
+    final formattedDate =
+        DateFormat('d MMMM yyyy, HH:mm', context.l10n.localeName)
+            .format(checkIn.createdAt);
 
     showDialog(
       context: context,
@@ -1837,18 +1831,17 @@ class _NotesTab extends ConsumerWidget {
 
     if (shouldDelete == true && context.mounted) {
       try {
-        // userId ile direkt sil (yeni Firestore yapısı: users/{userId}/notes/{noteId})
-        final firestore = ref.read(firestoreProvider);
-        await firestore
-            .collection('users')
-            .doc(note.userId)
-            .collection('notes')
-            .doc(note.id)
-            .delete();
-        if (context.mounted) {
-          AppSnackbar.showSuccess(context,
-              message: context.l10n.noteDeleted);
-        }
+        // Repository üzerinden sil (fire-and-forget)
+        final repository = ref.read(goalRepositoryProvider);
+        await repository.deleteNote(note.id, note.userId);
+
+        if (!context.mounted) return;
+
+        // Stream'i invalidate et
+        ref.invalidate(notesStreamProvider(note.goalId));
+
+        AppSnackbar.showSuccess(context,
+            message: context.l10n.noteDeleted);
       } catch (e) {
         if (context.mounted) {
           AppSnackbar.showError(
@@ -1875,7 +1868,8 @@ class _NoteCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final dateFormat = DateFormat('d MMMM yyyy, HH:mm', context.l10n.localeName);
+    final dateFormat =
+        DateFormat('d MMMM yyyy, HH:mm', context.l10n.localeName);
 
     return GestureDetector(
       onTap: onTap,
@@ -2999,22 +2993,24 @@ class _AddNoteBottomSheetState extends ConsumerState<_AddNoteBottomSheet> {
               content: content,
             );
 
+      // Fire-and-forget: Repository hemen döner, arka planda sync olur
       await repository.addNote(note);
 
-      if (mounted) {
-        AppSnackbar.showSuccess(context, message: context.l10n.noteAdded);
-        Navigator.of(context).pop();
-      }
+      if (!mounted) return;
+
+      // Stream'i invalidate et - local cache'den yeni veri gelir
+      widget.ref.invalidate(notesStreamProvider(widget.goalId));
+
+      // Başarı mesajı göster ve kapat
+      AppSnackbar.showSuccess(context, message: context.l10n.noteAdded);
+      Navigator.of(context).pop();
     } catch (e) {
       if (mounted) {
+        setState(() => _isLoading = false);
         AppSnackbar.showError(
           context,
           message: context.l10n.errorAddingNote(e.toString()),
         );
-      }
-    } finally {
-      if (mounted) {
-        setState(() => _isLoading = false);
       }
     }
   }

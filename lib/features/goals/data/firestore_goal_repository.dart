@@ -176,31 +176,22 @@ class FirestoreGoalRepository implements GoalRepository {
 
   @override
   Future<Goal> createGoal(Goal goal) async {
+    // Client tarafından gelen ID'yi kullan, böylece offline durumda bile tutarlı olur
     final docRef =
         _FirestoreCollections._userGoalsCollection(_firestore, goal.userId)
-            .doc();
-    final goalWithId = Goal(
-      id: docRef.id,
-      userId: goal.userId,
-      title: goal.title,
-      category: goal.category,
-      createdAt: goal.createdAt,
-      targetDate: goal.targetDate,
-      description: goal.description,
-      motivation: goal.motivation,
-      subGoals: goal.subGoals,
-      progress: goal.progress,
-      isArchived: goal.isArchived,
-    );
+            .doc(goal.id);
 
-    await docRef.set(_goalToFirestore(goalWithId));
-    return goalWithId;
+    // Fire-and-forget: Offline durumda cache'e yazar, online olduğunda sync eder
+    // await kullanmıyoruz çünkü offline'da sunucu cevabı beklemek UI'ı bloklar
+    docRef.set(_goalToFirestore(goal));
+
+    return goal;
   }
 
   @override
   Future<Goal> updateGoal(Goal goal) async {
-    await _FirestoreCollections._userGoalsCollection(
-            _firestore, goal.userId)
+    // Fire-and-forget: Offline durumda cache'e yazar, online olduğunda sync eder
+    _FirestoreCollections._userGoalsCollection(_firestore, goal.userId)
         .doc(goal.id)
         .update(_goalToFirestore(goal));
 
@@ -209,14 +200,16 @@ class FirestoreGoalRepository implements GoalRepository {
 
   @override
   Future<void> archiveGoal(String goalId, String userId) async {
-    await _FirestoreCollections._userGoalsCollection(_firestore, userId)
+    // Fire-and-forget: Offline durumda cache'e yazar, online olduğunda sync eder
+    _FirestoreCollections._userGoalsCollection(_firestore, userId)
         .doc(goalId)
         .update({'isArchived': true});
   }
 
   @override
   Future<void> completeGoal(String goalId, String userId) async {
-    await _FirestoreCollections._userGoalsCollection(_firestore, userId)
+    // Fire-and-forget: Offline durumda cache'e yazar, online olduğunda sync eder
+    _FirestoreCollections._userGoalsCollection(_firestore, userId)
         .doc(goalId)
         .update({
       'isCompleted': true,
@@ -227,14 +220,16 @@ class FirestoreGoalRepository implements GoalRepository {
 
   @override
   Future<void> deleteGoal(String goalId, String userId) async {
-    await _FirestoreCollections._userGoalsCollection(_firestore, userId)
+    // Fire-and-forget: Offline durumda cache'e yazar, online olduğunda sync eder
+    _FirestoreCollections._userGoalsCollection(_firestore, userId)
         .doc(goalId)
         .delete();
   }
 
   @override
   Future<void> deleteGoalForUser(String goalId, String userId) async {
-    await _FirestoreCollections._userGoalsCollection(_firestore, userId)
+    // Fire-and-forget: Offline durumda cache'e yazar, online olduğunda sync eder
+    _FirestoreCollections._userGoalsCollection(_firestore, userId)
         .doc(goalId)
         .delete();
   }
@@ -262,22 +257,15 @@ class FirestoreGoalRepository implements GoalRepository {
 
   @override
   Future<CheckIn> addCheckIn(CheckIn checkIn) async {
+    // Client tarafından gelen ID'yi kullan
     final docRef = _FirestoreCollections._userCheckInsCollection(
             _firestore, checkIn.userId)
-        .doc();
-    final checkInWithId = CheckIn(
-      id: docRef.id,
-      goalId: checkIn.goalId,
-      userId: checkIn.userId,
-      createdAt: checkIn.createdAt,
-      score: checkIn.score,
-      progressDelta: checkIn.progressDelta,
-      note: checkIn.note,
-    );
+        .doc(checkIn.id);
 
-    await docRef.set(_checkInToFirestore(checkInWithId));
+    // Fire-and-forget: Offline durumda cache'e yazar, online olduğunda sync eder
+    docRef.set(_checkInToFirestore(checkIn));
 
-    return checkInWithId;
+    return checkIn;
   }
 
   @override
@@ -509,8 +497,8 @@ class FirestoreGoalRepository implements GoalRepository {
   @override
   Future<void> addNote(Note note) async {
     try {
-      await _FirestoreCollections._userNotesCollection(
-              _firestore, note.userId)
+      // Fire-and-forget: Offline durumda cache'e yazar, online olduğunda sync eder
+      _FirestoreCollections._userNotesCollection(_firestore, note.userId)
           .doc(note.id)
           .set({
         'goalId': note.goalId,
@@ -527,7 +515,8 @@ class FirestoreGoalRepository implements GoalRepository {
   @override
   Future<void> deleteNote(String noteId, String userId) async {
     try {
-      await _FirestoreCollections._userNotesCollection(_firestore, userId)
+      // Fire-and-forget: Offline durumda cache'e yazar, online olduğunda sync eder
+      _FirestoreCollections._userNotesCollection(_firestore, userId)
           .doc(noteId)
           .delete();
     } catch (e) {

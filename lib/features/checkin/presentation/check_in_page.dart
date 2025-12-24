@@ -81,15 +81,22 @@ class _CheckInPageState extends ConsumerState<CheckInPage> {
         note: note.isEmpty ? null : note,
       );
 
+      // Fire-and-forget: Repository hemen döner, arka planda sync olur
       await repository.addCheckIn(checkIn);
 
-      if (mounted) {
-        AppSnackbar.showSuccess(
-          context,
-          message: context.l10n.checkInSaved,
-        );
-        context.pop();
-      }
+      if (!mounted) return;
+
+      // Stream'leri invalidate et - local cache'den yeni veri gelir
+      ref.invalidate(checkInsStreamProvider(widget.goalId));
+
+      // Başarı mesajı göster
+      AppSnackbar.showSuccess(
+        context,
+        message: context.l10n.checkInSaved,
+      );
+
+      // Hedef detay sayfasına dön
+      context.pop();
     } catch (e) {
       if (mounted) {
         AppSnackbar.showError(

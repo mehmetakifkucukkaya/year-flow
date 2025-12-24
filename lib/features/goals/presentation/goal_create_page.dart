@@ -8,6 +8,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_radius.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_text_styles.dart';
+import '../../../core/utils/connectivity_helper.dart';
 import '../../../core/utils/error_handler.dart';
 import '../../../core/utils/extensions.dart';
 import '../../../core/utils/feedback_helper.dart';
@@ -109,25 +110,23 @@ class _GoalCreatePageState extends ConsumerState<GoalCreatePage> {
         isCompleted: false,
       );
 
+      // Fire-and-forget: Repository hemen döner, arka planda sync olur
       await repository.createGoal(goal);
 
-      if (mounted) {
-        // Stream'i yeniden başlatmak için invalidate et
-        ref.invalidate(goalsStreamProvider);
+      if (!mounted) return;
 
-        // Önce kullanıcıyı bilgilendir
-        FeedbackHelper.showSuccess(
-          context,
-          context.l10n.goalCreatedSuccess,
-        );
+      // Stream'i yeniden başlatmak için invalidate et
+      // Bu, local cache'den yeni veriyi hemen gösterir
+      ref.invalidate(goalsStreamProvider);
 
-        // Snackbar görünsün diye kısa bekle, sonra sayfayı kapat
-        await Future.delayed(const Duration(milliseconds: 500));
+      // Başarı mesajı göster (online/offline fark etmez, veri local cache'e yazıldı)
+      FeedbackHelper.showSuccess(
+        context,
+        context.l10n.goalCreatedSuccess,
+      );
 
-        if (mounted) {
-          context.pop();
-        }
-      }
+      // Sayfayı güvenli şekilde kapat
+      Navigator.of(context).pop();
     } catch (e, stackTrace) {
       if (mounted) {
         setState(() {
@@ -144,6 +143,15 @@ class _GoalCreatePageState extends ConsumerState<GoalCreatePage> {
   }
 
   Future<void> _handleAIOptimize() async {
+    // Önce internet kontrolü
+    final isOnline = await ConnectivityHelper.isOnline();
+    if (!isOnline) {
+      FeedbackHelper.showWarning(
+        context,
+        context.l10n.requiresConnection,
+      );
+      return;
+    }
     // Validate all required fields before AI optimization
     if (!_formKey.currentState!.validate()) {
       _scrollToFirstError();

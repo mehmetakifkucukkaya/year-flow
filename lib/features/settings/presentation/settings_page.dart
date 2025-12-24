@@ -246,8 +246,8 @@ class _AppSettingsSection extends ConsumerWidget {
           ),
           child: const Column(
             children: [
-              SettingsTile.notification(),
-              Divider(height: 1),
+              // SettingsTile.notification(), // TODO: Enable when notification system is added
+              // Divider(height: 1),
               SettingsTile.language(),
             ],
           ),

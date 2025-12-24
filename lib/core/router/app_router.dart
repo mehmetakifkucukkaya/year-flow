@@ -22,6 +22,7 @@ import '../../features/settings/presentation/privacy_security_page.dart';
 import '../../features/settings/presentation/profile_page.dart';
 import '../../features/settings/presentation/settings_page.dart';
 import '../../shared/models/yearly_report.dart';
+import '../widgets/network_status_banner.dart';
 import 'app_routes.dart';
 
 /// Smooth fade transition for bottom navigation pages
@@ -120,8 +121,8 @@ final routerProvider = Provider<GoRouter>((ref) {
       authState.errorMessage == null &&
       authState.errorCode == null;
   // Şifre değiştirme veya profil güncelleme sırasında authenticated kabul et (login'e yönlendirme yapma)
-  final isAuthenticatedOrInProgress = isAuthenticated || 
-      authState.isPasswordChanging || 
+  final isAuthenticatedOrInProgress = isAuthenticated ||
+      authState.isPasswordChanging ||
       authState.isProfileUpdating;
 
   // Onboarding tamamlandı mı kontrolü - try-catch ile güvenli okuma
@@ -163,9 +164,10 @@ final routerProvider = Provider<GoRouter>((ref) {
             currentAuthState.errorMessage == null &&
             currentAuthState.errorCode == null;
         // Şifre değiştirme veya profil güncelleme sırasında authenticated kabul et (login'e yönlendirme yapma)
-        final currentIsAuthenticatedOrInProgress = currentIsAuthenticated || 
-            currentAuthState.isPasswordChanging || 
-            currentAuthState.isProfileUpdating;
+        final currentIsAuthenticatedOrInProgress =
+            currentIsAuthenticated ||
+                currentAuthState.isPasswordChanging ||
+                currentAuthState.isProfileUpdating;
 
         bool currentIsOnboardingCompleted = false;
         try {
@@ -239,9 +241,10 @@ final routerProvider = Provider<GoRouter>((ref) {
                     currentAuthState.errorMessage == null &&
                     currentAuthState.errorCode == null;
             // Şifre değiştirme veya profil güncelleme sırasında authenticated kabul et
-            final currentIsAuthenticatedOrInProgress = currentIsAuthenticated || 
-                currentAuthState.isPasswordChanging || 
-                currentAuthState.isProfileUpdating;
+            final currentIsAuthenticatedOrInProgress =
+                currentIsAuthenticated ||
+                    currentAuthState.isPasswordChanging ||
+                    currentAuthState.isProfileUpdating;
 
             bool currentIsOnboardingCompleted = false;
             try {
@@ -519,7 +522,12 @@ class _MainShell extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      body: child,
+      body: Column(
+        children: [
+          const NetworkStatusBanner(),
+          Expanded(child: child),
+        ],
+      ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: selectedIndex,
         height: 72, // Slightly taller for better balance
