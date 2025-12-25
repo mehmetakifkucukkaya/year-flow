@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
 
 /// Base class for application errors
@@ -159,7 +160,7 @@ class UnknownError extends AppError {
 class ErrorHandler {
   const ErrorHandler._();
 
-  /// Converts any error to AppError
+  /// Converts any error to AppError and reports to Crashlytics
   static AppError handle(dynamic error, [StackTrace? stackTrace]) {
     if (kDebugMode) {
       debugPrint('❌ Error: $error');
@@ -170,45 +171,98 @@ class ErrorHandler {
 
     // Already an AppError
     if (error is AppError) {
+      // Non-fatal hataları Crashlytics'e gönder
+      _recordNonFatalError(error, error.stackTrace);
       return error;
     }
 
+    AppError appError;
+
     // Network errors
     if (error is DioException) {
-      return NetworkError(
+      appError = NetworkError(
         message: error.message ?? 'Network error occurred',
         code: error.type.name,
         originalError: error,
         stackTrace: stackTrace,
       );
     }
-
     // Firebase Auth errors
-    if (error is FirebaseAuthException) {
-      return AuthError(
+    else if (error is FirebaseAuthException) {
+      appError = AuthError(
         message: error.message ?? 'Authentication error occurred',
         code: error.code,
         originalError: error,
         stackTrace: stackTrace,
       );
     }
-
     // Firebase/Firestore errors
-    if (error is FirebaseException) {
-      return DatabaseError(
+    else if (error is FirebaseException) {
+      appError = DatabaseError(
         message: error.message ?? 'Database error occurred',
         code: error.code,
         originalError: error,
         stackTrace: stackTrace,
       );
     }
-
     // Unknown error
-    return UnknownError(
-      message: error.toString(),
-      originalError: error,
-      stackTrace: stackTrace,
-    );
+    else {
+      appError = UnknownError(
+        message: error.toString(),
+        originalError: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    // Non-fatal hatayı Crashlytics'e gönder
+    _recordNonFatalError(appError, stackTrace);
+
+    return appError;
+  }
+
+  /// Non-fatal hataları Crashlytics'e gönderir
+  static void _recordNonFatalError(
+      AppError error, StackTrace? stackTrace) {
+    // Debug modda Crashlytics'e gönderme
+    if (kDebugMode) return;
+
+    try {
+      FirebaseCrashlytics.instance.recordError(
+        error.originalError ?? error,
+        stackTrace ?? StackTrace.current,
+        reason: error.message,
+        information: [
+          'Error Type: ${error.runtimeType}',
+          if (error.code != null) 'Error Code: ${error.code}',
+        ],
+        fatal: false,
+      );
+    } catch (e) {
+      // Crashlytics hatası durumunda sessizce devam et
+      debugPrint('Crashlytics error: $e');
+    }
+  }
+
+  /// Crashlytics'e özel log ekler
+  static void log(String message) {
+    if (!kDebugMode) {
+      FirebaseCrashlytics.instance.log(message);
+    }
+    debugPrint('📝 Log: $message');
+  }
+
+  /// Crashlytics'te kullanıcı tanımlayıcısı ayarlar
+  static Future<void> setUserIdentifier(String userId) async {
+    if (!kDebugMode) {
+      await FirebaseCrashlytics.instance.setUserIdentifier(userId);
+    }
+  }
+
+  /// Crashlytics'e özel anahtar-değer çifti ekler
+  static Future<void> setCustomKey(String key, Object value) async {
+    if (!kDebugMode) {
+      await FirebaseCrashlytics.instance.setCustomKey(key, value);
+    }
   }
 
   /// Creates a validation error
