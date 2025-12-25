@@ -15,15 +15,17 @@ final firebaseAuthProvider = Provider<FirebaseAuth>((ref) {
 
 /// GoogleSignIn instance provider
 final googleSignInProvider = Provider<GoogleSignIn>((ref) {
-  // Android için serverClientId (Web client ID) gerekli - idToken almak için.
-  // Güvenlik için bu değer derleme zamanı ortam değişkeninden okunur.
-  // Tanımlama örneği:
-  // flutter run --dart-define=GOOGLE_SERVER_CLIENT_ID=xxx.apps.googleusercontent.com
+  // Android için serverClientId (Web client ID - client_type: 3) gerekli - idToken almak için.
+  // google_sign_in paketi otomatik olarak google-services.json'dan okur.
+  // Eğer gerekirse ortam değişkeni ile override edilebilir:
+  // flutter build appbundle --dart-define=GOOGLE_SERVER_CLIENT_ID=xxx
   const serverClientId =
       String.fromEnvironment('GOOGLE_SERVER_CLIENT_ID', defaultValue: '');
+
   return GoogleSignIn(
     scopes: ['email', 'profile'],
-    // Web client ID (client_type: 3) - ortam değişkeninden alınır
+    // serverClientId null veya boş ise, google_sign_in otomatik olarak
+    // google-services.json'dan client_type: 3 olan client_id'yi kullanır
     serverClientId: serverClientId.isEmpty ? null : serverClientId,
   );
 });
@@ -73,9 +75,11 @@ class AuthState {
   final bool isEmailLoading; // Email/Password giriş için
   final bool isGoogleLoading; // Google giriş için
   final bool isAuthenticated;
-  final String? errorMessage; // Ham hata mesajı (geriye dönük uyumluluk için)
+  final String?
+      errorMessage; // Ham hata mesajı (geriye dönük uyumluluk için)
   final String? errorCode; // Firebase Auth hata kodu (lokalizasyon için)
-  final AppUser? currentUser; // Mevcut kullanıcı bilgisi (isNewUser kontrolü için)
+  final AppUser?
+      currentUser; // Mevcut kullanıcı bilgisi (isNewUser kontrolü için)
 
   AuthState copyWith({
     bool? isLoading,
@@ -110,16 +114,17 @@ class AuthNotifier extends StateNotifier<AuthState> {
   AuthNotifier({required this.authRepository}) : super(const AuthState()) {
     // İlk kullanıcı durumunu kontrol et
     _checkInitialAuthState();
-    
+
     // Auth state değişikliklerini dinle
     _authSubscription = authRepository.authStateChanges().listen((user) {
       // Şifre değişimi sırasında tüm auth event'lerini yoksay
       if (_isChangePasswordInProgress) {
         return;
       }
-      
+
       // Şifre değişimi veya ardıl null event sırasında logout tetikleme
-      if ((state.isPasswordChanging || _suppressAuthNull) && user == null) {
+      if ((state.isPasswordChanging || _suppressAuthNull) &&
+          user == null) {
         return;
       }
 
@@ -137,14 +142,16 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
   final AuthRepository authRepository;
   StreamSubscription<AppUser?>? _authSubscription;
-  bool _suppressAuthNull = false; // Şifre değişimi sonrası kısa süreli null'u yoksay
-  bool _isChangePasswordInProgress = false; // Şifre değişimi sırasında auth listener'ı yoksay
-  
+  bool _suppressAuthNull =
+      false; // Şifre değişimi sonrası kısa süreli null'u yoksay
+  bool _isChangePasswordInProgress =
+      false; // Şifre değişimi sırasında auth listener'ı yoksay
+
   /// Şifre değiştirme işlemi başlatıldığında çağır (auth listener'ı pause eder)
   void startPasswordChange() {
     _isChangePasswordInProgress = true;
   }
-  
+
   /// Şifre değiştirme işlemi bittiğinde çağır (auth listener'ı resume eder)
   void endPasswordChange() {
     _isChangePasswordInProgress = false;
@@ -217,7 +224,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
         isEmailLoading: false,
         isLoading: false,
         isAuthenticated: false,
-        errorMessage: 'Giriş sırasında beklenmeyen bir hata oluştu: ${e.toString()}',
+        errorMessage:
+            'Giriş sırasında beklenmeyen bir hata oluştu: ${e.toString()}',
       );
     }
   }
@@ -330,7 +338,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
           isAuthenticated: true,
           errorMessage: null,
           errorCode: null,
-          currentUser: user, // Kullanıcı bilgisini state'e kaydet (isNewUser kontrolü için)
+          currentUser:
+              user, // Kullanıcı bilgisini state'e kaydet (isNewUser kontrolü için)
         );
       } else {
         state = state.copyWith(
@@ -345,7 +354,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       debugPrint(
         'Google sign-in failed (FirebaseAuthException): code=${e.code}, message=${e.message}',
       );
-      
+
       state = state.copyWith(
         isGoogleLoading: false,
         isLoading: false,
@@ -368,7 +377,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
   /// Çıkış
   Future<void> signOut() async {
     _suppressAuthNull = false; // Auth null event'lerini artık yoksayma
-    _isChangePasswordInProgress = false; // Şifre değiştirme flag'ini sıfırla
+    _isChangePasswordInProgress =
+        false; // Şifre değiştirme flag'ini sıfırla
     await authRepository.signOut();
     state = const AuthState(
       isAuthenticated: false,
@@ -407,7 +417,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
         errorMessage: null,
         errorCode: null,
       );
-      
+
       // Snackbar gösterildikten sonra flag'leri temizle (2 saniye sonra)
       // Bu süre snackbar'ın gösterilmesi için yeterli
       Future.delayed(const Duration(seconds: 2), () {
@@ -488,4 +498,3 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
   }
 }
-

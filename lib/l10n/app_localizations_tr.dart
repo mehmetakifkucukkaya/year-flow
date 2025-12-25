@@ -15,6 +15,12 @@ class AppLocalizationsTr extends AppLocalizations {
   String get welcomeBack => 'Tekrar Hoş Geldin!';
 
   @override
+  String get continueYourJourney => 'Yolculuğuna Devam Et';
+
+  @override
+  String get startYourGrowthJourney => 'Gelişim Yolculuğuna Başla';
+
+  @override
   String get email => 'E-posta';
 
   @override
@@ -1072,6 +1078,54 @@ class AppLocalizationsTr extends AppLocalizations {
   String get errorDeletingAccount => 'Hesap silinirken hata oluştu';
 
   @override
+  String get privacyTitle => 'Verilerin Senin Kontrolünde';
+
+  @override
+  String get privacyDescription =>
+      'YearFlow, Hedef, Check-in ve Rapor verilerini KVKK ve ilgili veri koruma mevzuatına uygun şekilde işler. Kişisel verilerin reklam amaçlı üçüncü kişilerle paylaşılmaz; yalnızca uygulama deneyimini geliştirmek, kişiselleştirilmiş içerik üretmek ve ürün analitiği yapmak için kullanılır. Dilediğin zaman verilerini indirip inceleyebilir veya hesap silme sürecini kullanarak verilerinin sistemden kaldırılmasını talep edebilirsin.';
+
+  @override
+  String get dataProcessingSecurity => 'Veri İşleme ve Güvenlik';
+
+  @override
+  String get gdprDataProtection => 'KVKK ve Veri Koruma';
+
+  @override
+  String get privacyBullet1 =>
+      'YearFlow\'da tuttuğun tüm Hedef, Check-in ve Rapor verileri KVKK ve ilgili mevzuata uygun şekilde işlenir.';
+
+  @override
+  String get privacyBullet2 =>
+      'Verilerin; uygulama deneyimini iyileştirmek, kişiselleştirilmiş içerikler sunmak ve ürün analitiği yapmak dışında başka bir amaçla kullanılmaz.';
+
+  @override
+  String get privacyBullet3 =>
+      'Kişisel verilerin reklam, pazarlama veya profilleme amaçlı üçüncü taraflarla paylaşılmaz.';
+
+  @override
+  String get privacyBullet4 =>
+      'Hesabını sildiğinde, kimliğini doğrudan belirleyen kişisel verilerin makul bir süre içinde sistemden silinmesi hedeflenir.';
+
+  @override
+  String get privacyBullet5 =>
+      'Yasal yükümlülükler gereği tutulması zorunlu olan kayıtlar, yalnızca mevzuata uygun süre boyunca saklanır ve süresi dolduğunda güvenli biçimde imha edilir.';
+
+  @override
+  String get security => 'Güvenlik';
+
+  @override
+  String get securityBullet1 =>
+      'Verilerin, endüstri standartlarına uygun biçimde yetkisiz erişime, kayba veya kötüye kullanıma karşı korunur.';
+
+  @override
+  String get securityBullet2 =>
+      'Sistem içindeki tüm veri iletimi şifrelenmiş bağlantılar üzerinden gerçekleşir.';
+
+  @override
+  String get securityBullet3 =>
+      'Güvenlik uygulamaları belirli aralıklarla gözden geçirilir ve iyileştirilir.';
+
+  @override
   String get goalTitle => 'Hedef Başlığı';
 
   @override
@@ -1423,4 +1477,40 @@ class AppLocalizationsTr extends AppLocalizations {
   @override
   String get noCompletedGoalsYetSubtitle =>
       'Hedeflerini tamamladığında burada göreceksin.';
+
+  @override
+  String get privacySecurityTitle => 'Gizlilik & Güvenlik';
+
+  @override
+  String get yourDataInYourControl => 'Verilerin Senin Kontrolünde';
+
+  @override
+  String get privacyIntroText =>
+      'YearFlow, Hedef, Check-in ve Rapor verilerini KVKK ve ilgili veri koruma mevzuatına uygun şekilde işler. Kişisel verilerin reklam amaçlı üçüncü kişilerle paylaşılmaz; yalnızca uygulama deneyimini geliştirmek, kişiselleştirilmiş içerik üretmek ve ürün analitiği yapmak için kullanılır. Dilediğin zaman verilerini indirip inceleyebilir veya hesap silme sürecini kullanarak verilerinin sistemden kaldırılmasını talep edebilirsin.';
+
+  @override
+  String get dataProcessingAndSecurity => 'Veri İşleme ve Güvenlik';
+
+  @override
+  String get gdprAndDataProtection => 'KVKK ve Veri Koruma';
+
+  @override
+  String get gdprBullet1 =>
+      'YearFlow\'da tuttuğun tüm Hedef, Check-in ve Rapor verileri KVKK ve ilgili mevzuata uygun şekilde işlenir.';
+
+  @override
+  String get gdprBullet2 =>
+      'Verilerin; uygulama deneyimini iyileştirmek, kişiselleştirilmiş içerikler sunmak ve ürün analitiği yapmak dışında başka bir amaçla kullanılmaz.';
+
+  @override
+  String get gdprBullet3 =>
+      'Kişisel verilerin reklam, pazarlama veya profilleme amaçlı üçüncü taraflarla paylaşılmaz.';
+
+  @override
+  String get gdprBullet4 =>
+      'Hesabını sildiğinde, kimliğini doğrudan belirleyen kişisel verilerin makul bir süre içinde sistemden silinmesi hedeflenir.';
+
+  @override
+  String get gdprBullet5 =>
+      'Yasal yükümlülükler gereği tutulması zorunlu olan kayıtlar, yalnızca mevzuata uygun süre boyunca saklanır ve süresi dolduğunda güvenli biçimde imha edilir.';
 }

@@ -196,7 +196,7 @@ class GoogleIcon extends StatelessWidget {
   }
 }
 
-/// Logo + App Name Header Component
+/// Logo Header Component (without app name)
 /// Used across auth pages for brand display
 class AuthLogoHeader extends StatelessWidget {
   const AuthLogoHeader({
@@ -206,7 +206,8 @@ class AuthLogoHeader extends StatelessWidget {
   });
 
   final String logoPath;
-  final String appName;
+  final String
+      appName; // Kept for backwards compatibility but not displayed
 
   @override
   Widget build(BuildContext context) {
@@ -215,7 +216,7 @@ class AuthLogoHeader extends StatelessWidget {
         // Logo with soft shadow
         Container(
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(24),
             boxShadow: [
               BoxShadow(
                 color: AppColors.primary.withOpacity(0.15),
@@ -226,43 +227,31 @@ class AuthLogoHeader extends StatelessWidget {
             ],
           ),
           child: ClipRRect(
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(24),
             child: Image.asset(
               logoPath,
-              width: 72,
-              height: 72,
+              width: 96,
+              height: 96,
               fit: BoxFit.contain,
-              cacheWidth: 144,
+              cacheWidth: 192,
               errorBuilder: (context, error, stackTrace) {
                 debugPrint('Logo load error: $error');
                 return Container(
-                  width: 72,
-                  height: 72,
+                  width: 96,
+                  height: 96,
                   decoration: BoxDecoration(
                     color: AppColors.primary.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(24),
                   ),
                   child: const Icon(
                     Icons.check_circle,
-                    size: 48,
+                    size: 64,
                     color: AppColors.primary,
                   ),
                 );
               },
             ),
           ),
-        ),
-        const SizedBox(height: AppSpacing.md),
-        // App Name
-        Text(
-          appName,
-          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                color: AppColors.gray900,
-                fontWeight: FontWeight.w700,
-                fontSize: 24,
-                letterSpacing: -0.3,
-                height: 1.2,
-              ),
         ),
       ],
     );

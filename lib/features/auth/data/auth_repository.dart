@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 /// Domain user model (şimdilik sadece temel alanlar)
@@ -17,7 +18,8 @@ class AppUser {
   final String? email;
   final String? displayName;
   final String? photoUrl;
-  final bool isNewUser; // Google ile giriş/kayıt sonrası yeni kullanıcı mı?
+  final bool
+      isNewUser; // Google ile giriş/kayıt sonrası yeni kullanıcı mı?
 
   factory AppUser.fromFirebaseUser(User user, {bool isNewUser = false}) {
     return AppUser(
@@ -136,14 +138,15 @@ class FirebaseAuthRepository implements AuthRepository {
     );
     final user = credential.user;
     if (user == null) return null;
-    
+
     // Kullanıcı adını güncelle
     await user.updateProfile(displayName: name);
     await user.reload();
     final updatedUser = _firebaseAuth.currentUser;
-    
+
     // Email ile kayıt her zaman yeni kullanıcıdır
-    final appUser = AppUser.fromFirebaseUser(updatedUser ?? user, isNewUser: true);
+    final appUser =
+        AppUser.fromFirebaseUser(updatedUser ?? user, isNewUser: true);
     // Users collection'ına kaydet
     await _saveUserToFirestore(appUser);
     return appUser;
@@ -172,7 +175,12 @@ class FirebaseAuthRepository implements AuthRepository {
       final googleAuth = await googleUser.authentication;
 
       if (googleAuth.idToken == null) {
-        throw Exception('Google authentication failed: idToken is null');
+        // idToken null ise genellikle SHA-1 parmak izi Firebase'e eklenmemiştir
+        // veya serverClientId yanlış yapılandırılmıştır
+        throw Exception(
+          'Google kimlik doğrulaması başarısız: idToken alınamadı. '
+          'Lütfen Firebase Console\'da SHA-1 parmak izinin eklendiğinden emin olun.',
+        );
       }
 
       final credential = GoogleAuthProvider.credential(
@@ -186,16 +194,24 @@ class FirebaseAuthRepository implements AuthRepository {
       if (user == null) return null;
 
       // additionalUserInfo.isNewUser ile yeni kullanıcı mı kontrol et
-      final isNewUser = userCredential.additionalUserInfo?.isNewUser ?? false;
+      final isNewUser =
+          userCredential.additionalUserInfo?.isNewUser ?? false;
 
       final appUser = AppUser.fromFirebaseUser(user, isNewUser: isNewUser);
-      
+
       // Yeni kullanıcı ise veya mevcut kullanıcı bilgileri güncellenmişse Firestore'a kaydet
       if (isNewUser || user.displayName != null || user.photoURL != null) {
         await _saveUserToFirestore(appUser);
       }
 
       return appUser;
+    } on PlatformException catch (e) {
+      // Platform hatalarını yakala (Google Sign-In kütüphanesi)
+      await _googleSignIn.signOut();
+      throw Exception(
+        'Google Sign-In hatası: ${e.message ?? e.code}. '
+        'Hata kodu: ${e.code}',
+      );
     } catch (e) {
       // Hata durumunda Google oturumunu temizle
       await _googleSignIn.signOut();
@@ -229,7 +245,8 @@ class FirebaseAuthRepository implements AuthRepository {
     // Google ile giriş yapmış kullanıcılar için şifre yok, bu durumda hata ver
     if (user.providerData.isEmpty ||
         !user.providerData.any((info) => info.providerId == 'password')) {
-      throw Exception('Google ile giriş yapmış kullanıcılar şifre değiştiremez');
+      throw Exception(
+          'Google ile giriş yapmış kullanıcılar şifre değiştiremez');
     }
 
     // Mevcut şifreyi doğrula
@@ -272,7 +289,7 @@ class FirebaseAuthRepository implements AuthRepository {
 
       // Tüm subcollection'ları sil
       // Batch işlemi 500 doküman limitine sahip, bu yüzden her subcollection için ayrı batch kullanıyoruz
-      
+
       // Goals'ları sil (users/{userId}/goals)
       final goalsSnapshot = await userDocRef.collection('goals').get();
       if (goalsSnapshot.docs.isNotEmpty) {
@@ -284,7 +301,8 @@ class FirebaseAuthRepository implements AuthRepository {
       }
 
       // Check-ins'leri sil (users/{userId}/checkIns)
-      final checkInsSnapshot = await userDocRef.collection('checkIns').get();
+      final checkInsSnapshot =
+          await userDocRef.collection('checkIns').get();
       if (checkInsSnapshot.docs.isNotEmpty) {
         final checkInsBatch = _firestore.batch();
         for (final checkInDoc in checkInsSnapshot.docs) {
@@ -294,7 +312,8 @@ class FirebaseAuthRepository implements AuthRepository {
       }
 
       // Yearly reports'ları sil (users/{userId}/yearlyReports)
-      final reportsSnapshot = await userDocRef.collection('yearlyReports').get();
+      final reportsSnapshot =
+          await userDocRef.collection('yearlyReports').get();
       if (reportsSnapshot.docs.isNotEmpty) {
         final reportsBatch = _firestore.batch();
         for (final reportDoc in reportsSnapshot.docs) {
@@ -321,7 +340,8 @@ class FirebaseAuthRepository implements AuthRepository {
       debugPrint('Error deleting user data from Firestore: $e');
       debugPrint('Stack trace: $stackTrace');
       // Firestore silme başarısız olursa auth hesabını silme - veri tutarlılığı için
-      throw Exception('Firestore verileri silinirken hata oluştu. Hesap silinemedi: $e');
+      throw Exception(
+          'Firestore verileri silinirken hata oluştu. Hesap silinemedi: $e');
     }
 
     // Firebase Auth hesabını sil (sadece Firestore silme başarılı olduysa)
@@ -377,5 +397,3 @@ class FirebaseAuthRepository implements AuthRepository {
     return appUser;
   }
 }
-
-

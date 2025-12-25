@@ -203,9 +203,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     appName: context.l10n.appName,
                   ),
                   SizedBox(height: screenHeight * 0.08),
-                  // Welcome Back Title
+                  // Continue Your Journey Title
                   Text(
-                    context.l10n.welcomeBack,
+                    context.l10n.continueYourJourney,
                     style: Theme.of(context)
                         .textTheme
                         .headlineLarge
@@ -351,7 +351,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     isLoading: isGoogleLoading,
                     text: context.l10n.continueWithGoogle,
                   ),
-                  SizedBox(height: screenHeight * 0.04),
+                  const SizedBox(height: AppSpacing.lg),
                   // Register link
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,

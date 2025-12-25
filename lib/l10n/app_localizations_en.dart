@@ -15,6 +15,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get welcomeBack => 'Welcome Back!';
 
   @override
+  String get continueYourJourney => 'Continue Your Journey';
+
+  @override
+  String get startYourGrowthJourney => 'Start Your Growth Journey';
+
+  @override
   String get email => 'Email';
 
   @override
@@ -1073,6 +1079,54 @@ class AppLocalizationsEn extends AppLocalizations {
   String get errorDeletingAccount => 'An error occurred while deleting account';
 
   @override
+  String get privacyTitle => 'Your Data Under Your Control';
+
+  @override
+  String get privacyDescription =>
+      'YearFlow processes Goal, Check-in, and Report data in compliance with GDPR and relevant data protection regulations. Your personal data is not shared with third parties for advertising purposes; it is only used to improve the app experience, provide personalized content, and conduct product analytics. You can download and review your data at any time or request deletion of your data from the system through the account deletion process.';
+
+  @override
+  String get dataProcessingSecurity => 'Data Processing and Security';
+
+  @override
+  String get gdprDataProtection => 'GDPR and Data Protection';
+
+  @override
+  String get privacyBullet1 =>
+      'All Goal, Check-in, and Report data you keep in YearFlow is processed in compliance with GDPR and relevant regulations.';
+
+  @override
+  String get privacyBullet2 =>
+      'Your data is not used for any purpose other than improving the app experience, providing personalized content, and conducting product analytics.';
+
+  @override
+  String get privacyBullet3 =>
+      'Your personal data is not shared with third parties for advertising, marketing, or profiling purposes.';
+
+  @override
+  String get privacyBullet4 =>
+      'When you delete your account, personal data that directly identifies you is targeted to be deleted from the system within a reasonable period.';
+
+  @override
+  String get privacyBullet5 =>
+      'Records that must be kept due to legal obligations are stored only for the period required by legislation and are securely destroyed when the period expires.';
+
+  @override
+  String get security => 'Security';
+
+  @override
+  String get securityBullet1 =>
+      'Data is protected against unauthorized access, loss, or misuse in accordance with industry standards.';
+
+  @override
+  String get securityBullet2 =>
+      'All data transmission within the system occurs over encrypted connections.';
+
+  @override
+  String get securityBullet3 =>
+      'Security practices are reviewed and improved at regular intervals.';
+
+  @override
   String get goalTitle => 'Goal Title';
 
   @override
@@ -1427,4 +1481,40 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get noCompletedGoalsYetSubtitle => 'You\'ll see completed goals here.';
+
+  @override
+  String get privacySecurityTitle => 'Privacy & Security';
+
+  @override
+  String get yourDataInYourControl => 'Your Data Is Under Your Control';
+
+  @override
+  String get privacyIntroText =>
+      'YearFlow processes Goal, Check-in, and Report data in accordance with GDPR and relevant data protection regulations. Personal data is not shared with third parties for advertising purposes; it is used solely to improve the app experience, produce personalized content, and conduct product analytics. You can download and review your data at any time or request its removal from the system through the account deletion process.';
+
+  @override
+  String get dataProcessingAndSecurity => 'Data Processing and Security';
+
+  @override
+  String get gdprAndDataProtection => 'GDPR and Data Protection';
+
+  @override
+  String get gdprBullet1 =>
+      'All Goal, Check-in, and Report data you keep in YearFlow are processed in accordance with GDPR and relevant regulations.';
+
+  @override
+  String get gdprBullet2 =>
+      'Your data is used only for improving the app experience, providing personalized content, and conducting product analytics.';
+
+  @override
+  String get gdprBullet3 =>
+      'Personal data is not shared with third parties for advertising, marketing, or profiling purposes.';
+
+  @override
+  String get gdprBullet4 =>
+      'When you delete your account, personal data that directly identifies you is removed from the system within a reasonable time.';
+
+  @override
+  String get gdprBullet5 =>
+      'Records that must be kept due to legal obligations are retained only for the legally required period and securely destroyed when the period expires.';
 }

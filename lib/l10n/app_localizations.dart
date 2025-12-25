@@ -110,6 +110,18 @@ abstract class AppLocalizations {
   /// **'Welcome Back!'**
   String get welcomeBack;
 
+  /// Login page subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'Continue Your Journey'**
+  String get continueYourJourney;
+
+  /// Register page subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'Start Your Growth Journey'**
+  String get startYourGrowthJourney;
+
   /// Email field label
   ///
   /// In en, this message translates to:
@@ -1995,6 +2007,84 @@ abstract class AppLocalizations {
   /// **'An error occurred while deleting account'**
   String get errorDeletingAccount;
 
+  /// Privacy page main title
+  ///
+  /// In en, this message translates to:
+  /// **'Your Data Under Your Control'**
+  String get privacyTitle;
+
+  /// Privacy page description
+  ///
+  /// In en, this message translates to:
+  /// **'YearFlow processes Goal, Check-in, and Report data in compliance with GDPR and relevant data protection regulations. Your personal data is not shared with third parties for advertising purposes; it is only used to improve the app experience, provide personalized content, and conduct product analytics. You can download and review your data at any time or request deletion of your data from the system through the account deletion process.'**
+  String get privacyDescription;
+
+  /// Data processing section title
+  ///
+  /// In en, this message translates to:
+  /// **'Data Processing and Security'**
+  String get dataProcessingSecurity;
+
+  /// GDPR section title
+  ///
+  /// In en, this message translates to:
+  /// **'GDPR and Data Protection'**
+  String get gdprDataProtection;
+
+  /// Privacy bullet point 1
+  ///
+  /// In en, this message translates to:
+  /// **'All Goal, Check-in, and Report data you keep in YearFlow is processed in compliance with GDPR and relevant regulations.'**
+  String get privacyBullet1;
+
+  /// Privacy bullet point 2
+  ///
+  /// In en, this message translates to:
+  /// **'Your data is not used for any purpose other than improving the app experience, providing personalized content, and conducting product analytics.'**
+  String get privacyBullet2;
+
+  /// Privacy bullet point 3
+  ///
+  /// In en, this message translates to:
+  /// **'Your personal data is not shared with third parties for advertising, marketing, or profiling purposes.'**
+  String get privacyBullet3;
+
+  /// Privacy bullet point 4
+  ///
+  /// In en, this message translates to:
+  /// **'When you delete your account, personal data that directly identifies you is targeted to be deleted from the system within a reasonable period.'**
+  String get privacyBullet4;
+
+  /// Privacy bullet point 5
+  ///
+  /// In en, this message translates to:
+  /// **'Records that must be kept due to legal obligations are stored only for the period required by legislation and are securely destroyed when the period expires.'**
+  String get privacyBullet5;
+
+  /// Security section title
+  ///
+  /// In en, this message translates to:
+  /// **'Security'**
+  String get security;
+
+  /// Security bullet point 1
+  ///
+  /// In en, this message translates to:
+  /// **'Data is protected against unauthorized access, loss, or misuse in accordance with industry standards.'**
+  String get securityBullet1;
+
+  /// Security bullet point 2
+  ///
+  /// In en, this message translates to:
+  /// **'All data transmission within the system occurs over encrypted connections.'**
+  String get securityBullet2;
+
+  /// Security bullet point 3
+  ///
+  /// In en, this message translates to:
+  /// **'Security practices are reviewed and improved at regular intervals.'**
+  String get securityBullet3;
+
   /// Goal title field label
   ///
   /// In en, this message translates to:
@@ -2600,6 +2690,66 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'You\'ll see completed goals here.'**
   String get noCompletedGoalsYetSubtitle;
+
+  /// No description provided for @privacySecurityTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy & Security'**
+  String get privacySecurityTitle;
+
+  /// No description provided for @yourDataInYourControl.
+  ///
+  /// In en, this message translates to:
+  /// **'Your Data Is Under Your Control'**
+  String get yourDataInYourControl;
+
+  /// No description provided for @privacyIntroText.
+  ///
+  /// In en, this message translates to:
+  /// **'YearFlow processes Goal, Check-in, and Report data in accordance with GDPR and relevant data protection regulations. Personal data is not shared with third parties for advertising purposes; it is used solely to improve the app experience, produce personalized content, and conduct product analytics. You can download and review your data at any time or request its removal from the system through the account deletion process.'**
+  String get privacyIntroText;
+
+  /// No description provided for @dataProcessingAndSecurity.
+  ///
+  /// In en, this message translates to:
+  /// **'Data Processing and Security'**
+  String get dataProcessingAndSecurity;
+
+  /// No description provided for @gdprAndDataProtection.
+  ///
+  /// In en, this message translates to:
+  /// **'GDPR and Data Protection'**
+  String get gdprAndDataProtection;
+
+  /// No description provided for @gdprBullet1.
+  ///
+  /// In en, this message translates to:
+  /// **'All Goal, Check-in, and Report data you keep in YearFlow are processed in accordance with GDPR and relevant regulations.'**
+  String get gdprBullet1;
+
+  /// No description provided for @gdprBullet2.
+  ///
+  /// In en, this message translates to:
+  /// **'Your data is used only for improving the app experience, providing personalized content, and conducting product analytics.'**
+  String get gdprBullet2;
+
+  /// No description provided for @gdprBullet3.
+  ///
+  /// In en, this message translates to:
+  /// **'Personal data is not shared with third parties for advertising, marketing, or profiling purposes.'**
+  String get gdprBullet3;
+
+  /// No description provided for @gdprBullet4.
+  ///
+  /// In en, this message translates to:
+  /// **'When you delete your account, personal data that directly identifies you is removed from the system within a reasonable time.'**
+  String get gdprBullet4;
+
+  /// No description provided for @gdprBullet5.
+  ///
+  /// In en, this message translates to:
+  /// **'Records that must be kept due to legal obligations are retained only for the legally required period and securely destroyed when the period expires.'**
+  String get gdprBullet5;
 }
 
 class _AppLocalizationsDelegate

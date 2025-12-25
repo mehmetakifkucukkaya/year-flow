@@ -195,9 +195,9 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                     appName: context.l10n.appName,
                   ),
                   SizedBox(height: screenHeight * 0.06),
-                  // Register Title
+                  // Start Your Growth Journey Title
                   Text(
-                    context.l10n.register,
+                    context.l10n.startYourGrowthJourney,
                     style: Theme.of(context)
                         .textTheme
                         .headlineLarge
@@ -336,7 +336,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                     isLoading: isGoogleLoading,
                     text: context.l10n.continueWithGoogleRegister,
                   ),
-                  SizedBox(height: screenHeight * 0.03),
+                  const SizedBox(height: AppSpacing.lg),
                   // Login link
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,

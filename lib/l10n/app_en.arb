@@ -8,6 +8,14 @@
   "@welcomeBack": {
     "description": "Login page title"
   },
+  "continueYourJourney": "Continue Your Journey",
+  "@continueYourJourney": {
+    "description": "Login page subtitle"
+  },
+  "startYourGrowthJourney": "Start Your Growth Journey",
+  "@startYourGrowthJourney": {
+    "description": "Register page subtitle"
+  },
   "email": "Email",
   "@email": {
     "description": "Email field label"
@@ -1505,6 +1513,58 @@
   "@errorDeletingAccount": {
     "description": "Error deleting account message"
   },
+  "privacyTitle": "Your Data Under Your Control",
+  "@privacyTitle": {
+    "description": "Privacy page main title"
+  },
+  "privacyDescription": "YearFlow processes Goal, Check-in, and Report data in compliance with GDPR and relevant data protection regulations. Your personal data is not shared with third parties for advertising purposes; it is only used to improve the app experience, provide personalized content, and conduct product analytics. You can download and review your data at any time or request deletion of your data from the system through the account deletion process.",
+  "@privacyDescription": {
+    "description": "Privacy page description"
+  },
+  "dataProcessingSecurity": "Data Processing and Security",
+  "@dataProcessingSecurity": {
+    "description": "Data processing section title"
+  },
+  "gdprDataProtection": "GDPR and Data Protection",
+  "@gdprDataProtection": {
+    "description": "GDPR section title"
+  },
+  "privacyBullet1": "All Goal, Check-in, and Report data you keep in YearFlow is processed in compliance with GDPR and relevant regulations.",
+  "@privacyBullet1": {
+    "description": "Privacy bullet point 1"
+  },
+  "privacyBullet2": "Your data is not used for any purpose other than improving the app experience, providing personalized content, and conducting product analytics.",
+  "@privacyBullet2": {
+    "description": "Privacy bullet point 2"
+  },
+  "privacyBullet3": "Your personal data is not shared with third parties for advertising, marketing, or profiling purposes.",
+  "@privacyBullet3": {
+    "description": "Privacy bullet point 3"
+  },
+  "privacyBullet4": "When you delete your account, personal data that directly identifies you is targeted to be deleted from the system within a reasonable period.",
+  "@privacyBullet4": {
+    "description": "Privacy bullet point 4"
+  },
+  "privacyBullet5": "Records that must be kept due to legal obligations are stored only for the period required by legislation and are securely destroyed when the period expires.",
+  "@privacyBullet5": {
+    "description": "Privacy bullet point 5"
+  },
+  "security": "Security",
+  "@security": {
+    "description": "Security section title"
+  },
+  "securityBullet1": "Your data is protected against unauthorized access, loss, or misuse in accordance with industry standards.",
+  "@securityBullet1": {
+    "description": "Security bullet point 1"
+  },
+  "securityBullet2": "All data transmission within the system is conducted over encrypted connections.",
+  "@securityBullet2": {
+    "description": "Security bullet point 2"
+  },
+  "securityBullet3": "Security practices are reviewed and improved at regular intervals.",
+  "@securityBullet3": {
+    "description": "Security bullet point 3"
+  },
   "goalTitle": "Goal Title",
   "@goalTitle": {
     "description": "Goal title field label"
@@ -1919,6 +1979,20 @@
   "uncompleteGoalMessage": "Are you sure you want to make this goal active again?",
   "noGoalsYetSubtitle": "Start by adding a goal to track your progress.",
   "noCompletedGoalsYet": "No completed goals yet",
-  "noCompletedGoalsYetSubtitle": "You'll see completed goals here."
+  "noCompletedGoalsYetSubtitle": "You'll see completed goals here.",
+  "privacySecurityTitle": "Privacy & Security",
+  "yourDataInYourControl": "Your Data Is Under Your Control",
+  "privacyIntroText": "YearFlow processes Goal, Check-in, and Report data in accordance with GDPR and relevant data protection regulations. Personal data is not shared with third parties for advertising purposes; it is used solely to improve the app experience, produce personalized content, and conduct product analytics. You can download and review your data at any time or request its removal from the system through the account deletion process.",
+  "dataProcessingAndSecurity": "Data Processing and Security",
+  "gdprAndDataProtection": "GDPR and Data Protection",
+  "gdprBullet1": "All Goal, Check-in, and Report data you keep in YearFlow are processed in accordance with GDPR and relevant regulations.",
+  "gdprBullet2": "Your data is used only for improving the app experience, providing personalized content, and conducting product analytics.",
+  "gdprBullet3": "Personal data is not shared with third parties for advertising, marketing, or profiling purposes.",
+  "gdprBullet4": "When you delete your account, personal data that directly identifies you is removed from the system within a reasonable time.",
+  "gdprBullet5": "Records that must be kept due to legal obligations are retained only for the legally required period and securely destroyed when the period expires.",
+  "security": "Security",
+  "securityBullet1": "Data is protected against unauthorized access, loss, or misuse in accordance with industry standards.",
+  "securityBullet2": "All data transmission within the system occurs over encrypted connections.",
+  "securityBullet3": "Security practices are reviewed and improved at regular intervals."
 }
 
