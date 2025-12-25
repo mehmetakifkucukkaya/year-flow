@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../core/providers/locale_provider.dart';
 import '../../../core/router/app_routes.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_radius.dart';
@@ -13,6 +12,7 @@ import '../../../core/utils/extensions.dart';
 import '../../../core/widgets/index.dart';
 import '../../../shared/providers/goal_providers.dart';
 import '../../auth/providers/auth_providers.dart';
+import 'widgets/settings_tile.dart';
 
 class SettingsPage extends ConsumerWidget {
   const SettingsPage({super.key});
@@ -246,201 +246,11 @@ class _AppSettingsSection extends ConsumerWidget {
           ),
           child: const Column(
             children: [
-              _SettingsTile.notification(),
-              Divider(height: 1),
-              _SettingsTile.language(),
+              // SettingsTile.notification(), // TODO: Enable when notification system is added
+              // Divider(height: 1),
+              SettingsTile.language(),
             ],
           ),
-        ),
-      ],
-    );
-  }
-}
-
-class _SettingsTile extends ConsumerWidget {
-  const _SettingsTile._({
-    required this.icon,
-    required this.title,
-    this.trailing,
-    this.onTap,
-    this.isLanguage = false,
-  });
-
-  const _SettingsTile.notification()
-      : icon = Icons.notifications_rounded,
-        title = '', // Will be set in build method
-        trailing = const _NotificationSwitch(),
-        onTap = null,
-        isLanguage = false;
-
-  const _SettingsTile.language()
-      : icon = Icons.language_rounded,
-        title = 'Dil',
-        trailing = null,
-        onTap = null,
-        isLanguage = true;
-
-  final IconData icon;
-  final String title;
-  final Widget? trailing;
-  final VoidCallback? onTap;
-  final bool isLanguage;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final l10n = context.l10n;
-    final currentLocale = isLanguage ? ref.watch(localeProvider) : null;
-    final currentLanguageLabel = currentLocale != null
-        ? (currentLocale.languageCode == 'tr'
-            ? l10n.turkish
-            : l10n.english)
-        : null;
-    final displayTitle = isLanguage
-        ? l10n.language
-        : (title.isEmpty ? l10n.notifications : title);
-
-    return InkWell(
-      onTap: trailing is _NotificationSwitch
-          ? null
-          : isLanguage
-              ? () => _showLanguageDialog(context, ref)
-              : onTap,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.md,
-          vertical: AppSpacing.md + 2,
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 44,
-              height: 44,
-              decoration: const BoxDecoration(
-                color: AppColors.gray50,
-                borderRadius: AppRadius.borderRadiusLg,
-              ),
-              child: Icon(
-                icon,
-                color: AppColors.gray700,
-                size: 22,
-              ),
-            ),
-            const SizedBox(width: AppSpacing.md),
-            Expanded(
-              child: Text(
-                displayTitle,
-                style: AppTextStyles.bodyMedium.copyWith(
-                  color: AppColors.gray900,
-                ),
-              ),
-            ),
-            if (trailing != null)
-              trailing!
-            else if (currentLanguageLabel != null)
-              _ChevronWithLabel(label: currentLanguageLabel),
-          ],
-        ),
-      ),
-    );
-  }
-
-  void _showLanguageDialog(BuildContext context, WidgetRef ref) {
-    final l10n = context.l10n;
-    final currentLocale = ref.read(localeProvider);
-
-    showDialog(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Text(l10n.language),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            RadioListTile<Locale>(
-              title: Text(l10n.turkish),
-              value: const Locale('tr', 'TR'),
-              groupValue: currentLocale,
-              onChanged: (value) {
-                if (value != null) {
-                  ref.read(localeProvider.notifier).setLocale(value);
-                  Navigator.of(dialogContext).pop();
-                }
-              },
-            ),
-            RadioListTile<Locale>(
-              title: Text(l10n.english),
-              value: const Locale('en', 'US'),
-              groupValue: currentLocale,
-              onChanged: (value) {
-                if (value != null) {
-                  ref.read(localeProvider.notifier).setLocale(value);
-                  Navigator.of(dialogContext).pop();
-                }
-              },
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _NotificationSwitch extends StatefulWidget {
-  const _NotificationSwitch();
-
-  @override
-  State<_NotificationSwitch> createState() => _NotificationSwitchState();
-}
-
-class _NotificationSwitchState extends State<_NotificationSwitch> {
-  bool _value = true;
-
-  @override
-  Widget build(BuildContext context) {
-    return Switch(
-      value: _value,
-      onChanged: (value) {
-        setState(() {
-          _value = value;
-        });
-      },
-    );
-  }
-}
-
-class _ChevronWithLabel extends StatelessWidget {
-  const _ChevronWithLabel({required this.label});
-
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    final hasLabel = label.isNotEmpty;
-
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        if (hasLabel)
-          Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.sm,
-              vertical: 6,
-            ),
-            decoration: const BoxDecoration(
-              color: AppColors.gray50,
-              borderRadius: AppRadius.borderRadiusFull,
-            ),
-            child: Text(
-              label,
-              style: AppTextStyles.bodySmall.copyWith(
-                color: AppColors.gray700,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ),
-        if (hasLabel) const SizedBox(width: AppSpacing.xs),
-        const Icon(
-          Icons.chevron_right_rounded,
-          color: AppColors.gray400,
         ),
       ],
     );
@@ -481,13 +291,22 @@ class _SecuritySection extends StatelessWidget {
               ),
             ],
           ),
-          child: _SettingsTile._(
-            icon: Icons.shield_rounded,
-            title: context.l10n.privacyAndSecurity,
-            trailing: const _ChevronWithLabel(label: ''),
-            onTap: () {
-              context.push(AppRoutes.privacySecurity);
-            },
+          child: Column(
+            children: [
+              SettingsTile.plain(
+                icon: Icons.shield_rounded,
+                title: context.l10n.privacyAndSecurity,
+                trailing: const ChevronWithLabel(label: ''),
+                onTap: () {
+                  context.push(AppRoutes.privacySecurity);
+                },
+              ),
+              const Divider(height: 1),
+              const Padding(
+                padding: EdgeInsets.all(AppSpacing.md),
+                child: _DangerZoneSection(),
+              ),
+            ],
           ),
         ),
       ],
@@ -713,19 +532,19 @@ class _DataAndPrivacySection extends ConsumerWidget {
           ),
           child: Column(
             children: [
-              _SettingsTile._(
+              SettingsTile.plain(
                 icon: Icons.file_download_rounded,
                 title: context.l10n.downloadAllMyData,
-                trailing: const _ChevronWithLabel(label: 'JSON / CSV'),
+                trailing: ChevronWithLabel(label: context.l10n.json),
                 onTap: () {
                   _showExportOptionsDialog(context, 'all_data');
                 },
               ),
               const Divider(height: 1),
-              _SettingsTile._(
+              SettingsTile.plain(
                 icon: Icons.upload_rounded,
                 title: context.l10n.restoreFromBackup,
-                trailing: const _ChevronWithLabel(label: 'JSON'),
+                trailing: ChevronWithLabel(label: context.l10n.json),
                 onTap: () {
                   _importBackup(context, ref);
                 },
@@ -875,7 +694,7 @@ class _LogoutConfirmationDialog extends StatelessWidget {
                       ),
                     ),
                     child: Text(
-                      'İptal',
+                      context.l10n.cancel,
                       style: AppTextStyles.bodyMedium.copyWith(
                         fontWeight: FontWeight.w600,
                         color: AppColors.gray700,
@@ -984,7 +803,7 @@ class _DangerZoneSection extends ConsumerWidget {
                 color: Colors.white,
               ),
               label: Text(
-                'Hesabı Sil',
+                context.l10n.deleteAccount,
                 style: AppTextStyles.bodyMedium.copyWith(
                   fontWeight: FontWeight.w700,
                   color: Colors.white,
@@ -1057,7 +876,7 @@ class _DangerZoneSection extends ConsumerWidget {
         if (context.mounted) {
           AppSnackbar.showSuccess(
             context,
-            message: 'Hesabınız başarıyla silindi',
+            message: context.l10n.accountDeletedSuccess,
           );
           await Future.delayed(const Duration(milliseconds: 500));
           if (context.mounted) {
@@ -1068,7 +887,7 @@ class _DangerZoneSection extends ConsumerWidget {
         if (context.mounted) {
           AppSnackbar.showError(
             context,
-            message: 'Hesap silinirken hata oluştu: $e',
+            message: context.l10n.errorDeletingAccount,
           );
         }
       }
@@ -1309,7 +1128,7 @@ class _ChangePasswordBottomSheetState
                     ),
                   ),
                   child: Text(
-                    'İptal',
+                    context.l10n.cancel,
                     style: AppTextStyles.bodyMedium.copyWith(
                       fontWeight: FontWeight.w600,
                       color: AppColors.gray800,
@@ -1414,7 +1233,7 @@ class _DeleteAccountConfirmationDialog extends StatelessWidget {
             ),
             const SizedBox(height: AppSpacing.lg),
             Text(
-              'Hesabı Sil',
+              context.l10n.deleteAccount,
               style: AppTextStyles.titleLarge.copyWith(
                 fontWeight: FontWeight.w700,
                 color: AppColors.gray900,
@@ -1423,7 +1242,7 @@ class _DeleteAccountConfirmationDialog extends StatelessWidget {
             ),
             const SizedBox(height: AppSpacing.sm),
             Text(
-              'Hesabınızı silmek istediğinize emin misiniz? Bu işlem geri alınamaz ve tüm verileriniz kalıcı olarak silinecektir.',
+              context.l10n.deleteAccountConfirmation,
               style: AppTextStyles.bodyMedium.copyWith(
                 color: AppColors.gray700,
               ),
@@ -1446,7 +1265,7 @@ class _DeleteAccountConfirmationDialog extends StatelessWidget {
                       ),
                     ),
                     child: Text(
-                      'İptal',
+                      context.l10n.cancel,
                       style: AppTextStyles.bodyMedium.copyWith(
                         fontWeight: FontWeight.w600,
                         color: AppColors.gray800,
@@ -1467,7 +1286,7 @@ class _DeleteAccountConfirmationDialog extends StatelessWidget {
                       elevation: 0,
                     ),
                     child: Text(
-                      'Hesabı Sil',
+                      context.l10n.deleteAccount,
                       style: AppTextStyles.bodyMedium.copyWith(
                         fontWeight: FontWeight.w700,
                         color: Colors.white,

@@ -8,7 +8,10 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_radius.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_text_styles.dart';
+import '../../../core/utils/connectivity_helper.dart';
+import '../../../core/utils/error_handler.dart';
 import '../../../core/utils/extensions.dart';
+import '../../../core/utils/feedback_helper.dart';
 import '../../../core/widgets/index.dart';
 import '../../../shared/models/goal.dart';
 import '../../../shared/providers/goal_providers.dart';
@@ -29,9 +32,7 @@ class _GoalCreatePageState extends ConsumerState<GoalCreatePage> {
   List<SubGoal> _subGoals = const [];
   GoalCategory? _selectedCategory;
   DateTime? _completionDate;
-
-  // Premium background color
-  static const Color _premiumBackground = Color(0xFFF9FAFB);
+  bool _isSaving = false; // Prevent multiple saves
 
   @override
   void dispose() {
@@ -69,6 +70,9 @@ class _GoalCreatePageState extends ConsumerState<GoalCreatePage> {
   }
 
   Future<void> _handleSave() async {
+    // Prevent multiple saves
+    if (_isSaving) return;
+
     if (!_formKey.currentState!.validate()) {
       // Form validation failed, scroll to first error
       _scrollToFirstError();
@@ -82,6 +86,10 @@ class _GoalCreatePageState extends ConsumerState<GoalCreatePage> {
     }
 
     if (!mounted) return;
+
+    setState(() {
+      _isSaving = true;
+    });
 
     try {
       final repository = ref.read(goalRepositoryProvider);
@@ -102,27 +110,48 @@ class _GoalCreatePageState extends ConsumerState<GoalCreatePage> {
         isCompleted: false,
       );
 
+      // Fire-and-forget: Repository hemen döner, arka planda sync olur
       await repository.createGoal(goal);
 
-      if (mounted) {
-        // Stream'i yeniden başlatmak için invalidate et
-        ref.invalidate(goalsStreamProvider);
+      if (!mounted) return;
 
-        AppSnackbar.showSuccess(context,
-            message: context.l10n.goalCreatedSuccess);
-        context.pop();
-      }
-    } catch (e) {
+      // Stream'i yeniden başlatmak için invalidate et
+      // Bu, local cache'den yeni veriyi hemen gösterir
+      ref.invalidate(goalsStreamProvider);
+
+      // Başarı mesajı göster (online/offline fark etmez, veri local cache'e yazıldı)
+      FeedbackHelper.showSuccess(
+        context,
+        context.l10n.goalCreatedSuccess,
+      );
+
+      // Sayfayı güvenli şekilde kapat
+      Navigator.of(context).pop();
+    } catch (e, stackTrace) {
       if (mounted) {
-        AppSnackbar.showError(
+        setState(() {
+          _isSaving = false;
+        });
+
+        final appError = ErrorHandler.handle(e, stackTrace);
+        FeedbackHelper.showAppError(
           context,
-          message: context.l10n.errorCreatingGoal(e.toString()),
+          appError,
         );
       }
     }
   }
 
   Future<void> _handleAIOptimize() async {
+    // Önce internet kontrolü
+    final isOnline = await ConnectivityHelper.isOnline();
+    if (!isOnline) {
+      FeedbackHelper.showWarning(
+        context,
+        context.l10n.requiresConnection,
+      );
+      return;
+    }
     // Validate all required fields before AI optimization
     if (!_formKey.currentState!.validate()) {
       _scrollToFirstError();
@@ -134,7 +163,8 @@ class _GoalCreatePageState extends ConsumerState<GoalCreatePage> {
     }
 
     if (_selectedCategory == null) {
-      AppSnackbar.showError(context, message: context.l10n.pleaseSelectCategory);
+      AppSnackbar.showError(context,
+          message: context.l10n.pleaseSelectCategory);
       return;
     }
 
@@ -189,7 +219,7 @@ class _GoalCreatePageState extends ConsumerState<GoalCreatePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: _premiumBackground,
+      backgroundColor: AppColors.premiumBackground,
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
@@ -300,15 +330,25 @@ class _GoalCreatePageState extends ConsumerState<GoalCreatePage> {
                 // Kaydet
                 AppButton(
                   variant: AppButtonVariant.filled,
-                  onPressed: _handleSave,
+                  onPressed: _isSaving ? null : _handleSave,
                   minHeight: 60, // Increased height to match AI button
-                  child: Text(
-                    context.l10n.save,
-                    style: AppTextStyles.bodyMedium.copyWith(
-                      fontWeight:
-                          FontWeight.w700, // Stronger than AI button
-                    ),
-                  ),
+                  child: _isSaving
+                      ? const SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                                Colors.white),
+                          ),
+                        )
+                      : Text(
+                          context.l10n.save,
+                          style: AppTextStyles.bodyMedium.copyWith(
+                            fontWeight:
+                                FontWeight.w700, // Stronger than AI button
+                          ),
+                        ),
                 ),
               ],
             ),

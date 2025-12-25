@@ -888,8 +888,6 @@ class _CompletedGoalCard extends ConsumerWidget {
         return const Color(0xFFFF9800);
       case GoalCategory.personalGrowth:
         return AppColors.primary;
-      default:
-        return AppColors.primary;
     }
   }
 
@@ -898,7 +896,7 @@ class _CompletedGoalCard extends ConsumerWidget {
     final categoryColor = _getCategoryColor(goal.category);
     final completedDate =
         goal.completedAt ?? goal.targetDate ?? goal.createdAt;
-    final dateFormat = DateFormat('d MMMM yyyy', 'tr_TR');
+    final dateFormat = DateFormat('d MMMM yyyy', context.l10n.localeName);
 
     return Container(
       decoration: BoxDecoration(

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/providers/locale_provider.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_radius.dart';
 import '../../../core/theme/app_spacing.dart';
@@ -1127,41 +1128,6 @@ class _ChallengeCard extends StatelessWidget {
   }
 }
 
-class _IconBulletRow extends StatelessWidget {
-  const _IconBulletRow({
-    required this.icon,
-    required this.iconColor,
-    required this.text,
-  });
-
-  final IconData icon;
-  final Color iconColor;
-  final String text;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Icon(
-          icon,
-          color: iconColor,
-          size: 20,
-        ),
-        const SizedBox(width: AppSpacing.sm),
-        Expanded(
-          child: Text(
-            text,
-            style: AppTextStyles.bodyMedium.copyWith(
-              color: AppColors.gray800,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
 /// AI Önerileri kartı
 class _AiSuggestionsSection extends StatelessWidget {
   const _AiSuggestionsSection();
@@ -1542,12 +1508,14 @@ class _CreateReportBottomSheetState
             return;
           }
 
+          final locale = ref.read(localeProvider).languageCode;
           content = await aiService.generateWeeklyReport(
             userId: userId,
             weekStart: periodStart,
             weekEnd: periodEnd,
             goals: goals,
             checkIns: weekCheckIns,
+            locale: locale,
           );
           break;
 
@@ -1580,12 +1548,14 @@ class _CreateReportBottomSheetState
             return;
           }
 
+          final monthLocale = ref.read(localeProvider).languageCode;
           content = await aiService.generateMonthlyReport(
             userId: userId,
             year: now.year,
             month: now.month,
             goals: goals,
             checkIns: monthCheckIns,
+            locale: monthLocale,
           );
           break;
 
@@ -1617,11 +1587,13 @@ class _CreateReportBottomSheetState
             return;
           }
 
+          final yearLocale = ref.read(localeProvider).languageCode;
           content = await aiService.generateYearlyReport(
             userId: userId,
             year: now.year,
             goals: goals,
             checkIns: yearCheckIns,
+            locale: yearLocale,
           );
           break;
       }
@@ -1685,7 +1657,7 @@ class _CreateReportBottomSheetState
           Row(
             children: [
               Text(
-                'Rapor Oluştur',
+                context.l10n.createReport,
                 style: AppTextStyles.titleLarge.copyWith(
                   fontWeight: FontWeight.w700,
                 ),
@@ -1800,7 +1772,7 @@ class _CreateReportBottomSheetState
                       ),
                     )
                   : Text(
-                      'Rapor Oluştur',
+                      context.l10n.createReport,
                       style: AppTextStyles.bodyLarge.copyWith(
                         fontWeight: FontWeight.w700,
                         color: Colors.white,
@@ -1933,7 +1905,7 @@ class _ReportsHistorySection extends ConsumerWidget {
                 ),
                 const SizedBox(height: AppSpacing.md),
                 Text(
-                  'Henüz rapor oluşturulmamış',
+                  context.l10n.noReportsYet,
                   style: AppTextStyles.bodyLarge.copyWith(
                     color: AppColors.gray600,
                   ),

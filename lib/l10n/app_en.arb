@@ -676,6 +676,15 @@
       }
     }
   },
+  "inDays": "In {days} days",
+  "@inDays": {
+    "description": "In X days text",
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
   "reportsLoadingError": "An error occurred while loading reports: {error}",
   "@reportsLoadingError": {
     "description": "Error message when reports fail to load",
@@ -1296,6 +1305,18 @@
   "@annualReport": {
     "description": "Annual report label"
   },
+  "weeklyReportTitle": "Weekly Report",
+  "@weeklyReportTitle": {
+    "description": "Weekly report title"
+  },
+  "monthlyReportTitle": "Monthly Report",
+  "@monthlyReportTitle": {
+    "description": "Monthly report title"
+  },
+  "yearlyReportTitle": "Yearly Report",
+  "@yearlyReportTitle": {
+    "description": "Yearly report title"
+  },
   "accountInformation": "Account Information",
   "@accountInformation": {
     "description": "Account information section title"
@@ -1721,6 +1742,19 @@
   "@deleteReport": {
     "description": "Delete report dialog title"
   },
+  "reportDeleted": "Report deleted",
+  "@reportDeleted": {
+    "description": "Report deleted success message"
+  },
+  "reportDeleteError": "An error occurred while deleting the report: {error}",
+  "@reportDeleteError": {
+    "description": "Report delete error message",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
   "pageNotFound": "Page not found: {path}",
   "@pageNotFound": {
     "description": "Error message shown when a page is not found",
@@ -1809,6 +1843,82 @@
   "errorUnexpectedAuth": "An unexpected error occurred. Please try again.",
   "@errorUnexpectedAuth": {
     "description": "Firebase Auth error: unexpected error"
-  }
+  },
+  "accountDeletedSuccessfully": "Your account has been deleted successfully.",
+  "@accountDeletedSuccessfully": {
+    "description": "Account deleted success message"
+  },
+  "accountDeleteError": "An error occurred while deleting the account: {error}",
+  "@accountDeleteError": {
+    "description": "Account delete error message",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "aiOptimization": "AI Optimization",
+  "@aiOptimization": {
+    "description": "AI optimization bottom sheet title"
+  },
+  "aiOptimizationSubtitle": "Your goal has been converted to SMART format",
+  "@aiOptimizationSubtitle": {
+    "description": "AI optimization bottom sheet subtitle"
+  },
+  "optimizationFailed": "Optimization failed",
+  "@optimizationFailed": {
+    "description": "AI optimization failed message"
+  },
+  "optimizedGoal": "Optimized Goal",
+  "@optimizedGoal": {
+    "description": "Optimized goal section title"
+  },
+  "optimizedGoalHint": "Write a short goal name…",
+  "@optimizedGoalHint": {
+    "description": "Optimized goal input hint"
+  },
+  "explanation": "Explanation",
+  "@explanation": {
+    "description": "Explanation section title"
+  },
+  "suggestedSubTasks": "Suggested Sub Tasks",
+  "@suggestedSubTasks": {
+    "description": "Suggested sub tasks section title"
+  },
+  "apply": "Apply",
+  "@apply": {
+    "description": "Apply button text"
+  },
+  "jsonCsv": "JSON / CSV",
+  "@jsonCsv": {
+    "description": "JSON and CSV formats label"
+  },
+  "noInternetConnection": "No internet connection. Please check your connection.",
+  "@noInternetConnection": {
+    "description": "Network error message when offline"
+  },
+  "requiresConnection": "This feature requires an internet connection.",
+  "@requiresConnection": {
+    "description": "Hint message that feature needs internet"
+  },
+  "unexpectedError": "An unexpected error occurred. Please try again.",
+  "@unexpectedError": {
+    "description": "Generic error message"
+  },
+  "addGoal": "Add goal",
+  "sortBy": "Sort by",
+  "filterBy": "Filter by",
+  "sortNewest": "Newest first",
+  "sortOldest": "Oldest first",
+  "sortProgressHigh": "Progress: high to low",
+  "sortProgressLow": "Progress: low to high",
+  "sortTitleAsc": "Title A–Z",
+  "sortTitleDesc": "Title Z–A",
+  "confirm": "Confirm",
+  "uncompleteGoalTitle": "Mark goal as active",
+  "uncompleteGoalMessage": "Are you sure you want to make this goal active again?",
+  "noGoalsYetSubtitle": "Start by adding a goal to track your progress.",
+  "noCompletedGoalsYet": "No completed goals yet",
+  "noCompletedGoalsYetSubtitle": "You'll see completed goals here."
 }
 

@@ -426,7 +426,7 @@ class _DatePickerFieldWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final dateText = selectedDate != null
-        ? selectedDate!.formatted
+        ? selectedDate!.formatted(context.l10n.localeName)
         : context.l10n.selectDate;
 
     return Column(

@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/providers/locale_provider.dart';
 import '../models/check_in.dart';
 import '../models/goal.dart';
 import '../services/ai_service.dart';
@@ -35,17 +36,20 @@ final optimizedGoalProvider =
     FutureProvider.autoDispose.family<OptimizeGoalResponse?, OptimizeGoalParams>(
         (ref, params) async {
   final aiService = ref.watch(aiServiceProvider);
+  final locale = ref.watch(localeProvider).languageCode;
 
   try {
     debugPrint('AI Provider: Starting optimization...');
     debugPrint('  goalTitle: ${params.goalTitle}');
     debugPrint('  category: ${params.category}');
+    debugPrint('  locale: $locale');
 
     final result = await aiService.optimizeGoal(
       goalTitle: params.goalTitle,
       category: params.category,
       motivation: params.motivation,
       targetDate: params.targetDate,
+      locale: locale,
     );
 
     debugPrint('AI Provider: Optimization completed successfully');
@@ -67,6 +71,7 @@ final aiSuggestionsProvider = FutureProvider.autoDispose<String?>((ref) async {
   final aiService = ref.watch(aiServiceProvider);
   final userId = ref.watch(currentUserIdProvider);
   final goalsAsync = ref.watch(goalsStreamProvider);
+  final locale = ref.watch(localeProvider).languageCode;
 
   if (userId == null) {
     return null;
@@ -84,6 +89,7 @@ final aiSuggestionsProvider = FutureProvider.autoDispose<String?>((ref) async {
           userId: userId,
           goals: goals,
           checkIns: allCheckIns,
+          locale: locale,
         );
         return suggestions;
       } catch (e) {
@@ -103,6 +109,7 @@ final yearlyReportProvider =
   final aiService = ref.watch(aiServiceProvider);
   final userId = ref.watch(currentUserIdProvider);
   final goalsAsync = ref.watch(goalsStreamProvider);
+  final locale = ref.watch(localeProvider).languageCode;
 
   if (userId == null) {
     return null;
@@ -139,6 +146,7 @@ final yearlyReportProvider =
           year: params.year,
           goals: yearGoals,
           checkIns: allCheckIns,
+          locale: locale,
         );
         return report;
       } catch (e) {

@@ -62,7 +62,8 @@ import 'app_localizations_tr.dart';
 /// be consistent with the languages listed in the AppLocalizations.supportedLocales
 /// property.
 abstract class AppLocalizations {
-  AppLocalizations(String locale) : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+  AppLocalizations(String locale)
+      : localeName = intl.Intl.canonicalizedLocale(locale.toString());
 
   final String localeName;
 
@@ -70,7 +71,8 @@ abstract class AppLocalizations {
     return Localizations.of<AppLocalizations>(context, AppLocalizations);
   }
 
-  static const LocalizationsDelegate<AppLocalizations> delegate = _AppLocalizationsDelegate();
+  static const LocalizationsDelegate<AppLocalizations> delegate =
+      _AppLocalizationsDelegate();
 
   /// A list of this localizations delegate along with the default localizations
   /// delegates.
@@ -82,7 +84,8 @@ abstract class AppLocalizations {
   /// Additional delegates can be added by appending to this list in
   /// MaterialApp. This list does not have to be used at all if a custom list
   /// of delegates is preferred or required.
-  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates = <LocalizationsDelegate<dynamic>>[
+  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
+      <LocalizationsDelegate<dynamic>>[
     delegate,
     GlobalMaterialLocalizations.delegate,
     GlobalCupertinoLocalizations.delegate,
@@ -483,7 +486,8 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'This year you worked on a total of {totalGoals} goals and completed {completedGoals} goals (completion rate approximately {completionRate}%).'**
-  String thisYearWorkedOnGoals(int totalGoals, int completedGoals, int completionRate);
+  String thisYearWorkedOnGoals(
+      int totalGoals, int completedGoals, int completionRate);
 
   /// Achievement text about average progress
   ///
@@ -988,6 +992,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{days} days left'**
   String daysLeft(int days);
+
+  /// In X days text
+  ///
+  /// In en, this message translates to:
+  /// **'In {days} days'**
+  String inDays(int days);
 
   /// Error message when reports fail to load
   ///
@@ -1697,6 +1707,24 @@ abstract class AppLocalizations {
   /// **'Annual Report'**
   String get annualReport;
 
+  /// Weekly report title
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly Report'**
+  String get weeklyReportTitle;
+
+  /// Monthly report title
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly Report'**
+  String get monthlyReportTitle;
+
+  /// Yearly report title
+  ///
+  /// In en, this message translates to:
+  /// **'Yearly Report'**
+  String get yearlyReportTitle;
+
   /// Account information section title
   ///
   /// In en, this message translates to:
@@ -2261,6 +2289,18 @@ abstract class AppLocalizations {
   /// **'Delete Report'**
   String get deleteReport;
 
+  /// Report deleted success message
+  ///
+  /// In en, this message translates to:
+  /// **'Report deleted'**
+  String get reportDeleted;
+
+  /// Report delete error message
+  ///
+  /// In en, this message translates to:
+  /// **'An error occurred while deleting the report: {error}'**
+  String reportDeleteError(String error);
+
   /// Error message shown when a page is not found
   ///
   /// In en, this message translates to:
@@ -2386,9 +2426,184 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'An unexpected error occurred. Please try again.'**
   String get errorUnexpectedAuth;
+
+  /// Account deleted success message
+  ///
+  /// In en, this message translates to:
+  /// **'Your account has been deleted successfully.'**
+  String get accountDeletedSuccessfully;
+
+  /// Account delete error message
+  ///
+  /// In en, this message translates to:
+  /// **'An error occurred while deleting the account: {error}'**
+  String accountDeleteError(String error);
+
+  /// AI optimization bottom sheet title
+  ///
+  /// In en, this message translates to:
+  /// **'AI Optimization'**
+  String get aiOptimization;
+
+  /// AI optimization bottom sheet subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'Your goal has been converted to SMART format'**
+  String get aiOptimizationSubtitle;
+
+  /// AI optimization failed message
+  ///
+  /// In en, this message translates to:
+  /// **'Optimization failed'**
+  String get optimizationFailed;
+
+  /// Optimized goal section title
+  ///
+  /// In en, this message translates to:
+  /// **'Optimized Goal'**
+  String get optimizedGoal;
+
+  /// Optimized goal input hint
+  ///
+  /// In en, this message translates to:
+  /// **'Write a short goal name…'**
+  String get optimizedGoalHint;
+
+  /// Explanation section title
+  ///
+  /// In en, this message translates to:
+  /// **'Explanation'**
+  String get explanation;
+
+  /// Suggested sub tasks section title
+  ///
+  /// In en, this message translates to:
+  /// **'Suggested Sub Tasks'**
+  String get suggestedSubTasks;
+
+  /// Apply button text
+  ///
+  /// In en, this message translates to:
+  /// **'Apply'**
+  String get apply;
+
+  /// JSON and CSV formats label
+  ///
+  /// In en, this message translates to:
+  /// **'JSON / CSV'**
+  String get jsonCsv;
+
+  /// Network error message when offline
+  ///
+  /// In en, this message translates to:
+  /// **'No internet connection. Please check your connection.'**
+  String get noInternetConnection;
+
+  /// Hint message that feature needs internet
+  ///
+  /// In en, this message translates to:
+  /// **'This feature requires an internet connection.'**
+  String get requiresConnection;
+
+  /// Generic error message
+  ///
+  /// In en, this message translates to:
+  /// **'An unexpected error occurred. Please try again.'**
+  String get unexpectedError;
+
+  /// No description provided for @addGoal.
+  ///
+  /// In en, this message translates to:
+  /// **'Add goal'**
+  String get addGoal;
+
+  /// No description provided for @sortBy.
+  ///
+  /// In en, this message translates to:
+  /// **'Sort by'**
+  String get sortBy;
+
+  /// No description provided for @filterBy.
+  ///
+  /// In en, this message translates to:
+  /// **'Filter by'**
+  String get filterBy;
+
+  /// No description provided for @sortNewest.
+  ///
+  /// In en, this message translates to:
+  /// **'Newest first'**
+  String get sortNewest;
+
+  /// No description provided for @sortOldest.
+  ///
+  /// In en, this message translates to:
+  /// **'Oldest first'**
+  String get sortOldest;
+
+  /// No description provided for @sortProgressHigh.
+  ///
+  /// In en, this message translates to:
+  /// **'Progress: high to low'**
+  String get sortProgressHigh;
+
+  /// No description provided for @sortProgressLow.
+  ///
+  /// In en, this message translates to:
+  /// **'Progress: low to high'**
+  String get sortProgressLow;
+
+  /// No description provided for @sortTitleAsc.
+  ///
+  /// In en, this message translates to:
+  /// **'Title A–Z'**
+  String get sortTitleAsc;
+
+  /// No description provided for @sortTitleDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Title Z–A'**
+  String get sortTitleDesc;
+
+  /// No description provided for @confirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm'**
+  String get confirm;
+
+  /// No description provided for @uncompleteGoalTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark goal as active'**
+  String get uncompleteGoalTitle;
+
+  /// No description provided for @uncompleteGoalMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to make this goal active again?'**
+  String get uncompleteGoalMessage;
+
+  /// No description provided for @noGoalsYetSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Start by adding a goal to track your progress.'**
+  String get noGoalsYetSubtitle;
+
+  /// No description provided for @noCompletedGoalsYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No completed goals yet'**
+  String get noCompletedGoalsYet;
+
+  /// No description provided for @noCompletedGoalsYetSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'ll see completed goals here.'**
+  String get noCompletedGoalsYetSubtitle;
 }
 
-class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
+class _AppLocalizationsDelegate
+    extends LocalizationsDelegate<AppLocalizations> {
   const _AppLocalizationsDelegate();
 
   @override
@@ -2397,25 +2612,25 @@ class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> 
   }
 
   @override
-  bool isSupported(Locale locale) => <String>['en', 'tr'].contains(locale.languageCode);
+  bool isSupported(Locale locale) =>
+      <String>['en', 'tr'].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;
 }
 
 AppLocalizations lookupAppLocalizations(Locale locale) {
-
-
   // Lookup logic when only language code is specified.
   switch (locale.languageCode) {
-    case 'en': return AppLocalizationsEn();
-    case 'tr': return AppLocalizationsTr();
+    case 'en':
+      return AppLocalizationsEn();
+    case 'tr':
+      return AppLocalizationsTr();
   }
 
   throw FlutterError(
-    'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
-    'an issue with the localizations generation tool. Please file an issue '
-    'on GitHub with a reproducible sample app and the gen-l10n configuration '
-    'that was used.'
-  );
+      'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
+      'an issue with the localizations generation tool. Please file an issue '
+      'on GitHub with a reproducible sample app and the gen-l10n configuration '
+      'that was used.');
 }

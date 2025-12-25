@@ -1,17 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
-
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:year_flow/core/theme/app_colors.dart';
 
 import '../../../core/constants/app_assets.dart';
 import '../../../core/router/app_routes.dart';
-import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
-import '../../../core/utils/auth_error_handler.dart';
+import '../../../core/utils/connectivity_helper.dart';
 import '../../../core/utils/extensions.dart';
 import '../../../core/widgets/index.dart';
+import '../../../shared/utils/auth_utils.dart';
+import '../../../shared/widgets/auth_widgets.dart';
 import '../providers/auth_providers.dart';
 
 class LoginPage extends ConsumerStatefulWidget {
@@ -28,30 +27,6 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   bool _obscurePassword = true;
   String? _lastShownError; // Son gösterilen hata mesajını takip et
 
-  String _resolveAuthError(BuildContext context, String? errorMessage, String? errorCode) {
-    // Google auth özel kodları
-    if (errorMessage == AuthNotifier.googleAuthFailedCode) {
-      return context.l10n.googleAuthFailed;
-    }
-    if (errorMessage == AuthNotifier.googleAuthCancelledCode) {
-      return context.l10n.googleAuthCancelled;
-    }
-    
-    // Firebase Auth hata kodu varsa lokalize et
-    if (errorCode != null) {
-      try {
-        final exception = FirebaseAuthException(code: errorCode, message: errorMessage);
-        return AuthErrorHandler.getLocalizedSignInMessage(context, exception);
-      } catch (_) {
-        // Hata kodu parse edilemezse ham mesajı döndür
-        return errorMessage ?? context.l10n.errorUnexpectedAuth;
-      }
-    }
-    
-    // Fallback: ham mesajı döndür
-    return errorMessage ?? context.l10n.errorUnexpectedAuth;
-  }
-
   @override
   void dispose() {
     _emailController.dispose();
@@ -66,6 +41,19 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
     if (!mounted) return;
 
+    // İnternet bağlantısını kontrol et
+    final isOnline = await ConnectivityHelper.isOnline();
+    if (!isOnline) {
+      if (mounted) {
+        AppSnackbar.showWarning(
+          context,
+          message:
+              'Giriş yapmak için internet bağlantısı gereklidir. Lütfen bağlantınızı kontrol edip tekrar deneyin.',
+        );
+      }
+      return;
+    }
+
     // Giriş işlemini başlat
     // Hata mesajları ve başarılı giriş ref.listen ile handle edilecek
     await ref.read(authStateProvider.notifier).signInWithEmail(
@@ -77,6 +65,19 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   Future<void> _handleGoogleSignIn() async {
     if (!mounted) return;
 
+    // İnternet bağlantısını kontrol et
+    final isOnline = await ConnectivityHelper.isOnline();
+    if (!isOnline) {
+      if (mounted) {
+        AppSnackbar.showWarning(
+          context,
+          message:
+              'Giriş yapmak için internet bağlantısı gereklidir. Lütfen bağlantınızı kontrol edip tekrar deneyin.',
+        );
+      }
+      return;
+    }
+
     await ref.read(authStateProvider.notifier).signInWithGoogle();
 
     if (!mounted) return;
@@ -84,7 +85,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     final authState = ref.read(authStateProvider);
 
     if (authState.errorMessage != null || authState.errorCode != null) {
-      final message = _resolveAuthError(
+      final message = resolveAuthError(
         context,
         authState.errorMessage,
         authState.errorCode,
@@ -119,24 +120,33 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
+    // Cache MediaQuery for performance
+    final screenHeight = MediaQuery.of(context).size.height;
+    final bottomPadding = MediaQuery.of(context).padding.bottom;
+
     // Sadece loading state'ini watch et, böylece form state'i korunur
-    final isEmailLoading = ref.watch(authStateProvider.select((s) => s.isEmailLoading));
-    final isGoogleLoading = ref.watch(authStateProvider.select((s) => s.isGoogleLoading));
-    
+    final isEmailLoading =
+        ref.watch(authStateProvider.select((s) => s.isEmailLoading));
+    final isGoogleLoading =
+        ref.watch(authStateProvider.select((s) => s.isGoogleLoading));
+
     // State değişikliklerini dinle - ref.listen otomatik olarak dispose edilir
     // NOT: ref.listen build içinde güvenli bir şekilde kullanılabilir (Riverpod 2.x)
     ref.listen<AuthState>(authStateProvider, (previous, next) {
       if (!mounted) return;
-      
+
       // Hata mesajı varsa ve daha önce gösterilmemişse göster
       if (next.errorMessage != null || next.errorCode != null) {
-        final resolvedMessage = _resolveAuthError(
+        final resolvedMessage = resolveAuthError(
           context,
           next.errorMessage,
           next.errorCode,
         );
-        if (resolvedMessage != _lastShownError &&
-            resolvedMessage != previous?.errorMessage) {
+        final hasErrorStateChanged =
+            next.errorMessage != previous?.errorMessage ||
+                next.errorCode != previous?.errorCode;
+
+        if (hasErrorStateChanged && resolvedMessage != _lastShownError) {
           _lastShownError = resolvedMessage;
           try {
             AppSnackbar.showError(context, message: resolvedMessage);
@@ -145,12 +155,15 @@ class _LoginPageState extends ConsumerState<LoginPage> {
           }
         }
       }
-      
+
       // Hata mesajı temizlendiğinde, son gösterilen hatayı da temizle
-      if (next.errorMessage == null && previous?.errorMessage != null) {
+      if (next.errorMessage == null &&
+          next.errorCode == null &&
+          (previous?.errorMessage != null ||
+              previous?.errorCode != null)) {
         _lastShownError = null;
       }
-      
+
       // Başarılı giriş yapıldıysa yönlendir
       if (next.isAuthenticated && !(previous?.isAuthenticated ?? false)) {
         try {
@@ -183,17 +196,20 @@ class _LoginPageState extends ConsumerState<LoginPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  SizedBox(height: MediaQuery.of(context).size.height * 0.06),
+                  SizedBox(height: screenHeight * 0.06),
                   // Logo + App Name Header Component
-                  _LogoHeader(
+                  AuthLogoHeader(
                     logoPath: AppAssets.appLogo,
                     appName: context.l10n.appName,
                   ),
-                  SizedBox(height: MediaQuery.of(context).size.height * 0.08),
+                  SizedBox(height: screenHeight * 0.08),
                   // Welcome Back Title
                   Text(
                     context.l10n.welcomeBack,
-                    style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+                    style: Theme.of(context)
+                        .textTheme
+                        .headlineLarge
+                        ?.copyWith(
                           color: AppColors.gray900,
                           fontWeight: FontWeight.w700,
                           fontSize: 28,
@@ -268,7 +284,10 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       ),
                       child: Text(
                         context.l10n.forgotPassword,
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        style: Theme.of(context)
+                            .textTheme
+                            .bodyMedium
+                            ?.copyWith(
                               color: AppColors.primary,
                               fontWeight: FontWeight.w500,
                             ),
@@ -277,7 +296,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                   ),
                   const SizedBox(height: AppSpacing.xl),
                   // Premium Login button with glossy effect
-                  _PremiumButton(
+                  PremiumButton(
                     onPressed: (isEmailLoading || isGoogleLoading)
                         ? null
                         : _handleLogin,
@@ -302,10 +321,14 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                         ),
                       ),
                       Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: AppSpacing.sm),
                         child: Text(
                           context.l10n.or,
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodySmall
+                              ?.copyWith(
                                 color: AppColors.gray500,
                                 fontWeight: FontWeight.w500,
                               ),
@@ -321,21 +344,24 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                   ),
                   const SizedBox(height: AppSpacing.lg),
                   // Modern Google Sign-In button
-                  _GoogleSignInButton(
+                  GoogleSignInButton(
                     onPressed: (isEmailLoading || isGoogleLoading)
                         ? null
                         : _handleGoogleSignIn,
                     isLoading: isGoogleLoading,
                     text: context.l10n.continueWithGoogle,
                   ),
-                  SizedBox(height: MediaQuery.of(context).size.height * 0.04),
+                  SizedBox(height: screenHeight * 0.04),
                   // Register link
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
                         context.l10n.noAccount,
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        style: Theme.of(context)
+                            .textTheme
+                            .bodyMedium
+                            ?.copyWith(
                               color: AppColors.gray600,
                             ),
                       ),
@@ -359,269 +385,12 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       ),
                     ],
                   ),
-                  SizedBox(height: MediaQuery.of(context).padding.bottom + AppSpacing.md),
+                  SizedBox(height: bottomPadding + AppSpacing.md),
                 ],
               ),
             ),
           ),
         ),
-      ),
-    );
-  }
-}
-
-/// Logo + App Name Header Component
-class _LogoHeader extends StatelessWidget {
-  const _LogoHeader({
-    required this.logoPath,
-    required this.appName,
-  });
-
-  final String logoPath;
-  final String appName;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        // Logo with soft shadow - transparent background
-        // Logo PNG dosyasının şeffaf arka planlı olması gerekiyor
-        Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(20),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.primary.withOpacity(0.15),
-                blurRadius: 20,
-                offset: const Offset(0, 8),
-                spreadRadius: 0,
-              ),
-            ],
-          ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(20),
-            child: Image.asset(
-              logoPath,
-              width: 72,
-              height: 72,
-              fit: BoxFit.contain,
-              cacheWidth: 144,
-              // PNG dosyasının alpha channel'ı korunur
-              errorBuilder: (context, error, stackTrace) {
-                debugPrint('Logo load error: $error');
-                return Container(
-                  width: 72,
-                  height: 72,
-                  decoration: BoxDecoration(
-                    color: AppColors.primary.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: const Icon(
-                    Icons.check_circle,
-                    size: 48,
-                    color: AppColors.primary,
-                  ),
-                );
-              },
-            ),
-          ),
-        ),
-        const SizedBox(height: AppSpacing.md),
-        // App Name
-        Text(
-          appName,
-          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                color: AppColors.gray900,
-                fontWeight: FontWeight.w700,
-                fontSize: 24,
-                letterSpacing: -0.3,
-                height: 1.2,
-              ),
-        ),
-      ],
-    );
-  }
-}
-
-/// Premium Button with glossy effect
-class _PremiumButton extends StatelessWidget {
-  const _PremiumButton({
-    required this.onPressed,
-    required this.child,
-    this.isLoading = false,
-  });
-
-  final VoidCallback? onPressed;
-  final Widget child;
-  final bool isLoading;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: 56,
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: onPressed == null
-              ? [
-                  AppColors.gray300,
-                  AppColors.gray400,
-                ]
-              : [
-                  AppColors.primary,
-                  AppColors.primaryDark,
-                ],
-        ),
-        borderRadius: BorderRadius.circular(14),
-        boxShadow: onPressed == null
-            ? null
-            : [
-                BoxShadow(
-                  color: AppColors.primary.withOpacity(0.3),
-                  blurRadius: 16,
-                  offset: const Offset(0, 6),
-                  spreadRadius: 0,
-                ),
-              ],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: isLoading ? null : onPressed,
-          borderRadius: BorderRadius.circular(14),
-          child: Container(
-            alignment: Alignment.center,
-            child: isLoading
-                ? const SizedBox(
-                    width: 24,
-                    height: 24,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2.5,
-                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                    ),
-                  )
-                : DefaultTextStyle(
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: 0.3,
-                    ),
-                    child: child,
-                  ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/// Modern Google Sign-In Button
-class _GoogleSignInButton extends StatelessWidget {
-  const _GoogleSignInButton({
-    required this.onPressed,
-    required this.text,
-    this.isLoading = false,
-  });
-
-  final VoidCallback? onPressed;
-  final String text;
-  final bool isLoading;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: 56,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: AppColors.gray300.withOpacity(0.8),
-          width: 1.2,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-            spreadRadius: 0,
-          ),
-        ],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: isLoading ? null : onPressed,
-          borderRadius: BorderRadius.circular(14),
-          child: Container(
-            alignment: Alignment.center,
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-            child: isLoading
-                ? const SizedBox(
-                    width: 24,
-                    height: 24,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2.5,
-                      valueColor: AlwaysStoppedAnimation<Color>(AppColors.gray600),
-                    ),
-                  )
-                : Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      _GoogleIcon(),
-                      const SizedBox(width: AppSpacing.sm),
-                      Text(
-                        text,
-                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                              color: AppColors.gray900,
-                              fontWeight: FontWeight.w600,
-                              fontSize: 16,
-                            ),
-                      ),
-                    ],
-                  ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/// Google ikonu widget'ı - Google'ın resmi logosunu kullanır
-class _GoogleIcon extends StatelessWidget {
-  const _GoogleIcon({this.size = 20});
-
-  final double size;
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: size * 1.7,
-      height: size,
-      child: Builder(
-        builder: (context) {
-          try {
-            return SvgPicture.asset(
-              'assets/icons/google_logo.svg',
-              width: size * 1.7,
-              height: size,
-              fit: BoxFit.contain,
-              placeholderBuilder: (context) => const Icon(
-                Icons.g_mobiledata,
-                size: 20,
-              ),
-            );
-          } catch (e) {
-            // SVG dosyası yoksa veya yüklenemezse fallback göster
-            return const Icon(
-              Icons.g_mobiledata,
-              size: 20,
-              color: AppColors.gray700,
-            );
-          }
-        },
       ),
     );
   }

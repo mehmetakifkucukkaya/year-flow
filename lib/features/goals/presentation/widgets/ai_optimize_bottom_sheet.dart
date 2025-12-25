@@ -5,27 +5,44 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_radius.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_text_styles.dart';
+import '../../../../core/utils/error_handler.dart';
 import '../../../../core/utils/extensions.dart';
 import '../../../../core/widgets/index.dart';
 import '../../../../shared/models/goal.dart';
 import '../../../../shared/providers/ai_providers.dart';
 import '../../../../shared/services/ai_service.dart';
 
-String _shortenGoalTitle(String input) {
+String _shortenGoalTitle(String input, [String locale = 'tr']) {
   var text = input.trim();
   if (text.isEmpty) return text;
 
   var words = text.split(RegExp(r'\s+'));
 
+  // Locale-aware time units and prepositions
+  final timeUnits = locale == 'tr'
+      ? ['gün', 'hafta', 'ay', 'yıl']
+      : [
+          'day',
+          'days',
+          'week',
+          'weeks',
+          'month',
+          'months',
+          'year',
+          'years'
+        ];
+  final prepositions =
+      locale == 'tr' ? ['içinde', 'boyunca'] : ['in', 'for', 'within'];
+
   // Çok kelimeli süre ifadelerini baştan kırp (örn. "3 ay içinde", "6 ay boyunca")
+  // Trim multi-word time expressions from the beginning (e.g., "3 months in", "6 weeks for")
   if (words.length > 3) {
     final lower = words.map((w) => w.toLowerCase()).toList();
     final isNumber = RegExp(r'^\d+$').hasMatch(lower[0]);
-    final isTimeUnit = ['gün', 'hafta', 'ay', 'yıl'].contains(lower[1]);
+    final isTimeUnit = timeUnits.contains(lower[1]);
     if (isNumber && isTimeUnit) {
       var start = 2;
-      if (lower.length > 2 &&
-          (lower[2] == 'içinde' || lower[2] == 'boyunca')) {
+      if (lower.length > 2 && prepositions.contains(lower[2])) {
         start = 3;
       }
       words = words.sublist(start);
@@ -125,7 +142,9 @@ class _AIOptimizeBottomSheetState
                         return const _EmptyStateSection();
                       }
                       if (_titleController.text.isEmpty) {
-                        _titleController.text = _shortenGoalTitle(result.optimizedTitle);
+                        _titleController.text = _shortenGoalTitle(
+                            result.optimizedTitle,
+                            context.l10n.localeName);
                       }
                       return _ContentSection(
                         result: result,
@@ -133,7 +152,8 @@ class _AIOptimizeBottomSheetState
                       );
                     },
                     loading: () => const _LoadingSection(),
-                    error: (error, stackTrace) => _ErrorSection(error: error),
+                    error: (error, stackTrace) =>
+                        _ErrorSection(error: error),
                   ),
                 ],
               ),
@@ -202,23 +222,25 @@ class _HeaderSection extends StatelessWidget {
         ),
         const SizedBox(width: AppSpacing.md),
         Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'AI Optimizasyonu',
-                style: AppTextStyles.titleMedium.copyWith(
-                  fontWeight: FontWeight.w700,
+          child: Builder(
+            builder: (context) => Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  context.l10n.aiOptimization,
+                  style: AppTextStyles.titleMedium.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                'Hedefiniz SMART formatına çevrildi',
-                style: AppTextStyles.bodySmall.copyWith(
-                  color: AppColors.gray600,
+                const SizedBox(height: 4),
+                Text(
+                  context.l10n.aiOptimizationSubtitle,
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: AppColors.gray600,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ],
@@ -247,9 +269,22 @@ class _ErrorSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var message = error.toString();
-    if (message.startsWith('Exception:')) {
-      message = message.substring('Exception:'.length).trim();
+    // Convert error to AppError for user-friendly messages
+    final appError = ErrorHandler.handle(error);
+
+    // Get localized error messages
+    String userMessage;
+    String? hint;
+
+    if (appError is NetworkError) {
+      // Use existing localized network fallback
+      userMessage = context.l10n.errorNetworkRequestFailed;
+      hint = null;
+    } else {
+      // Fallback to original message or a generic localized error
+      userMessage = appError.userMessage.isNotEmpty
+          ? appError.userMessage
+          : context.l10n.errorUnexpectedAuth;
     }
 
     return Padding(
@@ -270,19 +305,30 @@ class _ErrorSection extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.md),
           Text(
-            'Optimizasyon başarısız',
+            context.l10n.optimizationFailed,
             style: AppTextStyles.titleSmall.copyWith(
               fontWeight: FontWeight.w600,
             ),
           ),
           const SizedBox(height: AppSpacing.sm),
           Text(
-            message,
-            style: AppTextStyles.bodySmall.copyWith(
-              color: AppColors.gray600,
+            userMessage,
+            style: AppTextStyles.bodyMedium.copyWith(
+              color: AppColors.gray700,
             ),
             textAlign: TextAlign.center,
           ),
+          if (hint != null) ...[
+            const SizedBox(height: AppSpacing.xs),
+            Text(
+              hint,
+              style: AppTextStyles.bodySmall.copyWith(
+                color: AppColors.gray600,
+                fontStyle: FontStyle.italic,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
           const SizedBox(height: AppSpacing.lg),
           AppButton(
             variant: AppButtonVariant.outlined,
@@ -346,7 +392,7 @@ class _OptimizedTitleField extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const _SectionTitle('Optimize Edilmiş Hedef'),
+        _SectionTitle(context.l10n.optimizedGoal),
         const SizedBox(height: AppSpacing.sm),
         Container(
           width: double.infinity,
@@ -381,10 +427,10 @@ class _OptimizedTitleField extends StatelessWidget {
               color: AppColors.primary,
               height: 1.4,
             ),
-            decoration: const InputDecoration(
+            decoration: InputDecoration(
               contentPadding: AppSpacing.paddingMd,
               border: InputBorder.none,
-              hintText: 'Kısa bir hedef adı yazın…',
+              hintText: context.l10n.optimizedGoalHint,
             ),
           ),
         ),
@@ -403,7 +449,7 @@ class _ExplanationSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const _SectionTitle('Açıklama'),
+        _SectionTitle(context.l10n.explanation),
         const SizedBox(height: AppSpacing.sm),
         Container(
           width: double.infinity,
@@ -438,7 +484,7 @@ class _SubGoalsSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const _SectionTitle('Önerilen Alt Görevler'),
+        _SectionTitle(context.l10n.suggestedSubTasks),
         const SizedBox(height: AppSpacing.md),
         ...subGoals.asMap().entries.map((entry) {
           return _SubGoalItem(
@@ -586,7 +632,7 @@ class _ActionButtonsSection extends StatelessWidget {
                     ),
                   ),
                   child: Text(
-                    'İptal',
+                    context.l10n.cancel,
                     style: AppTextStyles.bodyMedium.copyWith(
                       fontWeight: FontWeight.w600,
                       color: AppColors.gray700,
@@ -626,7 +672,7 @@ class _ActionButtonsSection extends StatelessWidget {
                         height: 56,
                         alignment: Alignment.center,
                         child: Text(
-                          'Uygula',
+                          context.l10n.apply,
                           style: AppTextStyles.bodyMedium.copyWith(
                             fontWeight: FontWeight.w700,
                             color: Colors.white,

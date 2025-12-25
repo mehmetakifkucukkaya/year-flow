@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
+import 'package:year_flow/core/utils/connectivity_helper.dart';
 
 import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_radius.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_text_styles.dart';
+import '../../../core/utils/error_handler.dart';
 import '../../../core/utils/extensions.dart';
+import '../../../core/utils/feedback_helper.dart';
 import '../../../core/widgets/index.dart';
 import '../../../shared/models/goal.dart';
 import '../../../shared/providers/goal_providers.dart';
@@ -34,9 +36,7 @@ class _GoalEditPageState extends ConsumerState<GoalEditPage> {
   GoalCategory? _selectedCategory;
   DateTime? _completionDate;
   List<SubGoal> _subGoals = const [];
-
-  // Premium background color
-  static const Color _premiumBackground = Color(0xFFF9FAFB);
+  bool _isSaving = false; // Prevent multiple saves
 
   @override
   void initState() {
@@ -97,11 +97,18 @@ class _GoalEditPageState extends ConsumerState<GoalEditPage> {
   }
 
   Future<void> _handleSave() async {
+    // Prevent multiple saves
+    if (_isSaving) return;
+
     if (!_formKey.currentState!.validate()) {
       return;
     }
 
     if (!mounted) return;
+
+    setState(() {
+      _isSaving = true;
+    });
 
     try {
       final repository = ref.read(goalRepositoryProvider);
@@ -110,7 +117,11 @@ class _GoalEditPageState extends ConsumerState<GoalEditPage> {
 
       if (currentGoal == null) {
         if (mounted) {
-          AppSnackbar.showError(context, message: context.l10n.goalNotFound);
+          setState(() {
+            _isSaving = false;
+          });
+          AppSnackbar.showError(context,
+              message: context.l10n.goalNotFound);
         }
         return;
       }
@@ -125,28 +136,50 @@ class _GoalEditPageState extends ConsumerState<GoalEditPage> {
         subGoals: _subGoals,
       );
 
+      // Fire-and-forget: Repository hemen döner, arka planda sync olur
       await repository.updateGoal(updatedGoal);
 
-      if (mounted) {
-        // Stream'i yeniden başlatmak için invalidate et
-        ref.invalidate(goalsStreamProvider);
-        // Goal detail'i de invalidate et
-        ref.invalidate(goalDetailProvider(widget.goalId));
+      if (!mounted) return;
 
-        AppSnackbar.showSuccess(context, message: context.l10n.goalUpdatedSuccess);
-        context.pop();
-      }
-    } catch (e) {
+      // Stream'i yeniden başlatmak için invalidate et
+      // Bu, local cache'den yeni veriyi hemen gösterir
+      ref.invalidate(goalsStreamProvider);
+      // Goal detail'i de invalidate et
+      ref.invalidate(goalDetailProvider(widget.goalId));
+
+      // Başarı mesajı göster
+      FeedbackHelper.showSuccess(
+        context,
+        context.l10n.goalUpdatedSuccess,
+      );
+
+      // Sayfayı güvenli şekilde kapat
+      Navigator.of(context).pop();
+    } catch (e, stackTrace) {
       if (mounted) {
-        AppSnackbar.showError(
+        setState(() {
+          _isSaving = false;
+        });
+
+        final appError = ErrorHandler.handle(e, stackTrace);
+        FeedbackHelper.showAppError(
           context,
-          message: context.l10n.errorUpdatingGoal(e.toString()),
+          appError,
         );
       }
     }
   }
 
   Future<void> _handleAIOptimize() async {
+    // Önce internet kontrolü
+    final isOnline = await ConnectivityHelper.isOnline();
+    if (!isOnline) {
+      FeedbackHelper.showWarning(
+        context,
+        context.l10n.requiresConnection,
+      );
+      return;
+    }
     // Validate all required fields before AI optimization
     if (!_formKey.currentState!.validate()) {
       AppSnackbar.showError(
@@ -157,7 +190,8 @@ class _GoalEditPageState extends ConsumerState<GoalEditPage> {
     }
 
     if (_selectedCategory == null) {
-      AppSnackbar.showError(context, message: context.l10n.pleaseSelectCategory);
+      AppSnackbar.showError(context,
+          message: context.l10n.pleaseSelectCategory);
       return;
     }
 
@@ -212,7 +246,7 @@ class _GoalEditPageState extends ConsumerState<GoalEditPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: _premiumBackground,
+      backgroundColor: AppColors.premiumBackground,
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
@@ -316,14 +350,24 @@ class _GoalEditPageState extends ConsumerState<GoalEditPage> {
                 const SizedBox(height: AppSpacing.md),
                 AppButton(
                   variant: AppButtonVariant.filled,
-                  onPressed: _handleSave,
+                  onPressed: _isSaving ? null : _handleSave,
                   minHeight: 60,
-                  child: Text(
-                    context.l10n.update,
-                    style: AppTextStyles.bodyMedium.copyWith(
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
+                  child: _isSaving
+                      ? const SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                                Colors.white),
+                          ),
+                        )
+                      : Text(
+                          context.l10n.update,
+                          style: AppTextStyles.bodyMedium.copyWith(
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
                 ),
               ],
             ),

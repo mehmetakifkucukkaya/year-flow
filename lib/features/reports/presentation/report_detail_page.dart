@@ -58,28 +58,20 @@ class ReportDetailPage extends ConsumerWidget {
     final backgroundColor = isDark ? AppColors.gray900 : AppColors.gray50;
 
     String buildTitle() {
+      final l10n = context.l10n;
       switch (reportType) {
         case ReportType.weekly:
-          return 'Haftalık Rapor';
+          return l10n.weeklyReportTitle;
         case ReportType.monthly:
-          return 'Aylık Rapor';
+          return l10n.monthlyReportTitle;
         case ReportType.yearly:
-          return 'Yıllık Rapor';
+          return l10n.yearlyReportTitle;
       }
     }
 
     Future<void> handleDelete() async {
       final id = reportId;
       if (id == null) {
-        return;
-      }
-
-      final userId = ref.read(currentUserIdProvider);
-      if (userId == null) {
-        AppSnackbar.showError(
-          context,
-          message: 'Oturum bulunamadı. Lütfen tekrar giriş yap.',
-        );
         return;
       }
 
@@ -91,7 +83,7 @@ class ReportDetailPage extends ConsumerWidget {
               borderRadius: AppRadius.borderRadiusLg,
             ),
             title: Text(context.l10n.deleteReport),
-            content: Text(
+            content: const Text(
               'Bu raporu silmek istediğinden emin misin? Bu işlem geri alınamaz.',
             ),
             actions: [
@@ -116,12 +108,21 @@ class ReportDetailPage extends ConsumerWidget {
       }
 
       try {
+        final userId = ref.read(currentUserIdProvider);
+        if (userId == null) {
+          AppSnackbar.showError(
+            context,
+            message: context.l10n.errorUnexpectedAuth,
+          );
+          return;
+        }
+
         final repository = ref.read(goalRepositoryProvider);
         await repository.deleteReport(id, userId);
 
         AppSnackbar.showSuccess(
           context,
-          message: 'Rapor silindi',
+          message: context.l10n.reportDeleted,
         );
         if (Navigator.of(context).canPop()) {
           Navigator.of(context).pop();
@@ -129,7 +130,7 @@ class ReportDetailPage extends ConsumerWidget {
       } catch (e) {
         AppSnackbar.showError(
           context,
-          message: 'Rapor silinirken bir hata oluştu: $e',
+          message: context.l10n.reportDeleteError(e.toString()),
         );
       }
     }

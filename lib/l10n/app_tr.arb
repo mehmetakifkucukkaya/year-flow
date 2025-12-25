@@ -261,6 +261,7 @@
       }
     }
   },
+  "inDays": "{days} gün sonra",
   "reportsLoadingError": "Raporlar yüklenirken hata oluştu: {error}",
   "@reportsLoadingError": {
     "placeholders": {
@@ -562,6 +563,9 @@
   "profile": "Profil",
   "totalGoals": "Toplam Hedef",
   "annualReport": "Yıllık Rapor",
+  "weeklyReportTitle": "Haftalık Rapor",
+  "monthlyReportTitle": "Aylık Rapor",
+  "yearlyReportTitle": "Yıllık Rapor",
   "accountInformation": "Hesap Bilgileri",
   "edit": "Düzenle",
   "fullName": "Ad Soyad",
@@ -662,6 +666,8 @@
   "deleteSubtask": "Alt görevi sil",
   "deleteSubtaskConfirmation": "Bu alt görevi silmek istediğine emin misin?",
   "deleteReport": "Raporu sil",
+  "reportDeleted": "Rapor silindi",
+  "reportDeleteError": "Rapor silinirken bir hata oluştu: {error}",
   "pageNotFound": "Sayfa bulunamadı: {path}",
   "@pageNotFound": {
     "placeholders": {
@@ -689,6 +695,35 @@
   "errorSignInFailed": "Giriş yapılamadı. E-posta veya şifre hatalı olabilir, lütfen tekrar deneyin.",
   "errorSignUpFailed": "Kayıt işlemi tamamlanamadı. Lütfen tekrar deneyin.",
   "errorPasswordResetFailed": "Şifre sıfırlama sırasında hata oluştu. Lütfen tekrar deneyin.",
-  "errorUnexpectedAuth": "Beklenmeyen bir hata oluştu. Lütfen tekrar deneyin."
+  "errorUnexpectedAuth": "Beklenmeyen bir hata oluştu. Lütfen tekrar deneyin.",
+  "accountDeletedSuccessfully": "Hesabınız başarıyla silindi",
+  "accountDeleteError": "Hesap silinirken hata oluştu: {error}",
+  "aiOptimization": "AI Optimizasyonu",
+  "aiOptimizationSubtitle": "Hedefiniz SMART formatına çevrildi",
+  "optimizationFailed": "Optimizasyon başarısız",
+  "optimizedGoal": "Optimize Edilmiş Hedef",
+  "optimizedGoalHint": "Kısa bir hedef adı yazın…",
+  "explanation": "Açıklama",
+  "suggestedSubTasks": "Önerilen Alt Görevler",
+  "apply": "Uygula",
+  "jsonCsv": "JSON / CSV",
+  "noInternetConnection": "İnternet bağlantısı yok. Lütfen bağlantınızı kontrol edin.",
+  "requiresConnection": "Bu özellik internet bağlantısı gerektirir.",
+  "unexpectedError": "Beklenmeyen bir hata oluştu. Lütfen tekrar deneyin.",
+  "addGoal": "Hedef ekle",
+  "sortBy": "Sırala",
+  "filterBy": "Filtrele",
+  "sortNewest": "En yeni",
+  "sortOldest": "En eski",
+  "sortProgressHigh": "İlerleme: yüksekten düşüğe",
+  "sortProgressLow": "İlerleme: düşükten yükseğe",
+  "sortTitleAsc": "Başlık A–Z",
+  "sortTitleDesc": "Başlık Z–A",
+  "confirm": "Onayla",
+  "uncompleteGoalTitle": "Hedefi tekrar aktifleştir",
+  "uncompleteGoalMessage": "Bu hedefi tekrar aktif hale getirmek istediğine emin misin?",
+  "noGoalsYetSubtitle": "Hedef ekleyerek ilerlemeye başlayabilirsin.",
+  "noCompletedGoalsYet": "Henüz tamamlanan hedef yok",
+  "noCompletedGoalsYetSubtitle": "Hedeflerini tamamladığında burada göreceksin."
 }
 

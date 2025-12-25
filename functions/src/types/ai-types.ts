@@ -7,6 +7,7 @@ export interface OptimizeGoalRequest {
   category: string;
   motivation?: string;
   targetDate?: string;
+  locale?: string;
 }
 
 export interface SubGoal {
@@ -26,6 +27,7 @@ export interface GenerateSuggestionsRequest {
   userId: string;
   goals: Goal[];
   checkIns: CheckIn[];
+  locale?: string;
 }
 
 export interface GenerateSuggestionsResponse {
@@ -37,6 +39,7 @@ export interface GenerateYearlyReportRequest {
   year: number;
   goals: Goal[];
   checkIns: CheckIn[];
+  locale?: string;
 }
 
 export interface GenerateYearlyReportResponse {
@@ -49,6 +52,7 @@ export interface GenerateWeeklyReportRequest {
   weekEnd: string;
   goals: Goal[];
   checkIns: CheckIn[];
+  locale?: string;
 }
 
 export interface GenerateWeeklyReportResponse {
@@ -61,6 +65,7 @@ export interface GenerateMonthlyReportRequest {
   month: number;
   goals: Goal[];
   checkIns: CheckIn[];
+  locale?: string;
 }
 
 export interface GenerateMonthlyReportResponse {
@@ -71,6 +76,7 @@ export interface SuggestSubGoalsRequest {
   goalTitle: string;
   category: string;
   description?: string;
+  locale?: string;
 }
 
 export interface SuggestSubGoalsResponse {

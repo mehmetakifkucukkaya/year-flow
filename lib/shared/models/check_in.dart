@@ -20,5 +20,3 @@ class CheckIn {
   final int progressDelta; // change in progress in percentage points
   final String? note;
 }
-
-

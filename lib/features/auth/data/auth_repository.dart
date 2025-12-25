@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 /// Domain user model (şimdilik sadece temel alanlar)
@@ -90,9 +91,10 @@ class FirebaseAuthRepository implements AuthRepository {
         'createdAt': FieldValue.serverTimestamp(),
         'updatedAt': FieldValue.serverTimestamp(),
       }, SetOptions(merge: true)); // merge: true ile mevcut verileri koru
-    } catch (e) {
-      // Firestore hatası auth işlemini engellememeli
-      print('Error saving user to Firestore: $e');
+    } catch (e, stackTrace) {
+      // Firestore hatası auth işlemini engellememeli, ama loglanmalı
+      debugPrint('Error saving user to Firestore: $e');
+      debugPrint('Stack trace: $stackTrace');
     }
   }
 
@@ -313,11 +315,11 @@ class FirebaseAuthRepository implements AuthRepository {
 
       // User document'ını sil
       await userDocRef.delete();
-      
-      print('User data successfully deleted from Firestore');
+
+      debugPrint('User data successfully deleted from Firestore');
     } catch (e, stackTrace) {
-      print('Error deleting user data from Firestore: $e');
-      print('Stack trace: $stackTrace');
+      debugPrint('Error deleting user data from Firestore: $e');
+      debugPrint('Stack trace: $stackTrace');
       // Firestore silme başarısız olursa auth hesabını silme - veri tutarlılığı için
       throw Exception('Firestore verileri silinirken hata oluştu. Hesap silinemedi: $e');
     }
@@ -325,9 +327,10 @@ class FirebaseAuthRepository implements AuthRepository {
     // Firebase Auth hesabını sil (sadece Firestore silme başarılı olduysa)
     try {
       await user.delete();
-      print('User account successfully deleted from Firebase Auth');
-    } catch (e) {
-      print('Error deleting user from Firebase Auth: $e');
+      debugPrint('User account successfully deleted from Firebase Auth');
+    } catch (e, stackTrace) {
+      debugPrint('Error deleting user from Firebase Auth: $e');
+      debugPrint('Stack trace: $stackTrace');
       // Auth silme başarısız olursa hata fırlat
       throw Exception('Firebase Auth hesabı silinirken hata oluştu: $e');
     }

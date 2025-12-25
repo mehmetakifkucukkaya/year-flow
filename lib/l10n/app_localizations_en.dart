@@ -1,3 +1,5 @@
+// ignore: unused_import
+import 'package:intl/intl.dart' as intl;
 import 'app_localizations.dart';
 
 // ignore_for_file: type=lint
@@ -124,7 +126,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get setYourName => 'Let\'s set your name';
 
   @override
-  String get setYourNameDescription => 'We\'ll address you by your name on screen. You can always change this from your profile if you don\'t want to.';
+  String get setYourNameDescription =>
+      'We\'ll address you by your name on screen. You can always change this from your profile if you don\'t want to.';
 
   @override
   String get yearlyPerformanceSummary => 'Your yearly performance summary';
@@ -183,7 +186,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get categoryBasedDevelopment => 'Category-Based Development';
 
   @override
-  String get noAchievementData => 'Not enough data to create achievement stories yet. You\'ll see your progress here as you add goals and check in.';
+  String get noAchievementData =>
+      'Not enough data to create achievement stories yet. You\'ll see your progress here as you add goals and check in.';
 
   @override
   String get language => 'Language';
@@ -203,7 +207,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get achievements => 'Achievements';
 
   @override
-  String thisYearWorkedOnGoals(int totalGoals, int completedGoals, int completionRate) {
+  String thisYearWorkedOnGoals(
+      int totalGoals, int completedGoals, int completionRate) {
     return 'This year you worked on a total of $totalGoals goals and completed $completedGoals goals (completion rate approximately $completionRate%).';
   }
 
@@ -226,7 +231,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get aiSuggestions => 'AI Suggestions';
 
   @override
-  String get aiSuggestionExample => 'Your progress in personal development goals is great! Next year, you can increase the completion rate by breaking down large career goals into smaller, manageable steps. Also, adding a goal on financial literacy can support your overall success.';
+  String get aiSuggestionExample =>
+      'Your progress in personal development goals is great! Next year, you can increase the completion rate by breaking down large career goals into smaller, manageable steps. Also, adding a goal on financial literacy can support your overall success.';
 
   @override
   String get loginRequired => 'You need to sign in';
@@ -247,7 +253,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get csv => 'CSV';
 
   @override
-  String get atLeastOneGoalRequired => 'At least one goal is required to create a report';
+  String get atLeastOneGoalRequired =>
+      'At least one goal is required to create a report';
 
   @override
   String errorCreatingReport(String error) {
@@ -275,7 +282,8 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get solutionAddActions => 'Solution: You could try adding 1-2 small, clear actions in this area next week and increasing the frequency of check-ins.';
+  String get solutionAddActions =>
+      'Solution: You could try adding 1-2 small, clear actions in this area next week and increasing the frequency of check-ins.';
 
   @override
   String challengeFocusDifficulty(String category, int value) {
@@ -283,16 +291,20 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get solutionBreakDownGoals => 'Solution: Breaking these goals into smaller steps and reviewing them weekly can increase focus.';
+  String get solutionBreakDownGoals =>
+      'Solution: Breaking these goals into smaller steps and reviewing them weekly can increase focus.';
 
   @override
-  String get generalStatusHealthy => 'General status: There is healthy progress in all categories.';
+  String get generalStatusHealthy =>
+      'General status: There is healthy progress in all categories.';
 
   @override
-  String get solutionReviewPriorities => 'Solution: Still, reviewing your priorities weekly can be a good idea to maintain your motivation.';
+  String get solutionReviewPriorities =>
+      'Solution: Still, reviewing your priorities weekly can be a good idea to maintain your motivation.';
 
   @override
-  String get goalAndCheckInDataNeeded => 'As your goal and check-in data grows, areas where you struggle and improvement suggestions will appear here.';
+  String get goalAndCheckInDataNeeded =>
+      'As your goal and check-in data grows, areas where you struggle and improvement suggestions will appear here.';
 
   @override
   String get january => 'January';
@@ -400,7 +412,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noCompletedGoals => 'No completed goals yet';
 
   @override
-  String get completedGoalsWillAppear => 'Your completed goals will appear here as you complete them';
+  String get completedGoalsWillAppear =>
+      'Your completed goals will appear here as you complete them';
 
   @override
   String get goalsLoadingError => 'An error occurred while loading goals.';
@@ -426,7 +439,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get moveToActiveTooltip => 'Move back to active goals';
 
   @override
-  String get mustSignInToPerformAction => 'You must sign in to perform this action.';
+  String get mustSignInToPerformAction =>
+      'You must sign in to perform this action.';
 
   @override
   String get notificationsComingSoon => 'Notifications coming soon';
@@ -452,7 +466,8 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get weeklySummaryError => 'This week\'s summary could not be loaded right now. Try again later.';
+  String get weeklySummaryError =>
+      'This week\'s summary could not be loaded right now. Try again later.';
 
   @override
   String get howIsTodayGoing => 'How is today going?';
@@ -480,6 +495,11 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String inDays(int days) {
+    return 'In $days days';
+  }
+
+  @override
   String reportsLoadingError(String error) {
     return 'An error occurred while loading reports: $error';
   }
@@ -488,7 +508,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noReportsYet => 'No reports created yet';
 
   @override
-  String get createFirstReport => 'You can create your first report by clicking the \"Create Report\" button above.';
+  String get createFirstReport =>
+      'You can create your first report by clicking the \"Create Report\" button above.';
 
   @override
   String get pastReports => 'Past Reports';
@@ -529,7 +550,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noGoalsYet => 'You haven\'t added any goals yet';
 
   @override
-  String get startJourneyWithGoal => 'Start your success journey by adding a new goal';
+  String get startJourneyWithGoal =>
+      'Start your success journey by adding a new goal';
 
   @override
   String get addNewGoal => 'Add New Goal';
@@ -538,7 +560,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noGoalCreatedYet => 'You haven\'t created any goals yet';
 
   @override
-  String get createFirstGoal => 'Create your first goal and make your year more planned, focused and meaningful.';
+  String get createFirstGoal =>
+      'Create your first goal and make your year more planned, focused and meaningful.';
 
   @override
   String get createGoal => 'Create Goal';
@@ -565,49 +588,60 @@ class AppLocalizationsEn extends AppLocalizations {
   String get onboardingSlide1Title => 'Make your goals concrete this year.';
 
   @override
-  String get onboardingSlide1Description => 'Turn your dreams into reality with YearFlow. Progress towards your big goals with achievable steps.';
+  String get onboardingSlide1Description =>
+      'Turn your dreams into reality with YearFlow. Progress towards your big goals with achievable steps.';
 
   @override
-  String get onboardingSlide2Title => 'Track your journey with regular progress.';
+  String get onboardingSlide2Title =>
+      'Track your journey with regular progress.';
 
   @override
-  String get onboardingSlide2Description => 'Record your progress on goals with monthly check-ins, maintain your motivation and celebrate your achievements.';
+  String get onboardingSlide2Description =>
+      'Record your progress on goals with monthly check-ins, maintain your motivation and celebrate your achievements.';
 
   @override
-  String get onboardingSlide3Title => 'Get your personal development report at the end of the year.';
+  String get onboardingSlide3Title =>
+      'Get your personal development report at the end of the year.';
 
   @override
-  String get onboardingSlide3Description => 'See the progress you\'ve made throughout the year with AI-powered reports, understand your development with concrete data and get inspired for new goals.';
+  String get onboardingSlide3Description =>
+      'See the progress you\'ve made throughout the year with AI-powered reports, understand your development with concrete data and get inspired for new goals.';
 
   @override
   String get onboardingWelcomeTitle => 'Make your goals real.';
 
   @override
-  String get onboardingWelcomeSubtitle => 'Turn your dreams into reality, one step at a time.';
+  String get onboardingWelcomeSubtitle =>
+      'Turn your dreams into reality, one step at a time.';
 
   @override
   String get onboardingFeature1Title => 'Track your journey';
 
   @override
-  String get onboardingFeature1Subtitle => 'Monthly check-ins help you stay on track and see how far you\'ve come.';
+  String get onboardingFeature1Subtitle =>
+      'Monthly check-ins help you stay on track and see how far you\'ve come.';
 
   @override
   String get onboardingFeature2Title => 'Celebrate every win';
 
   @override
-  String get onboardingFeature2Subtitle => 'Visual progress and milestones keep you motivated along the way.';
+  String get onboardingFeature2Subtitle =>
+      'Visual progress and milestones keep you motivated along the way.';
 
   @override
-  String get onboardingFeature3Title => 'See your growth with AI-powered reports.';
+  String get onboardingFeature3Title =>
+      'See your growth with AI-powered reports.';
 
   @override
-  String get onboardingFeature3Subtitle => 'Yearly snapshots & data-driven insights.';
+  String get onboardingFeature3Subtitle =>
+      'Yearly snapshots & data-driven insights.';
 
   @override
   String get onboardingEndTitle => 'Ready to start your journey?';
 
   @override
-  String get onboardingEndSubtitle => 'Let\'s turn your goals into achievements.';
+  String get onboardingEndSubtitle =>
+      'Let\'s turn your goals into achievements.';
 
   @override
   String get letsStart => 'Let\'s start';
@@ -622,7 +656,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get forgotPasswordTitle => 'Forgot your password?';
 
   @override
-  String get forgotPasswordDescription => 'Enter your registered email address to reset your password.';
+  String get forgotPasswordDescription =>
+      'Enter your registered email address to reset your password.';
 
   @override
   String get emailAddress => 'Email Address';
@@ -761,7 +796,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get errorLoadingNotes => 'Error Loading Notes';
 
   @override
-  String get firestoreIndexNotReady => 'Firestore index is not ready yet. Please wait a few minutes and try again.';
+  String get firestoreIndexNotReady =>
+      'Firestore index is not ready yet. Please wait a few minutes and try again.';
 
   @override
   String tasksLeft(int count) {
@@ -799,7 +835,8 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get createYourFirstReport => 'You can create your first report by clicking the \"Create Report\" button above.';
+  String get createYourFirstReport =>
+      'You can create your first report by clicking the \"Create Report\" button above.';
 
   @override
   String get reportTypeWeekly => 'Weekly Report';
@@ -811,7 +848,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get reportTypeYearly => 'Yearly Report';
 
   @override
-  String get solutionIncreaseCheckIns => 'Solution: Try adding 1-2 small, clear actions in this area next week and increase check-in frequency.';
+  String get solutionIncreaseCheckIns =>
+      'Solution: Try adding 1-2 small, clear actions in this area next week and increase check-in frequency.';
 
   @override
   String challengeDifficultyFocusing(String category, int value) {
@@ -819,7 +857,8 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get generalStatusHealthyProgress => 'General status: Healthy progress in all categories.';
+  String get generalStatusHealthyProgress =>
+      'General status: Healthy progress in all categories.';
 
   @override
   String reportTitle(String reportType, String period) {
@@ -842,7 +881,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get allGoalsCompleted => 'All goals completed! 🎉';
 
   @override
-  String get allGoalsCompletedDescription => 'You\'ve completed all your goals for this week. Time to set new ones or enjoy your progress!';
+  String get allGoalsCompletedDescription =>
+      'You\'ve completed all your goals for this week. Time to set new ones or enjoy your progress!';
 
   @override
   String get viewAllGoals => 'View All Goals';
@@ -854,13 +894,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get weeklySummaryDescription => 'Your progress for this week';
 
   @override
-  String get weeklySummaryNoData => 'No data for this week yet. Start adding goals and checking in to see your progress!';
+  String get weeklySummaryNoData =>
+      'No data for this week yet. Start adding goals and checking in to see your progress!';
 
   @override
   String get namePromptTitle => 'Let\'s set your name';
 
   @override
-  String get namePromptDescription => 'We\'ll address you by your name on screen. You can always change this from your profile if you don\'t want to.';
+  String get namePromptDescription =>
+      'We\'ll address you by your name on screen. You can always change this from your profile if you don\'t want to.';
 
   @override
   String get namePromptSave => 'Save';
@@ -878,6 +920,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get annualReport => 'Annual Report';
 
   @override
+  String get weeklyReportTitle => 'Weekly Report';
+
+  @override
+  String get monthlyReportTitle => 'Monthly Report';
+
+  @override
+  String get yearlyReportTitle => 'Yearly Report';
+
+  @override
   String get accountInformation => 'Account Information';
 
   @override
@@ -887,13 +938,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get fullName => 'Full Name';
 
   @override
-  String get upcomingCheckInsDescription => 'Do check-ins for goals with less than 7 days remaining';
+  String get upcomingCheckInsDescription =>
+      'Do check-ins for goals with less than 7 days remaining';
 
   @override
   String get questionOfTheDay => 'QUESTION OF THE DAY';
 
   @override
-  String get questionOfTheDayText => 'What was the biggest thing that motivated you to reach your goals today?';
+  String get questionOfTheDayText =>
+      'What was the biggest thing that motivated you to reach your goals today?';
 
   @override
   String get writeYourAnswer => 'Write Your Answer';
@@ -929,13 +982,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get logOutTitle => 'Log Out';
 
   @override
-  String get logOutConfirmation => 'Are you sure you want to log out of your account?';
+  String get logOutConfirmation =>
+      'Are you sure you want to log out of your account?';
 
   @override
   String get restoreFromBackupTitle => 'Restore from Backup';
 
   @override
-  String get restoreFromBackupWarning => 'The backup file you selected will delete all current goal and report data and replace them with the backup data.\n\nThis action cannot be undone. Are you sure you want to continue?';
+  String get restoreFromBackupWarning =>
+      'The backup file you selected will delete all current goal and report data and replace them with the backup data.\n\nThis action cannot be undone. Are you sure you want to continue?';
 
   @override
   String get yesContinue => 'Yes, continue';
@@ -965,7 +1020,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get exportAllData => 'Export All Data';
 
   @override
-  String get exportDataFormatQuestion => 'In which format would you like to save your data?';
+  String get exportDataFormatQuestion =>
+      'In which format would you like to save your data?';
 
   @override
   String get tableCsv => 'Table (CSV)';
@@ -986,10 +1042,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get passwordsMismatch => 'Passwords do not match';
 
   @override
-  String get backupImportedSuccess => 'Backup imported successfully. You can check by refreshing the Goals screen.';
+  String get backupImportedSuccess =>
+      'Backup imported successfully. You can check by refreshing the Goals screen.';
 
   @override
-  String get exportCompleted => 'Export completed. You can access the files from the Downloads folder.';
+  String get exportCompleted =>
+      'Export completed. You can access the files from the Downloads folder.';
 
   @override
   String get editProfile => 'Edit Profile';
@@ -1004,10 +1062,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get deleteAccount => 'Delete Account';
 
   @override
-  String get deleteAccountConfirmation => 'Are you sure you want to delete your account? This action cannot be undone and all your data will be permanently deleted.';
+  String get deleteAccountConfirmation =>
+      'Are you sure you want to delete your account? This action cannot be undone and all your data will be permanently deleted.';
 
   @override
-  String get accountDeletedSuccess => 'Your account has been successfully deleted';
+  String get accountDeletedSuccess =>
+      'Your account has been successfully deleted';
 
   @override
   String get errorDeletingAccount => 'An error occurred while deleting account';
@@ -1089,10 +1149,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get takeAMomentToReflect => 'Take a moment to reflect';
 
   @override
-  String get howDoYouEvaluateThisMonth => 'How do you evaluate your progress this month?';
+  String get howDoYouEvaluateThisMonth =>
+      'How do you evaluate your progress this month?';
 
   @override
-  String get scoreDescription => '1 means very low progress, 10 means excellent progress.';
+  String get scoreDescription =>
+      '1 means very low progress, 10 means excellent progress.';
 
   @override
   String score(int score) {
@@ -1108,28 +1170,36 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get whatDidYouDoThisMonth => 'What did you do for this goal this month?';
+  String get whatDidYouDoThisMonth =>
+      'What did you do for this goal this month?';
 
   @override
-  String get smallStepsCount => 'Small steps count too. A short answer is enough.';
+  String get smallStepsCount =>
+      'Small steps count too. A short answer is enough.';
 
   @override
-  String get progressExample => 'e.g., I worked out 3 times a week, read two chapters, practiced vocabulary…';
+  String get progressExample =>
+      'e.g., I worked out 3 times a week, read two chapters, practiced vocabulary…';
 
   @override
-  String get whatChallengedYouMost => 'What challenged you most during this process? How did you deal with it?';
+  String get whatChallengedYouMost =>
+      'What challenged you most during this process? How did you deal with it?';
 
   @override
-  String get youCanWriteOnlyChallenges => 'You can also write only the part that challenged you.';
+  String get youCanWriteOnlyChallenges =>
+      'You can also write only the part that challenged you.';
 
   @override
-  String get challengeExample => 'e.g., Workload disrupted my routine; I started making weekly plans to get back on track…';
+  String get challengeExample =>
+      'e.g., Workload disrupted my routine; I started making weekly plans to get back on track…';
 
   @override
-  String get leaveNoteForFutureSelf => 'Would you like to leave a small note for your future self?';
+  String get leaveNoteForFutureSelf =>
+      'Would you like to leave a small note for your future self?';
 
   @override
-  String get noteExample => 'e.g., You\'re doing great. Stay consistent and trust the process.';
+  String get noteExample =>
+      'e.g., You\'re doing great. Stay consistent and trust the process.';
 
   @override
   String get optional => 'Optional';
@@ -1138,10 +1208,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get note => 'Note:';
 
   @override
-  String get whichGoalForCheckIn => 'Which goal would you like to check in for?';
+  String get whichGoalForCheckIn =>
+      'Which goal would you like to check in for?';
 
   @override
-  String get selectGoalFromBelow => 'Select a goal from below; we\'ll take you directly to the check-in screen.';
+  String get selectGoalFromBelow =>
+      'Select a goal from below; we\'ll take you directly to the check-in screen.';
 
   @override
   String get goalsLoading => 'Loading goals...';
@@ -1152,7 +1224,8 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get noGoalsYetCreateFirst => 'You don\'t have any goals yet. You need to create a goal first.';
+  String get noGoalsYetCreateFirst =>
+      'You don\'t have any goals yet. You need to create a goal first.';
 
   @override
   String get delete => 'Delete';
@@ -1164,10 +1237,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get deleteSubtask => 'Delete Subtask';
 
   @override
-  String get deleteSubtaskConfirmation => 'Are you sure you want to delete this subtask?';
+  String get deleteSubtaskConfirmation =>
+      'Are you sure you want to delete this subtask?';
 
   @override
   String get deleteReport => 'Delete Report';
+
+  @override
+  String get reportDeleted => 'Report deleted';
+
+  @override
+  String reportDeleteError(String error) {
+    return 'An error occurred while deleting the report: $error';
+  }
 
   @override
   String pageNotFound(String path) {
@@ -1178,7 +1260,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get optimizationResultNotFound => 'Optimization result not found';
 
   @override
-  String get createFirstReportInstruction => 'You can create your first report by clicking the \"Create Report\" button above.';
+  String get createFirstReportInstruction =>
+      'You can create your first report by clicking the \"Create Report\" button above.';
 
   @override
   String get remove => 'Remove';
@@ -1187,50 +1270,161 @@ class AppLocalizationsEn extends AppLocalizations {
   String get close => 'Close';
 
   @override
-  String get errorEmailAlreadyInUse => 'The email address is already in use by another account.';
+  String get errorEmailAlreadyInUse =>
+      'The email address is already in use by another account.';
 
   @override
-  String get errorWeakPassword => 'The password is too weak. Please choose a stronger password.';
+  String get errorWeakPassword =>
+      'The password is too weak. Please choose a stronger password.';
 
   @override
-  String get errorInvalidEmail => 'The email address is invalid. Please enter a valid email address.';
+  String get errorInvalidEmail =>
+      'The email address is invalid. Please enter a valid email address.';
 
   @override
-  String get errorUserNotFound => 'No account found with this email address. Please check your email or sign up.';
+  String get errorUserNotFound =>
+      'No account found with this email address. Please check your email or sign up.';
 
   @override
-  String get errorWrongPassword => 'The password is incorrect. Please try again.';
+  String get errorWrongPassword =>
+      'The password is incorrect. Please try again.';
 
   @override
-  String get errorInvalidCredential => 'The email or password is incorrect. Please try again.';
+  String get errorInvalidCredential =>
+      'The email or password is incorrect. Please try again.';
 
   @override
-  String get errorWrongCurrentPassword => 'Current password is incorrect. Please try again.';
+  String get errorWrongCurrentPassword =>
+      'Current password is incorrect. Please try again.';
 
   @override
-  String get errorUserDisabled => 'This account has been disabled. Please contact support.';
+  String get errorUserDisabled =>
+      'This account has been disabled. Please contact support.';
 
   @override
-  String get errorTooManyRequests => 'Too many failed login attempts. Please try again later.';
+  String get errorTooManyRequests =>
+      'Too many failed login attempts. Please try again later.';
 
   @override
-  String get errorOperationNotAllowed => 'This sign-in method is not currently available. Please try again later.';
+  String get errorOperationNotAllowed =>
+      'This sign-in method is not currently available. Please try again later.';
 
   @override
-  String get errorNetworkRequestFailed => 'Please check your internet connection.';
+  String get errorNetworkRequestFailed =>
+      'Please check your internet connection.';
 
   @override
-  String get errorRequiresRecentLogin => 'For security reasons, please sign in again.';
+  String get errorRequiresRecentLogin =>
+      'For security reasons, please sign in again.';
 
   @override
-  String get errorSignInFailed => 'Sign in failed. Please check your email and password, then try again.';
+  String get errorSignInFailed =>
+      'Sign in failed. Please check your email and password, then try again.';
 
   @override
   String get errorSignUpFailed => 'Registration failed. Please try again.';
 
   @override
-  String get errorPasswordResetFailed => 'Password reset failed. Please try again.';
+  String get errorPasswordResetFailed =>
+      'Password reset failed. Please try again.';
 
   @override
-  String get errorUnexpectedAuth => 'An unexpected error occurred. Please try again.';
+  String get errorUnexpectedAuth =>
+      'An unexpected error occurred. Please try again.';
+
+  @override
+  String get accountDeletedSuccessfully =>
+      'Your account has been deleted successfully.';
+
+  @override
+  String accountDeleteError(String error) {
+    return 'An error occurred while deleting the account: $error';
+  }
+
+  @override
+  String get aiOptimization => 'AI Optimization';
+
+  @override
+  String get aiOptimizationSubtitle =>
+      'Your goal has been converted to SMART format';
+
+  @override
+  String get optimizationFailed => 'Optimization failed';
+
+  @override
+  String get optimizedGoal => 'Optimized Goal';
+
+  @override
+  String get optimizedGoalHint => 'Write a short goal name…';
+
+  @override
+  String get explanation => 'Explanation';
+
+  @override
+  String get suggestedSubTasks => 'Suggested Sub Tasks';
+
+  @override
+  String get apply => 'Apply';
+
+  @override
+  String get jsonCsv => 'JSON / CSV';
+
+  @override
+  String get noInternetConnection =>
+      'No internet connection. Please check your connection.';
+
+  @override
+  String get requiresConnection =>
+      'This feature requires an internet connection.';
+
+  @override
+  String get unexpectedError =>
+      'An unexpected error occurred. Please try again.';
+
+  @override
+  String get addGoal => 'Add goal';
+
+  @override
+  String get sortBy => 'Sort by';
+
+  @override
+  String get filterBy => 'Filter by';
+
+  @override
+  String get sortNewest => 'Newest first';
+
+  @override
+  String get sortOldest => 'Oldest first';
+
+  @override
+  String get sortProgressHigh => 'Progress: high to low';
+
+  @override
+  String get sortProgressLow => 'Progress: low to high';
+
+  @override
+  String get sortTitleAsc => 'Title A–Z';
+
+  @override
+  String get sortTitleDesc => 'Title Z–A';
+
+  @override
+  String get confirm => 'Confirm';
+
+  @override
+  String get uncompleteGoalTitle => 'Mark goal as active';
+
+  @override
+  String get uncompleteGoalMessage =>
+      'Are you sure you want to make this goal active again?';
+
+  @override
+  String get noGoalsYetSubtitle =>
+      'Start by adding a goal to track your progress.';
+
+  @override
+  String get noCompletedGoalsYet => 'No completed goals yet';
+
+  @override
+  String get noCompletedGoalsYetSubtitle => 'You\'ll see completed goals here.';
 }

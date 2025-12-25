@@ -43,17 +43,38 @@ extension ContextExtensions on BuildContext {
 
 /// DateTime extension'ları
 extension DateTimeExtensions on DateTime {
-  /// Türkçe tarih formatı (15 Ocak 2025)
-  String get formatted {
-    return DateFormat('d MMMM yyyy', 'tr_TR').format(this);
+  /// Tarih formatı (15 Ocak 2025) - locale parametresi ile
+  String formatted([String? locale]) {
+    return DateFormat('d MMMM yyyy', locale ?? 'tr_TR').format(this);
   }
 
-  /// Kısa tarih formatı (15 Oca)
-  String get shortFormatted {
-    return DateFormat('d MMM', 'tr_TR').format(this);
+  /// Kısa tarih formatı (15 Oca) - locale parametresi ile
+  String shortFormatted([String? locale]) {
+    return DateFormat('d MMM', locale ?? 'tr_TR').format(this);
   }
 
-  /// Göreceli zaman (3 gün önce)
+  /// Göreceli zaman (3 gün önce) - BuildContext ile lokalize
+  String relativeLocalized(BuildContext context) {
+    final l10n = context.l10n;
+    final now = DateTime.now();
+    final difference = now.difference(this);
+
+    if (difference.inDays == 0) {
+      return l10n.today;
+    } else if (difference.inDays == 1) {
+      return l10n.yesterday;
+    } else if (difference.inDays < 7) {
+      return l10n.daysAgo(difference.inDays);
+    } else if (difference.inDays < 30) {
+      final weeks = (difference.inDays / 7).floor();
+      return l10n.weeksAgo(weeks);
+    } else {
+      return formatted(context.l10n.localeName);
+    }
+  }
+
+  /// Göreceli zaman (3 gün önce) - locale parametresi ile (fallback)
+  /// Not: Yeni kodlar için relativeLocalized kullanın önerilir
   String get relative {
     final now = DateTime.now();
     final difference = now.difference(this);
@@ -68,13 +89,13 @@ extension DateTimeExtensions on DateTime {
       final weeks = (difference.inDays / 7).floor();
       return '$weeks hafta önce';
     } else {
-      return formatted;
+      return formatted();
     }
   }
 
-  /// Ay ve yıl formatı (Ocak 2025)
-  String get monthYear {
-    return DateFormat('MMMM yyyy', 'tr_TR').format(this);
+  /// Ay ve yıl formatı (Ocak 2025) - locale parametresi ile
+  String monthYear([String? locale]) {
+    return DateFormat('MMMM yyyy', locale ?? 'tr_TR').format(this);
   }
 }
 

@@ -14,9 +14,9 @@ export async function generateSuggestions(
   request: GenerateSuggestionsRequest,
   geminiClient: GeminiClient
 ): Promise<GenerateSuggestionsResponse> {
-  const {goals, checkIns} = request;
+  const {goals, checkIns, locale = 'tr'} = request;
 
-  const prompt = buildSuggestionsPrompt(goals, checkIns);
+  const prompt = buildSuggestionsPrompt(goals, checkIns, locale);
 
   try {
     const suggestions = await geminiClient.generateText(prompt, 1500);

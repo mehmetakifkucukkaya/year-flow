@@ -35,8 +35,10 @@ void main() async {
     rethrow;
   }
 
-  // Türkçe tarih formatı için
+  // Tarih formatlaması için desteklenen dilleri başlat
+  // Hem Türkçe hem İngilizce için date formatting'i başlatıyoruz
   await initializeDateFormatting('tr_TR', null);
+  await initializeDateFormatting('en_US', null);
 
   // Status bar rengini ayarla
   SystemChrome.setSystemUIOverlayStyle(
