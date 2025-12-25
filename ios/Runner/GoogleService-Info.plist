@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>API_KEY</key>
+	<string>AIzaSyCH-BEaVHT_ifuN35MgJZcv6HSVkL7Onvk</string>
+	<key>GCM_SENDER_ID</key>
+	<string>111770215758</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.yearflow.yearFlow</string>
+	<key>PROJECT_ID</key>
+	<string>yearflow-app</string>
+	<key>STORAGE_BUCKET</key>
+	<string>yearflow-app.firebasestorage.app</string>
+	<key>IS_ADS_ENABLED</key>
+	<false/>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<true/>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true/>
+	<key>IS_GCM_ENABLED</key>
+	<true/>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true/>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:111770215758:ios:6ade478ec1ef4ebba72a1f</string>
+</dict>
+</plist>

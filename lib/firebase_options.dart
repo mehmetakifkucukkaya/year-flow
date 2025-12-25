@@ -63,6 +63,9 @@ class DefaultFirebaseOptions {
     messagingSenderId: '111770215758',
     projectId: 'yearflow-app',
     storageBucket: 'yearflow-app.firebasestorage.app',
+    androidClientId: '111770215758-8aqovht48k3i77ekfvrqllto1jhp0dia.apps.googleusercontent.com',
+    iosClientId: '111770215758-occloc6p41fj6el5oegvikp036a8t283.apps.googleusercontent.com',
     iosBundleId: 'com.yearflow.yearFlow',
   );
+
 }
